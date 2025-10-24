@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>papergraph</title>
+    <link href="https://api.fontshare.com/v2/css?f[]=chillax@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css">
+    <link rel="icon" type="image/svg+xml" href="logo-papergraph.svg">
+</head>
+<body>
+    <div id="app">
+        <!-- Logo Menu Button (top-left) -->
+        <button id="logoMenuBtn" class="logo-menu-btn">
+            <img src="logo-papergraph.svg" alt="papergraph" class="logo-icon">
+            <span class="logo-text">papergraph</span>
+        </button>
+        
+        <!-- Main Dropdown Menu -->
+        <div id="mainDropdown" class="main-dropdown">
+            <!-- New Section -->
+            <div class="dropdown-section">
+                <div class="dropdown-section-title">Nouveau</div>
+                <button class="dropdown-menu-item" id="actionNewProject">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span>Créer nouveau projet</span>
+                </button>
+                <button class="dropdown-menu-item" id="actionImport">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <span>Importer un projet</span>
+                </button>
+            </div>
+            
+            <!-- Import/Export Section -->
+            <div class="dropdown-section">
+                <div class="dropdown-section-title">Exporter</div>
+                <button class="dropdown-menu-item" id="actionExport">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span>Exporter projet</span>
+                </button>
+                <button class="dropdown-menu-item" id="actionExportPdf">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
+                    </svg>
+                    <span>Exporter PDF</span>
+                </button>
+                <button class="dropdown-menu-item" id="actionExportImage">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <span>Exporter Image</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Active Filters Display -->
+        <div id="activeFilters" class="active-filters-container">
+            <!-- Filters will be added here dynamically -->
+        </div>
+
+        <!-- Graph View -->
+        <div id="graphView" class="view active">
+            <!-- Article Preview Panel on the left -->
+            <div id="articlePreview" class="article-preview">
+                <div class="preview-content">
+                    <div class="article-card">
+                        <h2 id="previewTitle" class="article-title">Titre de l'article</h2>
+                        <p id="previewAuthors" class="article-meta"></p>
+                        <div id="previewCategoryBadge" class="category-badge"></div>
+                        
+                        <div class="article-section">
+                            <h4>Résumé / Notes</h4>
+                            <p id="previewText" class="article-description"></p>
+                        </div>
+                        
+                        <div class="article-links">
+                            <div id="previewDoiContainer" class="link-item" style="display: none;">
+                                <span class="link-label">📄 DOI:</span>
+                                <a id="previewDoi" href="#" target="_blank" rel="noopener"></a>
+                            </div>
+                            <div id="previewLinkContainer" class="link-item" style="display: none;">
+                                <span class="link-label">🔗 Lien:</span>
+                                <a id="previewLink" href="#" target="_blank" rel="noopener"></a>
+                            </div>
+                            <div id="previewPdfContainer" class="link-item" style="display: none;">
+                                <span class="link-label">📕 PDF:</span>
+                                <a id="previewPdf" href="#" target="_blank" rel="noopener"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="graphContainer"></div>
+            
+            <!-- Toolbar on the right (kept for compatibility) -->
+            <div class="toolbar" style="display: none;">
+            </div>
+            
+            <!-- Edge menu for connection actions -->
+            <div id="edgeMenu" class="edge-menu">
+                <button class="edge-btn edge-delete" title="Supprimer la connexion">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Radial menu for node actions -->
+            <div id="radialMenu" class="radial-menu">
+                <button class="radial-btn radial-connect" title="Créer connexion">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                </button>
+                <button class="radial-btn radial-delete" title="Supprimer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Connection mode indicator -->
+            <div id="connectionModeIndicator" class="mode-indicator">
+                <span>Mode connexion actif - Cliquez sur un nœud cible</span>
+                <button id="cancelConnectionMode">✖ Annuler</button>
+            </div>
+        </div>
+
+        <!-- List View -->
+        <div id="listView" class="view">
+            <div id="listContainer" class="articles-list">
+                <!-- Les articles seront ajoutés ici dynamiquement -->
+            </div>
+        </div>
+        
+        <!-- Category filter dropdown (shared between both views, above toolbar) -->
+        <div id="categoryDropdown" class="dropdown-panel">
+            <h3>Filtres</h3>
+            
+            <div class="filter-section-dropdown">
+                <label>Catégorie</label>
+                <select id="categoryFilter">
+                    <option value="">Toutes les catégories</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Main Action Toolbar - Bottom horizontal (outside views to be always visible) -->
+        <div class="main-toolbar">
+            <button id="addArticleBtn" class="main-tool-btn" title="Ajouter un article">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="16"/>
+                    <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+                <span class="btn-label">Ajouter</span>
+            </button>
+            
+            <!-- Category filter icon (both modes) -->
+            <button id="categoryFilterBtn" class="main-tool-btn" title="Filtrer par catégorie">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                </svg>
+                <span class="btn-label">Filtrer</span>
+            </button>
+            
+            <!-- Search icon/box -->
+            <button id="searchToggleBtn" class="main-tool-btn search-toggle-btn" title="Rechercher">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <span class="btn-label">Rechercher</span>
+            </button>
+            
+            <!-- Expandable search box -->
+            <div class="toolbar-search collapsed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input type="text" id="searchBoxToolbar" placeholder="Rechercher..." class="toolbar-search-input">
+                <span id="searchResultCount" class="search-result-count"></span>
+                <button id="searchCloseBtn" class="search-close-btn">✕</button>
+            </div>
+            
+            <!-- Graph-only buttons -->
+            <div class="main-tool-divider graph-only"></div>
+            <button id="fitGraphBtn" class="main-tool-btn graph-only" title="Recentrer le graphe">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                    <path d="M12 3 L12 8" stroke-linecap="round"/>
+                    <path d="M10 5 L12 3 L14 5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 21 L12 16" stroke-linecap="round"/>
+                    <path d="M10 19 L12 21 L14 19" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 12 L8 12" stroke-linecap="round"/>
+                    <path d="M5 10 L3 12 L5 14" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M21 12 L16 12" stroke-linecap="round"/>
+                    <path d="M19 10 L21 12 L19 14" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="btn-label">Recentrer</span>
+            </button>
+            <button id="togglePhysicsBtn" class="main-tool-btn graph-only" title="Activer/Désactiver la physique">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="5" y="11" width="14" height="10" rx="2" ry="2"/>
+                    <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                </svg>
+                <span class="btn-label">Lock View</span>
+            </button>
+            
+            <div class="main-tool-divider"></div>
+            
+            <!-- Toggle switch for view mode (at the right, fixed position) -->
+            <div class="toolbar-view-toggle">
+                <input type="checkbox" id="viewToggle" class="toggle-input">
+                <label for="viewToggle" class="toggle-label">
+                    <span class="toggle-option toggle-graph">
+                        <img src="graph-icon-blue.svg" alt="Graph" class="toggle-icon toggle-icon-active">
+                        <img src="graph-icon-gray.svg" alt="Graph" class="toggle-icon toggle-icon-inactive">
+                    </span>
+                    <span class="toggle-option toggle-list">
+                        <img src="list-icon-blue.svg" alt="List" class="toggle-icon toggle-icon-active">
+                        <img src="list-icon-gray.svg" alt="List" class="toggle-icon toggle-icon-inactive">
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Article Edit Modal -->
+        <div id="articleModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="modalTitle">Nouvel Article</h2>
+                <form id="articleForm">
+                    <!-- Minimal import section -->
+                    <div class="import-zone">
+                        <div id="dropZone" class="drop-zone">
+                            <div class="drop-zone-content">
+                                <span class="drop-icon">📄</span>
+                                <p class="drop-text">Glissez un PDF ici</p>
+                                <p class="drop-or">ou</p>
+                                <input type="text" id="quickImport" placeholder="Collez un DOI ou arXiv ID (ex: 10.1234/... ou 2301.12345)">
+                                <input type="file" id="pdfFileInput" accept=".pdf" style="display: none;">
+                                <button type="button" id="browseFileBtn" class="btn-browse">Parcourir...</button>
+                            </div>
+                        </div>
+                        <div id="importStatus" class="import-status"></div>
+                    </div>
+                    
+                    <!-- Collapsible manual form -->
+                    <div id="manualFormToggle" class="manual-toggle">
+                        <button type="button" id="toggleManualBtn" class="toggle-manual-btn">
+                            ✏️ Saisie manuelle / modifier
+                        </button>
+                    </div>
+                    
+                    <div id="manualForm" class="manual-form collapsed">
+                        <div class="form-group">
+                            <label for="articleTitle">Titre *</label>
+                            <input type="text" id="articleTitle" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articleAuthors">Auteurs</label>
+                            <input type="text" id="articleAuthors" placeholder="ex: John Doe, Jane Smith">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articleCategories">Catégories (séparées par des virgules)</label>
+                            <input type="text" id="articleCategories" placeholder="ex: idée, méthodologie, résultats">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="articleText">Texte / Notes / Résumé</label>
+                            <textarea id="articleText" rows="6"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articleDoi">DOI</label>
+                            <input type="text" id="articleDoi" placeholder="ex: 10.1234/example.2024">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articleLink">Lien (URL)</label>
+                            <input type="url" id="articleLink" placeholder="https://...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articlePdf">Fichier PDF (URL ou chemin)</label>
+                            <input type="text" id="articlePdf" placeholder="https://... ou chemin local">
+                        </div>
+
+                        <div id="customFieldsContainer">
+                            <h3>Champs personnalisés</h3>
+                            <div id="customFieldsList"></div>
+                            <button type="button" id="addCustomFieldBtn" class="btn-secondary">➕ Ajouter un champ</button>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">💾 Enregistrer</button>
+                        <button type="button" id="deleteArticleBtn" class="btn-danger">🗑️ Supprimer</button>
+                        <button type="button" class="btn-secondary" onclick="closeModal()">Annuler</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Hidden file input for import -->
+        <input type="file" id="fileInput" accept=".json" style="display: none;">
+        
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-left">
+                <span class="footer-author">Rémy Vallot</span>
+                <span class="footer-separator">•</span>
+                <span class="footer-date" id="lastUpdate">Last update: Oct 2025</span>
+            </div>
+            <div class="footer-right">
+                <a href="https://github.com/yourusername/papergraph" target="_blank" rel="noopener" class="footer-github" title="View on GitHub">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
