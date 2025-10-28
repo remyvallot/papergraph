@@ -1,0 +1,24 @@
+/* ===== MAIN STYLES ENTRY POINT ===== */
+/* Import all modular CSS files */
+
+/* Base styles */
+@import url('./css/base/reset.css');
+@import url('./css/base/typography.css');
+@import url('./css/base/layout.css');
+
+/* Components */
+@import url('./css/components/buttons.css');
+@import url('./css/components/modals.css');
+@import url('./css/components/dropdown.css');
+@import url('./css/components/filters.css');
+@import url('./css/components/toolbar.css');
+@import url('./css/components/notifications.css');
+@import url('./css/components/radial-menu.css');
+
+/* Views */
+@import url('./css/views/graph-view.css');
+@import url('./css/views/list-view.css');
+@import url('./css/views/article-preview.css');
+
+/* Footer */
+@import url('./css/components/footer.css');

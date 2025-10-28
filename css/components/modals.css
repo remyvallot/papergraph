@@ -1,0 +1,392 @@
+/* ===== MODALS ===== */
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.01);
+    backdrop-filter: blur(4px);
+    overflow: auto;
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(20px);
+    padding: 2rem;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 
+                0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.modal-content h2 {
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+}
+
+.modal-content h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+/* Small modal for connection label */
+.modal-small {
+    max-width: 400px;
+    padding: 1.5rem;
+}
+
+.modal-small h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.form-group input[type="text"],
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.6rem;
+    border: 2px solid rgba(221, 221, 221, 0.5);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: rgba(52, 152, 219, 0.6);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+.custom-field {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.custom-field input {
+    flex: 1;
+}
+
+.custom-field button {
+    padding: 0.3rem 0.8rem;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.custom-field button:hover {
+    background-color: #c0392b;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.form-actions .btn-danger {
+    margin-right: auto;
+}
+
+/* Import zone in modal */
+.import-zone {
+    margin-bottom: 20px;
+}
+
+.drop-zone {
+    border: 2px dashed rgba(52, 152, 219, 0.4);
+    border-radius: 16px;
+    padding: 40px 20px;
+    text-align: center;
+    background: rgba(248, 249, 250, 0.6);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.drop-zone:hover {
+    background: rgba(232, 244, 248, 0.8);
+    border-color: rgba(41, 128, 185, 0.6);
+}
+
+.drop-zone.drag-over {
+    background: rgba(212, 237, 218, 0.8);
+    border-color: rgba(39, 174, 96, 0.6);
+    border-style: solid;
+}
+
+.drop-zone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.drop-icon {
+    font-size: 3rem;
+}
+
+.drop-text {
+    font-size: 1.1rem;
+    color: #2c3e50;
+    margin: 0;
+    font-weight: 500;
+}
+
+.drop-or {
+    color: #7f8c8d;
+    margin: 5px 0;
+    font-size: 0.9rem;
+}
+
+#quickImport {
+    width: 100%;
+    max-width: 500px;
+    padding: 12px;
+    border: 2px solid rgba(221, 221, 221, 0.5);
+    border-radius: 10px;
+    font-size: 1rem;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+}
+
+#quickImport:focus {
+    outline: none;
+    border-color: rgba(52, 152, 219, 0.6);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* BibTeX paste area */
+.bibtex-paste-area {
+    width: 100%;
+    max-width: 550px;
+    margin-top: 10px;
+}
+
+.bibtex-paste-area textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid rgba(52, 152, 219, 0.4);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-family: 'Courier New', monospace;
+    resize: vertical;
+    min-height: 200px;
+    background: rgba(248, 249, 250, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.bibtex-paste-area textarea:focus {
+    outline: none;
+    border-color: rgba(41, 128, 185, 0.8);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.bibtex-paste-area button {
+    margin-top: 10px;
+    margin-right: 10px;
+}
+
+.btn-browse {
+    padding: 10px 24px;
+    background: white;
+    border: 1px solid #3498db;
+    color: #3498db;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-browse:hover {
+    background: #3498db;
+    color: white;
+}
+
+/* Import success summary */
+.import-summary {
+    background: #d4edda;
+    border: 2px solid #27ae60;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.import-success-icon {
+    width: 60px;
+    height: 60px;
+    background: #27ae60;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 15px;
+}
+
+.import-summary h3 {
+    color: #155724;
+    margin: 0 0 15px 0;
+    font-size: 1.3rem;
+}
+
+.import-details {
+    text-align: left;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.import-details p {
+    margin: 8px 0;
+    color: #2c3e50;
+    font-size: 0.95rem;
+}
+
+.import-details strong {
+    color: #155724;
+    display: inline-block;
+    min-width: 80px;
+}
+
+#reimportBtn {
+    margin-top: 10px;
+}
+
+/* Manual form toggle */
+.manual-toggle {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.toggle-manual-btn {
+    background: transparent;
+    border: none;
+    color: #3498db;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 10px 20px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.toggle-manual-btn:hover {
+    background: #e8f4f8;
+}
+
+.manual-form {
+    max-height: 2000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 1;
+}
+
+.manual-form.collapsed {
+    max-height: 0;
+    opacity: 0;
+}
+
+.import-status {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    display: none;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.import-status.show {
+    display: block;
+}
+
+.import-status.loading {
+    background: rgba(255, 243, 205, 0.9);
+    color: #856404;
+    border: 1px solid rgba(255, 238, 186, 0.8);
+}
+
+.import-status.success {
+    background: rgba(212, 237, 218, 0.9);
+    color: #155724;
+    border: 1px solid rgba(195, 230, 203, 0.8);
+}
+
+.import-status.error {
+    background: rgba(248, 215, 218, 0.9);
+    color: #721c24;
+    border: 1px solid rgba(245, 198, 203, 0.8);
+}

@@ -1,0 +1,448 @@
+/* ===== TOOLBAR ===== */
+
+/* Main Toolbar - Bottom horizontal */
+.main-toolbar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    padding: 4px 4px 4px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 1000;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* List-only elements */
+.main-toolbar .list-only {
+    display: none;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Toolbar filter select (list mode) */
+.toolbar-filter {
+    display: flex;
+    align-items: center;
+}
+
+.toolbar-select {
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    background: #f8f9fa;
+    color: #333;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 140px;
+    white-space: nowrap;
+}
+
+.toolbar-select:hover {
+    background: #e3f2fd;
+    border-color: #4a90e2;
+}
+
+.toolbar-select:focus {
+    outline: none;
+    border-color: #4a90e2;
+    background: white;
+}
+
+/* Search toggle button */
+.search-toggle-btn {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-toggle-btn.hidden {
+    width: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+/* Expandable search bar */
+.toolbar-search {
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 6px 12px;
+    gap: 8px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 250px;
+    opacity: 1;
+}
+
+.toolbar-search.collapsed {
+    width: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    overflow: hidden;
+    border-color: transparent;
+}
+
+.toolbar-search:not(.collapsed) {
+    background: white;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+.toolbar-search svg {
+    width: 16px;
+    height: 16px;
+    stroke: #999;
+    flex-shrink: 0;
+}
+
+.toolbar-search-input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.85rem;
+    color: #333;
+    flex: 1;
+    min-width: 0;
+}
+
+.toolbar-search-input::placeholder {
+    color: #999;
+}
+
+.search-close-btn {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 0 4px;
+    font-size: 16px;
+    line-height: 1;
+    transition: color 0.2s;
+    flex-shrink: 0;
+}
+
+.search-close-btn:hover {
+    color: #333;
+}
+
+/* Search result count */
+.search-result-count {
+    font-size: 0.75rem;
+    color: #4a90e2;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Compact toggle switch in toolbar */
+.toolbar-view-toggle {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+    flex-shrink: 0;
+    background: #f5f5f5;
+    border-radius: 12px;
+    padding: 6px;
+    gap: 6px;
+}
+
+.toolbar-view-toggle .toggle-input {
+    display: none;
+}
+
+.toolbar-view-toggle .toggle-label {
+    display: flex;
+    height: 100%;
+    cursor: pointer;
+    margin: 0;
+    gap: 4px;
+}
+
+.toolbar-view-toggle .toggle-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    height: 100%;
+    border-radius: 6px;
+    background-color: transparent;
+    position: relative;
+    padding: 16px;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.toolbar-view-toggle .toggle-icon {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.2s ease;
+}
+
+.toolbar-view-toggle .toggle-icon-active {
+    opacity: 0;
+}
+
+.toolbar-view-toggle .toggle-icon-inactive {
+    opacity: 1;
+}
+
+/* Graph view (unchecked = graph active) */
+.toolbar-view-toggle .toggle-input:not(:checked) + .toggle-label .toggle-graph {
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.toolbar-view-toggle .toggle-input:not(:checked) + .toggle-label .toggle-graph .toggle-icon-active {
+    opacity: 1;
+}
+
+.toolbar-view-toggle .toggle-input:not(:checked) + .toggle-label .toggle-graph .toggle-icon-inactive {
+    opacity: 0;
+}
+
+/* List view (checked = list active) */
+.toolbar-view-toggle .toggle-input:checked + .toggle-label .toggle-list {
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.toolbar-view-toggle .toggle-input:checked + .toggle-label .toggle-list .toggle-icon-active {
+    opacity: 1;
+}
+
+.toolbar-view-toggle .toggle-input:checked + .toggle-label .toggle-list .toggle-icon-inactive {
+    opacity: 0;
+}
+
+/* Graph-only and list-only buttons visibility */
+.main-toolbar .graph-only {
+    display: none;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-toolbar .graph-only.visible {
+    display: flex;
+    opacity: 1;
+    max-width: 200px;
+    margin: initial;
+    padding: initial;
+}
+
+.main-toolbar .list-only {
+    display: none;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-toolbar .list-only.visible {
+    display: flex;
+    opacity: 1;
+    max-width: 200px;
+    margin: initial;
+    padding: initial;
+}
+
+.main-tool-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 42px;
+    height: 42px;
+    position: relative;
+}
+
+.main-tool-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-tool-btn .btn-label {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    background: #2c3e50;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+/* Ensure toolbar labels are consistent for all toolbar buttons, including graph-only/list-only */
+.main-toolbar .btn-label {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    background: #2c3e50;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+.main-tool-btn .btn-label::after,
+.main-toolbar .btn-label::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #2c3e50;
+}
+
+.main-tool-btn:hover {
+    background: #f0f7ff;
+    color: #4a90e2;
+}
+
+/* Active state should override hover */
+.main-tool-btn.active {
+    background: #4a90e2 !important;
+    color: white !important;
+}
+
+.main-tool-btn.active svg {
+    color: white !important;
+}
+
+.main-tool-btn:hover svg {
+    transform: scale(1.15);
+}
+
+.main-tool-btn:hover .btn-label,
+.main-toolbar .graph-only.visible:hover .btn-label,
+.main-toolbar .list-only.visible:hover .btn-label,
+.main-toolbar button:hover .btn-label {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-12px);
+}
+
+.main-tool-btn:active {
+    background: #e3f2fd;
+    transform: scale(0.95);
+}
+
+.main-tool-divider {
+    width: 1px;
+    height: 40px;
+    background: #e0e0e0;
+    margin: 0;
+}
+
+/* Old Toolbar - Keep for compatibility but hidden */
+.toolbar {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+}
+
+.toolbar .view-toggle {
+    padding: 0 4px;
+    margin-bottom: 4px;
+}
+
+.toolbar .toggle-switch {
+    background: #4a90e2;
+    box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
+}
+
+.toolbar .toggle-option {
+    padding: 6px 16px;
+    font-size: 0.85rem;
+}
+
+.tool-btn {
+    width: 48px;
+    height: 48px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.tool-btn:hover {
+    background: #f0f7ff;
+    color: #4a90e2;
+}
+
+.tool-btn:active {
+    background: #e3f2fd;
+}
+
+.tool-btn.active {
+    background: #4a90e2;
+    color: white;
+}
+
+.tool-divider {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 4px 8px;
+}

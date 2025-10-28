@@ -1,0 +1,81 @@
+/* ===== FOOTER ===== */
+
+/* Footer */
+.app-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    background: transparent;
+    z-index: 850;
+    font-size: 0.85rem;
+    color: #666;
+    pointer-events: none;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+.footer-author {
+    font-weight: 500;
+    color: #333;
+}
+
+.footer-separator {
+    color: #ddd;
+}
+
+.footer-date {
+    color: #999;
+    font-size: 0.8rem;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    pointer-events: auto;
+}
+
+.footer-github {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    color: #333;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.footer-github:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #000;
+}
+
+.footer-github svg {
+    transition: transform 0.2s;
+}
+
+.footer-github:hover svg {
+    transform: scale(1.1);
+}
+
+.app-version {
+    padding: 4px 12px;
+    background: rgba(74, 144, 226, 0.1);
+    color: #4a90e2;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
