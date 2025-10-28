@@ -1,0 +1,8 @@
+/* Typography */
+.logo-text {
+    font-family: 'Chillax', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 700;
+    font-size: 1.35rem;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+}

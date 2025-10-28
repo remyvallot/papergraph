@@ -1,0 +1,133 @@
+/* ===== FILTERS ===== */
+
+/* Active Filters Display */
+.active-filters-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 300px;
+}
+
+.filter-chip {
+    background: white;
+    border: 2px solid #4a90e2;
+    border-radius: 20px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+    animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s;
+}
+
+.filter-chip:hover {
+    box-shadow: 0 6px 16px rgba(74, 144, 226, 0.3);
+    transform: translateX(-4px);
+}
+
+.filter-chip-label {
+    flex: 1;
+    font-size: 0.85rem;
+    color: #2c3e50;
+}
+
+.filter-chip-value {
+    font-weight: 600;
+    color: #4a90e2;
+}
+
+.filter-chip-remove {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.filter-chip-remove:hover {
+    background: #fee;
+    color: #e53935;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Controls */
+.controls {
+    background-color: #f8f9fa;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-section label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.filter-section select,
+.filter-section input[type="text"] {
+    padding: 0.4rem 0.8rem;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.filter-section select:focus,
+.filter-section input[type="text"]:focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+.filter-select {
+    padding: 8px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #2c3e50;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 180px;
+}
+
+.filter-select:hover {
+    border-color: #4a90e2;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}

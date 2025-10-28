@@ -1,0 +1,241 @@
+/* ===== ARTICLE PREVIEW ===== */
+
+/* Article Preview Panel */
+.article-preview {
+    position: fixed;
+    left: 20px;
+    top: 90px;
+    width: 400px;
+    max-height: calc(100vh - 200px);
+    background: transparent;
+    z-index: 100;
+    display: none;
+    flex-direction: column;
+    padding: 15px;
+    pointer-events: none;
+}
+
+.article-preview.active {
+    display: flex;
+    pointer-events: all;
+}
+
+.preview-header {
+    display: none;
+}
+
+.close-preview-btn {
+    display: none;
+}
+
+.preview-content {
+    flex: 1;
+    overflow: visible;
+    overflow-x: visible;
+    padding: 0;
+}
+
+/* Article Card - White style */
+.article-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    color: #2c3e50;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    position: relative;
+    border: 1px solid #e0e0e0;
+    max-height: calc(100vh - 140px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.citation-key {
+    font-size: 0.75rem;
+    color: #95a5a6;
+    margin: 0 0 8px 0;
+    font-family: 'Courier New', monospace;
+    font-weight: 400;
+    cursor: text;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: inline-block;
+}
+
+.citation-key:hover {
+    background: #f8f9fa;
+    color: #7f8c8d;
+}
+
+.citation-key.editing {
+    background: #fff;
+    border: 2px solid #4a90e2;
+    outline: none;
+    color: #2c3e50;
+}
+
+.article-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    line-height: 1.3;
+    color: #2c3e50;
+    cursor: text;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.article-title:hover {
+    background: #f8f9fa;
+}
+
+.article-title.editing {
+    background: #fff;
+    border: 2px solid #4a90e2;
+    outline: none;
+}
+
+.article-meta {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin: 0 0 16px 0;
+    font-weight: 400;
+    cursor: text;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.article-meta:hover {
+    background: #f8f9fa;
+}
+
+.article-meta.editing {
+    background: #fff;
+    border: 2px solid #4a90e2;
+    outline: none;
+}
+
+.article-meta:empty::before {
+    content: 'Auteurs...';
+    color: #bdc3c7;
+    font-style: italic;
+}
+
+.category-badge {
+    display: inline-block;
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
+    color: #1976d2;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+.article-section {
+    background: #f8f9fa;
+    border-left: 4px solid #4a90e2;
+    padding: 16px;
+    border-radius: 8px;
+    margin: 20px 0;
+    flex-shrink: 0;
+}
+
+.article-section h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    color: #2c3e50;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.article-description {
+    margin: 0;
+    line-height: 1.7;
+    color: #2c3e50;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    max-height: 150px;
+    overflow-y: auto;
+    cursor: text;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    min-height: 20px;
+    flex: 1;
+}
+
+.article-description:hover {
+    background: white;
+}
+
+.article-description.editing {
+    background: #fff;
+    border: 2px solid #4a90e2;
+    outline: none;
+    min-height: 100px;
+}
+
+.article-description:empty::before {
+    content: 'Cliquez pour ajouter des notes...';
+    color: #bdc3c7;
+    font-style: italic;
+}
+
+.article-links {
+    margin: 20px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.link-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.link-label {
+    color: #7f8c8d;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.link-item a {
+    color: #4a90e2;
+    text-decoration: none;
+    word-break: break-all;
+    transition: color 0.2s;
+}
+
+.link-item a:hover {
+    color: #357abd;
+    text-decoration: underline;
+}
+
+/* Scrollbar styling for preview */
+.article-description::-webkit-scrollbar {
+    width: 6px;
+}
+
+.article-description::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.article-description::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+.article-description::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
+}

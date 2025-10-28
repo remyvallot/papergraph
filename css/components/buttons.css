@@ -1,0 +1,81 @@
+/* ===== BUTTONS ===== */
+
+/* Icon Buttons - Modern Design */
+.icon-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: white;
+    border-radius: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.icon-btn:hover {
+    background: #4a90e2;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+    transform: translateY(-1px);
+}
+
+.icon-btn svg {
+    stroke: #4a90e2;
+    transition: stroke 0.2s;
+}
+
+.icon-btn:hover svg {
+    stroke: white;
+}
+
+/* Standard Buttons */
+.btn-primary, .btn-secondary, .btn-danger {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+    background: rgba(74, 144, 226, 0.95);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary:hover {
+    background: rgba(53, 122, 189, 1);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.9);
+    color: #4a90e2;
+    border: 2px solid rgba(74, 144, 226, 0.4);
+}
+
+.btn-secondary:hover {
+    background: rgba(240, 247, 255, 1);
+    border-color: rgba(74, 144, 226, 0.6);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: rgba(231, 76, 60, 0.95);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-danger:hover {
+    background: rgba(192, 57, 43, 1);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+    transform: translateY(-1px);
+}

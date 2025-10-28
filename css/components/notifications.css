@@ -1,0 +1,34 @@
+/* ===== NOTIFICATIONS ===== */
+
+/* Notifications */
+.notification {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background-color: #4a90e2;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 2000;
+    animation: slideInBottom 0.3s ease-out;
+}
+
+@keyframes slideInBottom {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.notification.success {
+    background-color: #27ae60;
+}
+
+.notification.error {
+    background-color: #e74c3c;
+}

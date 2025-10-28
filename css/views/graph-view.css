@@ -1,0 +1,238 @@
+/* ===== GRAPH VIEW ===== */
+
+/* Views */
+.view {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.view.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Graph View */
+#graphView {
+    position: relative;
+    background-color: #ffffff;
+}
+
+#graphContainer {
+    flex: 1;
+    min-height: 500px;
+    height: 100%;
+    width: 100%;
+    border: none;
+    margin: 0;
+    border-radius: 0;
+    background-color: #ffffff;
+    position: relative;
+}
+
+/* Graph Container */
+#graphContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* View Toggle Overlay - Fixed top right */
+.view-toggle-overlay {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+    background: white;
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* View Toggle Switch */
+.view-toggle {
+    display: flex;
+    align-items: center;
+}
+
+.toggle-input {
+    display: none;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-flex;
+    background: white;
+    border-radius: 50px;
+    cursor: pointer;
+    padding: 6px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-option {
+    position: relative;
+    padding: 6px 24px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #999;
+    transition: all 0.3s ease;
+    z-index: 2;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.toggle-switch::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: calc(50% - 6px);
+    height: calc(100% - 12px);
+    background: #f0f7ff;
+    border-radius: 50px;
+    transition: transform 0.25s ease;
+    z-index: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.toggle-input:checked + .toggle-switch::before {
+    transform: translateX(100%);
+}
+
+.toggle-input:not(:checked) + .toggle-switch .toggle-option:first-child {
+    color: #2c3e50;
+}
+
+.toggle-input:checked + .toggle-switch .toggle-option:last-child {
+    color: #2c3e50;
+}
+
+.toggle-input:checked + .toggle-switch .toggle-option:first-child {
+    color: #999;
+}
+
+.toggle-input:not(:checked) + .toggle-switch .toggle-option:last-child {
+    color: #999;
+}
+
+.toggle-switch:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Connection mode indicator */
+.mode-indicator {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f39c12;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    display: none;
+    align-items: center;
+    gap: 16px;
+    z-index: 150;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.mode-indicator.active {
+    display: flex;
+    animation: slideDown 0.3s ease-out;
+}
+
+.mode-indicator button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.mode-indicator button:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Node vibration animation */
+@keyframes nodeVibrate {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-2px, -2px); }
+    20% { transform: translate(2px, -2px); }
+    30% { transform: translate(-2px, 2px); }
+    40% { transform: translate(2px, 2px); }
+    50% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, -2px); }
+    70% { transform: translate(-2px, 2px); }
+    80% { transform: translate(2px, 2px); }
+    90% { transform: translate(-2px, 0); }
+}
+
+.node-vibrate {
+    animation: nodeVibrate 0.5s infinite;
+}
+
+/* Selection Box with animated border effect */
+#selectionBox {
+    background-color: rgba(74, 144, 226, 0.1);
+    pointer-events: none;
+    position: relative;
+    outline: 2px dashed #4a90e2;
+    outline-offset: -2px;
+    box-shadow: 
+        inset 0 0 0 2px rgba(74, 144, 226, 0.3),
+        0 0 10px rgba(74, 144, 226, 0.2);
+    animation: selectionPulse 2s ease-in-out infinite;
+}
+
+@keyframes selectionPulse {
+    0%, 100% {
+        box-shadow: 
+            inset 0 0 0 2px rgba(74, 144, 226, 0.3),
+            0 0 10px rgba(74, 144, 226, 0.2);
+    }
+    50% {
+        box-shadow: 
+            inset 0 0 0 2px rgba(74, 144, 226, 0.5),
+            0 0 15px rgba(74, 144, 226, 0.4);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

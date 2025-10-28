@@ -5,67 +5,228 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>papergraph</title>
     <link href="https://api.fontshare.com/v2/css?f[]=chillax@400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Modular CSS - Base -->
+    <link rel="stylesheet" href="css/base/reset.css">
+    <link rel="stylesheet" href="css/base/layout.css">
+    <link rel="stylesheet" href="css/base/typography.css">
+    
+    <!-- Modular CSS - Components -->
+    <link rel="stylesheet" href="css/components/buttons.css">
+    <link rel="stylesheet" href="css/components/dropdown.css">
+    <link rel="stylesheet" href="css/components/modals.css">
+    <link rel="stylesheet" href="css/components/toolbar.css">
+    <link rel="stylesheet" href="css/components/filters.css">
+    <link rel="stylesheet" href="css/components/notifications.css">
+    <link rel="stylesheet" href="css/components/radial-menu.css">
+    <link rel="stylesheet" href="css/components/footer.css">
+    <link rel="stylesheet" href="css/components/onboarding.css">
+    
+    <!-- Modular CSS - Views -->
+    <link rel="stylesheet" href="css/views/graph-view.css">
+    <link rel="stylesheet" href="css/views/list-view.css">
+    <link rel="stylesheet" href="css/views/article-preview.css">
+    
+    <!-- External Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css">
-    <link rel="icon" type="image/svg+xml" href="logo-papergraph.svg">
+    <link rel="icon" type="image/svg+xml" href="assets/logo-papergraph.svg">
 </head>
 <body>
     <div id="app">
         <!-- Logo Menu Button (top-left) -->
         <button id="logoMenuBtn" class="logo-menu-btn">
-            <img src="logo-papergraph.svg" alt="papergraph" class="logo-icon">
+            <img src="assets/logo-papergraph.svg" alt="papergraph" class="logo-icon">
             <span class="logo-text">papergraph</span>
         </button>
         
         <!-- Main Dropdown Menu -->
         <div id="mainDropdown" class="main-dropdown">
-            <!-- New Section -->
+            <!-- File Section -->
             <div class="dropdown-section">
-                <div class="dropdown-section-title">Nouveau</div>
+                <div class="dropdown-section-title">File</div>
                 <button class="dropdown-menu-item" id="actionNewProject">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                         <polyline points="14 2 14 8 20 8"/>
                     </svg>
-                    <span>Créer nouveau projet</span>
+                    <span>New Project</span>
                 </button>
-                <button class="dropdown-menu-item" id="actionImport">
+                <button class="dropdown-menu-item has-submenu" id="actionImportMenu">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="17 8 12 3 7 8"/>
                         <line x1="12" y1="3" x2="12" y2="15"/>
                     </svg>
-                    <span>Importer un projet</span>
+                    <span>Import</span>
+                    <svg class="submenu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </button>
+                <button class="dropdown-menu-item has-submenu" id="actionExportMenu">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Export</span>
+                    <svg class="submenu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
                 </button>
             </div>
             
-            <!-- Import/Export Section -->
+            <!-- View Section -->
             <div class="dropdown-section">
-                <div class="dropdown-section-title">Exporter</div>
-                <button class="dropdown-menu-item" id="actionExport">
+                <div class="dropdown-section-title">View</div>
+                <button class="dropdown-menu-item has-submenu" id="actionNodeLabelMenu">
+                    <!-- <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg> -->
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
+                        <path d="M2.42012 12.7132C2.28394 12.4975 2.21584 12.3897 2.17772 12.2234C2.14909 12.0985 2.14909 11.9015 2.17772 11.7766C2.21584 11.6103 2.28394 11.5025 2.42012 11.2868C3.54553 9.50484 6.8954 5 12.0004 5C17.1054 5 20.4553 9.50484 21.5807 11.2868C21.7169 11.5025 21.785 11.6103 21.8231 11.7766C21.8517 11.9015 21.8517 12.0985 21.8231 12.2234C21.785 12.3897 21.7169 12.4975 21.5807 12.7132C20.4553 14.4952 17.1054 19 12.0004 19C6.8954 19 3.54553 14.4952 2.42012 12.7132Z"/>
+                        <path d="M12.0004 15C13.6573 15 15.0004 13.6569 15.0004 12C15.0004 10.3431 13.6573 9 12.0004 9C10.3435 9 9.0004 10.3431 9.0004 12C9.0004 13.6569 10.3435 15 12.0004 15Z"/>
                     </svg>
-                    <span>Exporter projet</span>
-                </button>
-                <button class="dropdown-menu-item" id="actionExportPdf">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="9" y1="15" x2="15" y2="15"/>
+                    <span>Node Labels</span>
+                    <svg class="submenu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"/>
                     </svg>
-                    <span>Exporter PDF</span>
-                </button>
-                <button class="dropdown-menu-item" id="actionExportImage">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <polyline points="21 15 16 10 5 21"/>
-                    </svg>
-                    <span>Exporter Image</span>
                 </button>
             </div>
+            
+            <!-- Help Section -->
+            <div class="dropdown-section">
+                <div class="dropdown-section-title">Help</div>
+                <button class="dropdown-menu-item" id="actionHelp">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 1 1 5.82 1c0 2-3 2.5-3 4"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span>Help</span>
+                </button>
+                <button class="dropdown-menu-item disabled-item" id="actionExploreGallery">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    <span>Explore Gallery<sup class="soon-badge">soon</sup></span>
+                </button>
+                <button class="dropdown-menu-item" id="actionReportBug">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <g transform="translate(0,-2)">
+                            <rect x="7" y="9" width="10" height="10" rx="5" ry="5"/>
+                            <line x1="7" y1="12" x2="3" y2="10"/>
+                            <line x1="7" y1="15" x2="3" y2="15"/>
+                            <line x1="7" y1="18" x2="3" y2="20"/>
+                            <line x1="17" y1="12" x2="21" y2="10"/>
+                            <line x1="17" y1="15" x2="21" y2="15"/>
+                            <line x1="17" y1="18" x2="21" y2="20"/>
+                        </g>
+                    </svg>
+                    <span>Report Bug</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Import Submenu -->
+        <div id="importSubmenu" class="dropdown-submenu">
+            <button class="dropdown-menu-item" id="actionImport">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span>Import Project (.json)</span>
+            </button>
+            <button class="dropdown-menu-item" id="actionImportBibtex">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <path d="M9 15h6"/>
+                    <path d="M9 11h6"/>
+                </svg>
+                <span>Import BibTeX (.bib)</span>
+            </button>
+        </div>
+        
+        <!-- Export Submenu -->
+        <div id="exportSubmenu" class="dropdown-submenu">
+            <button class="dropdown-menu-item" id="actionExport">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span>Export Project (.json)</span>
+            </button>
+            <button class="dropdown-menu-item" id="actionExportBibtex">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <path d="M9 15h6"/>
+                    <path d="M9 11h6"/>
+                </svg>
+                <span>Export BibTeX (.bib)</span>
+            </button>
+            <button class="dropdown-menu-item" id="actionExportPdf">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+                <span>Export PDF</span>
+            </button>
+            <button class="dropdown-menu-item" id="actionExportImage">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span>Export Image (.png)</span>
+            </button>
+        </div>
+        
+        <!-- Node Label Submenu -->
+        <div id="nodeLabelSubmenu" class="dropdown-submenu">
+            <button class="dropdown-menu-item node-label-option" data-format="bibtexId">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 7h16M4 12h16M4 17h10"/>
+                </svg>
+                <span>BibTeX ID</span>
+                <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </button>
+            <button class="dropdown-menu-item node-label-option" data-format="title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <span>Title</span>
+                <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </button>
+            <button class="dropdown-menu-item node-label-option" data-format="citation">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span>Citation (Author, Year)</span>
+                <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </button>
+            <button class="dropdown-menu-item node-label-option" data-format="author">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>First Author</span>
+                <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </button>
         </div>
         
         <!-- Active Filters Display -->
@@ -79,12 +240,13 @@
             <div id="articlePreview" class="article-preview">
                 <div class="preview-content">
                     <div class="article-card">
-                        <h2 id="previewTitle" class="article-title">Titre de l'article</h2>
+                        <div id="previewCitationKey" class="citation-key" style="display: none;"></div>
+                        <h2 id="previewTitle" class="article-title">Article Title</h2>
                         <p id="previewAuthors" class="article-meta"></p>
                         <div id="previewCategoryBadge" class="category-badge"></div>
                         
                         <div class="article-section">
-                            <h4>Résumé / Notes</h4>
+                            <h4>Abstract / Notes</h4>
                             <p id="previewText" class="article-description"></p>
                         </div>
                         
@@ -94,7 +256,7 @@
                                 <a id="previewDoi" href="#" target="_blank" rel="noopener"></a>
                             </div>
                             <div id="previewLinkContainer" class="link-item" style="display: none;">
-                                <span class="link-label">🔗 Lien:</span>
+                                <span class="link-label">🔗 Link:</span>
                                 <a id="previewLink" href="#" target="_blank" rel="noopener"></a>
                             </div>
                             <div id="previewPdfContainer" class="link-item" style="display: none;">
@@ -114,7 +276,7 @@
             
             <!-- Edge menu for connection actions -->
             <div id="edgeMenu" class="edge-menu">
-                <button class="edge-btn edge-delete" title="Supprimer la connexion">
+                <button class="edge-btn edge-delete" title="Delete connection">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"/>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -124,13 +286,13 @@
             
             <!-- Radial menu for node actions -->
             <div id="radialMenu" class="radial-menu">
-                <button class="radial-btn radial-connect" title="Créer connexion">
+                <button class="radial-btn radial-connect" title="Create connection">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                     </svg>
                 </button>
-                <button class="radial-btn radial-delete" title="Supprimer">
+                <button class="radial-btn radial-delete" title="Delete">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"/>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -140,24 +302,24 @@
             
             <!-- Connection mode indicator -->
             <div id="connectionModeIndicator" class="mode-indicator">
-                <span>Mode connexion actif - Cliquez sur un nœud cible</span>
-                <button id="cancelConnectionMode">✖ Annuler</button>
+                <span>Connection mode active - Click on a target node</span>
+                <button id="cancelConnectionMode">✖ Cancel</button>
             </div>
         </div>
 
         <!-- List View -->
         <div id="listView" class="view">
             <div id="listContainer" class="articles-list">
-                <!-- Les articles seront ajoutés ici dynamiquement -->
+                <!-- Articles will be added here dynamically -->
             </div>
         </div>
         
         <!-- Category filter dropdown (shared between both views, above toolbar) -->
         <div id="categoryDropdown" class="dropdown-panel">
-            <h3>Filtres</h3>
+            <h3>Filters</h3>
             
             <div class="filter-section-dropdown">
-                <label>Catégorie</label>
+                <label>Category</label>
                 <select id="categoryFilter">
                     <option value="">Toutes les catégories</option>
                 </select>
@@ -166,30 +328,30 @@
 
         <!-- Main Action Toolbar - Bottom horizontal (outside views to be always visible) -->
         <div class="main-toolbar">
-            <button id="addArticleBtn" class="main-tool-btn" title="Ajouter un article">
+            <button id="addArticleBtn" class="main-tool-btn" title="Add an article">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"/>
                     <line x1="12" y1="8" x2="12" y2="16"/>
                     <line x1="8" y1="12" x2="16" y2="12"/>
                 </svg>
-                <span class="btn-label">Ajouter</span>
+                <span class="btn-label">Add</span>
             </button>
             
             <!-- Category filter icon (both modes) -->
-            <button id="categoryFilterBtn" class="main-tool-btn" title="Filtrer par catégorie">
+            <button id="categoryFilterBtn" class="main-tool-btn">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
                 </svg>
-                <span class="btn-label">Filtrer</span>
+                <span class="btn-label">Filter</span>
             </button>
             
             <!-- Search icon/box -->
-            <button id="searchToggleBtn" class="main-tool-btn search-toggle-btn" title="Rechercher">
+            <button id="searchToggleBtn" class="main-tool-btn search-toggle-btn">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8"/>
                     <path d="m21 21-4.35-4.35"/>
                 </svg>
-                <span class="btn-label">Rechercher</span>
+                <span class="btn-label">Search</span>
             </button>
             
             <!-- Expandable search box -->
@@ -205,7 +367,7 @@
             
             <!-- Graph-only buttons -->
             <div class="main-tool-divider graph-only"></div>
-            <button id="fitGraphBtn" class="main-tool-btn graph-only" title="Recentrer le graphe">
+            <button id="fitGraphBtn" class="main-tool-btn graph-only">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
                     <path d="M12 3 L12 8" stroke-linecap="round"/>
@@ -219,12 +381,26 @@
                 </svg>
                 <span class="btn-label">Recentrer</span>
             </button>
-            <button id="togglePhysicsBtn" class="main-tool-btn graph-only" title="Activer/Désactiver la physique">
+            <button id="togglePhysicsBtn" class="main-tool-btn graph-only active">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="5" y="11" width="14" height="10" rx="2" ry="2"/>
                     <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
                 </svg>
-                <span class="btn-label">Lock View</span>
+                <span class="btn-label">Verrouiller</span>
+            </button>
+            <button id="toggleGridBtn" class="main-tool-btn graph-only">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="6" cy="6" r="1" fill="currentColor"/>
+                    <circle cx="12" cy="6" r="1" fill="currentColor"/>
+                    <circle cx="18" cy="6" r="1" fill="currentColor"/>
+                    <circle cx="6" cy="12" r="1" fill="currentColor"/>
+                    <circle cx="12" cy="12" r="1" fill="currentColor"/>
+                    <circle cx="18" cy="12" r="1" fill="currentColor"/>
+                    <circle cx="6" cy="18" r="1" fill="currentColor"/>
+                    <circle cx="12" cy="18" r="1" fill="currentColor"/>
+                    <circle cx="18" cy="18" r="1" fill="currentColor"/>
+                </svg>
+                <span class="btn-label">Grille</span>
             </button>
             
             <div class="main-tool-divider"></div>
@@ -233,13 +409,13 @@
             <div class="toolbar-view-toggle">
                 <input type="checkbox" id="viewToggle" class="toggle-input">
                 <label for="viewToggle" class="toggle-label">
-                    <span class="toggle-option toggle-graph">
-                        <img src="graph-icon-blue.svg" alt="Graph" class="toggle-icon toggle-icon-active">
-                        <img src="graph-icon-gray.svg" alt="Graph" class="toggle-icon toggle-icon-inactive">
+                    <span class="toggle-option toggle-graph" title="Vue Graphe">
+                        <img src="assets/graph-icon-blue.svg" alt="Graph" class="toggle-icon toggle-icon-active">
+                        <img src="assets/graph-icon-gray.svg" alt="Graph" class="toggle-icon toggle-icon-inactive">
                     </span>
-                    <span class="toggle-option toggle-list">
-                        <img src="list-icon-blue.svg" alt="List" class="toggle-icon toggle-icon-active">
-                        <img src="list-icon-gray.svg" alt="List" class="toggle-icon toggle-icon-inactive">
+                    <span class="toggle-option toggle-list" title="Vue Liste">
+                        <img src="assets/list-icon-blue.svg" alt="List" class="toggle-icon toggle-icon-active">
+                        <img src="assets/list-icon-gray.svg" alt="List" class="toggle-icon toggle-icon-inactive">
                     </span>
                 </label>
             </div>
@@ -249,18 +425,23 @@
         <div id="articleModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
-                <h2 id="modalTitle">Nouvel Article</h2>
+                <h2 id="modalTitle">New Article</h2>
                 <form id="articleForm">
                     <!-- Minimal import section -->
                     <div class="import-zone">
                         <div id="dropZone" class="drop-zone">
                             <div class="drop-zone-content">
                                 <span class="drop-icon">📄</span>
-                                <p class="drop-text">Glissez un PDF ici</p>
-                                <p class="drop-or">ou</p>
-                                <input type="text" id="quickImport" placeholder="Collez un DOI ou arXiv ID (ex: 10.1234/... ou 2301.12345)">
-                                <input type="file" id="pdfFileInput" accept=".pdf" style="display: none;">
-                                <button type="button" id="browseFileBtn" class="btn-browse">Parcourir...</button>
+                                <p class="drop-text">Drop PDF or .bib file here</p>
+                                <p class="drop-or">or</p>
+                                <input type="text" id="quickImport" placeholder="Paste DOI, arXiv ID or BibTeX (e.g. 10.1234/... or @article{...})">
+                                <div class="bibtex-paste-area" style="display: none;">
+                                    <textarea id="bibtexPasteArea" placeholder="Paste one or more complete BibTeX entries here...&#10;&#10;@article{key2024,&#10;  title = {Example},&#10;  author = {Doe, John},&#10;  year = {2024},&#10;  ...&#10;}" rows="10"></textarea>
+                                    <button type="button" id="parseBibtexBtn" class="btn-primary">✓ Import</button>
+                                    <button type="button" id="cancelBibtexBtn" class="btn-secondary">Cancel</button>
+                                </div>
+                                <input type="file" id="pdfFileInput" accept=".pdf,.bib" style="display: none;">
+                                <button type="button" id="browseFileBtn" class="btn-browse">Browse...</button>
                             </div>
                         </div>
                         <div id="importStatus" class="import-status"></div>
@@ -269,57 +450,115 @@
                     <!-- Collapsible manual form -->
                     <div id="manualFormToggle" class="manual-toggle">
                         <button type="button" id="toggleManualBtn" class="toggle-manual-btn">
-                            ✏️ Saisie manuelle / modifier
+                            ✏️ Manual entry / edit
                         </button>
                     </div>
                     
                     <div id="manualForm" class="manual-form collapsed">
+                        <!-- Essential fields -->
                         <div class="form-group">
-                            <label for="articleTitle">Titre *</label>
+                            <label for="articleTitle">Title *</label>
                             <input type="text" id="articleTitle" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="articleAuthors">Auteurs</label>
-                            <input type="text" id="articleAuthors" placeholder="ex: John Doe, Jane Smith">
+                            <label for="articleAuthors">Author(s)</label>
+                            <input type="text" id="articleAuthors" placeholder="Doe, John and Smith, Jane">
                         </div>
                         
                         <div class="form-group">
-                            <label for="articleCategories">Catégories (séparées par des virgules)</label>
-                            <input type="text" id="articleCategories" placeholder="ex: idée, méthodologie, résultats">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="articleText">Texte / Notes / Résumé</label>
-                            <textarea id="articleText" rows="6"></textarea>
+                            <label for="articleYear">Year</label>
+                            <input type="text" id="articleYear" placeholder="2024">
                         </div>
                         
+                        <!-- Publication details -->
+                        <div class="form-group">
+                            <label for="articleType">Entry Type</label>
+                            <select id="articleType">
+                                <option value="article">Article (journal)</option>
+                                <option value="inproceedings">Inproceedings (conference)</option>
+                                <option value="book">Book</option>
+                                <option value="phdthesis">PhD Thesis</option>
+                                <option value="mastersthesis">Master's Thesis</option>
+                                <option value="techreport">Technical Report</option>
+                                <option value="misc">Misc</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articleJournal">Journal / Conference Name</label>
+                            <input type="text" id="articleJournal" placeholder="Journal or conference name">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="articleVolume">Volume</label>
+                                <input type="text" id="articleVolume" placeholder="123">
+                            </div>
+                            <div class="form-group">
+                                <label for="articleNumber">Number</label>
+                                <input type="text" id="articleNumber" placeholder="4">
+                            </div>
+                            <div class="form-group">
+                                <label for="articlePages">Pages</label>
+                                <input type="text" id="articlePages" placeholder="45-67">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articlePublisher">Publisher / Institution</label>
+                            <input type="text" id="articlePublisher" placeholder="Publisher or institution name">
+                        </div>
+                        
+                        <!-- Identifiers -->
                         <div class="form-group">
                             <label for="articleDoi">DOI</label>
-                            <input type="text" id="articleDoi" placeholder="ex: 10.1234/example.2024">
+                            <input type="text" id="articleDoi" placeholder="10.1234/example.2024">
                         </div>
                         
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="articleIsbn">ISBN</label>
+                                <input type="text" id="articleIsbn" placeholder="978-3-16-148410-0">
+                            </div>
+                            <div class="form-group">
+                                <label for="articleIssn">ISSN</label>
+                                <input type="text" id="articleIssn" placeholder="1234-5678">
+                            </div>
+                        </div>
+                        
+                        <!-- Links and files -->
                         <div class="form-group">
-                            <label for="articleLink">Lien (URL)</label>
+                            <label for="articleLink">URL</label>
                             <input type="url" id="articleLink" placeholder="https://...">
                         </div>
                         
                         <div class="form-group">
-                            <label for="articlePdf">Fichier PDF (URL ou chemin)</label>
-                            <input type="text" id="articlePdf" placeholder="https://... ou chemin local">
+                            <label for="articlePdf">PDF (URL or path)</label>
+                            <input type="text" id="articlePdf" placeholder="https://... or local path">
                         </div>
-
-                        <div id="customFieldsContainer">
-                            <h3>Champs personnalisés</h3>
-                            <div id="customFieldsList"></div>
-                            <button type="button" id="addCustomFieldBtn" class="btn-secondary">➕ Ajouter un champ</button>
+                        
+                        <!-- Content -->
+                        <div class="form-group">
+                            <label for="articleAbstract">Abstract</label>
+                            <textarea id="articleAbstract" rows="4" placeholder="Article abstract..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articleNote">Note</label>
+                            <textarea id="articleNote" rows="2" placeholder="Additional notes..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articleCategories">Keywords / Categories (comma separated)</label>
+                            <input type="text" id="articleCategories" placeholder="machine learning, neural networks">
                         </div>
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="btn-primary">💾 Enregistrer</button>
-                        <button type="button" id="deleteArticleBtn" class="btn-danger">🗑️ Supprimer</button>
-                        <button type="button" class="btn-secondary" onclick="closeModal()">Annuler</button>
+                        <button type="button" id="deleteArticleBtn" class="btn-danger">�Delete</button>
+                        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button type="submit" class="btn-primary">Save</button>
                     </div>
                 </form>
             </div>
@@ -327,6 +566,7 @@
 
         <!-- Hidden file input for import -->
         <input type="file" id="fileInput" accept=".json" style="display: none;">
+        <input type="file" id="bibtexFileInput" accept=".bib,.bibtex" style="display: none;">
         
         <!-- Footer -->
         <footer class="app-footer">
@@ -341,13 +581,292 @@
                         <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                     </svg>
                 </a>
+                <span class="app-version">v1.0.2</span>
             </div>
         </footer>
+        
+        <!-- Onboarding Overlay -->
+        <div id="onboardingOverlay" class="onboarding-overlay">
+            <div class="onboarding-content">
+                <div class="onboarding-header">
+                    <img src="assets/logo-papergraph.svg" alt="papergraph" class="onboarding-logo">
+                    <h1>Welcome to papergraph</h1>
+                </div>
+                
+                <h2>Map your research. Connect ideas. Export citations.</h2>
+                
+                <div class="onboarding-options">
+                    <div class="onboarding-option" id="continueProject">
+                        <svg class="option-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <span>Continue</span>
+                    </div>
+                    
+                    <div class="onboarding-option" id="newProject">
+                        <svg class="option-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="16"/>
+                            <line x1="8" y1="12" x2="16" y2="12"/>
+                        </svg>
+                        <span>New Project</span>
+                    </div>
+                    
+                    <div class="onboarding-option disabled-option" id="exploreGallery">
+                        <svg class="option-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                        <span>Gallery<sup class="soon-badge">soon</sup></span>
+                    </div>
+                </div>
+                
+                <div class="quick-tips">
+                    <div class="tip-item"><strong>+</strong> Add articles with DOI or arXiv</div>
+                    <div class="tip-separator">•</div>
+                    <div class="tip-item"><strong>Click node</strong> then link icon to connect</div>
+                    <div class="tip-separator">•</div>
+                    <div class="tip-item"><strong>Drag</strong> to organize</div>
+                    <div class="tip-separator">•</div>
+                    <div class="tip-item"><strong>Export</strong> via logo menu</div>
+                </div>
+                
+                <div class="onboarding-footer">
+                    Press any key or click anywhere to dismiss
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="app.js"></script>
+    
+    <!-- Core Modules (Load First - No Dependencies) -->
+    <script src="js/core/state.js"></script>
+    <script src="js/utils/helpers.js"></script>
+    
+    <!-- Data Layer -->
+    <script src="js/data/storage.js"></script>
+    <script src="js/data/bibtex-parser.js"></script>
+    <script src="js/data/export.js"></script>
+    <script src="js/data/import.js"></script>
+    
+    <!-- Graph Modules (Zones before Graph - Graph depends on zone functions) -->
+    <script src="js/graph/zones.js"></script>
+    <script src="js/graph/connections.js"></script>
+    <script src="js/graph/graph.js"></script>
+    
+    <!-- UI Components -->
+    <script src="js/ui/filters.js"></script>
+    <script src="js/ui/modal.js"></script>
+    <script src="js/ui/preview.js"></script>
+    <script src="js/ui/radial-menu.js"></script>
+    <script src="js/ui/toolbar.js"></script>
+    <script src="js/ui/list-view.js"></script>
+    
+    <!-- Core Init (After all dependencies loaded) -->
+    <script src="js/core/init.js"></script>
+    
+    <!-- Application Startup -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if importing from gallery
+            const urlParams = new URLSearchParams(window.location.search);
+            const importFromGallery = urlParams.get('source') === 'gallery';
+            
+            if (importFromGallery) {
+                // Skip onboarding for gallery imports
+                localStorage.setItem('skipOnboarding', 'true');
+                
+                // Load project from gallery
+                const galleryProject = localStorage.getItem('gallery_import_project');
+                if (galleryProject) {
+                    try {
+                        const projectData = JSON.parse(galleryProject);
+                        
+                        // Import the project data
+                        if (projectData.tagZones) {
+                            tagZones = projectData.tagZones;
+                            delete projectData.tagZones;
+                        }
+                        if (projectData.nodePositions) {
+                            window.savedNodePositions = projectData.nodePositions;
+                            delete projectData.nodePositions;
+                        }
+                        
+                        appData = projectData;
+                        
+                        // Don't save to localStorage immediately (read-only mode)
+                        // User can export if they want to save
+                        
+                        // Clean up
+                        localStorage.removeItem('gallery_import_project');
+                        
+                        showNotification('Gallery project loaded (read-only)', 'success');
+                    } catch (err) {
+                        console.error('Error loading gallery project:', err);
+                        showNotification('Failed to load gallery project', 'error');
+                    }
+                }
+            } else {
+                // Normal load from localStorage
+                loadFromLocalStorage();
+            }
+            
+            initializeEventListeners();
+            updateCategoryFilters();
+            renderListView();
+            
+            // Initialize graph-only buttons visibility (default to graph view)
+            const graphOnlyElements = document.querySelectorAll('.graph-only');
+            graphOnlyElements.forEach(el => {
+                el.style.display = 'flex';
+                el.classList.add('visible');
+            });
+            
+            // Initialize graph after a short delay to ensure DOM is ready
+            setTimeout(() => {
+                initializeGraph();
+                
+                // Sync physics button state with actual physics state
+                const physicsBtn = document.getElementById('togglePhysicsBtn');
+                if (physicsBtn && !physicsEnabled) {
+                    physicsBtn.classList.add('active');
+                }
+                
+                // Note: Node positioning is handled in stabilizationIterationsDone event
+                // in graph.js, which checks for savedNodePositions first
+            }, 100);
+            
+            // ===== ONBOARDING SETUP =====
+            const onboardingOverlay = document.getElementById('onboardingOverlay');
+            const continueProjectBtn = document.getElementById('continueProject');
+            const newProjectBtn = document.getElementById('newProject');
+            const exploreGalleryBtn = document.getElementById('exploreGallery');
+            
+            console.log('Onboarding overlay:', onboardingOverlay);
+            
+            // Function to close onboarding (make it global so any action can close it)
+            window.closeOnboarding = function() {
+                console.log('closeOnboarding called');
+                if (onboardingOverlay) {
+                    onboardingOverlay.classList.add('hidden');
+                    console.log('Onboarding hidden');
+                }
+            }
+            
+            // Check if there's existing data
+            let hasExistingData = false;
+            try {
+                const data = localStorage.getItem('papermap_data');
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    hasExistingData = parsed.articles && parsed.articles.length > 0;
+                }
+            } catch (e) {
+                hasExistingData = false;
+            }
+            
+            // Disable continue option if no data
+            if (!hasExistingData) {
+                continueProjectBtn.style.opacity = '0.5';
+                continueProjectBtn.style.pointerEvents = 'none';
+                const continueSpan = continueProjectBtn.querySelector('span');
+                if (continueSpan) continueSpan.textContent = 'No Project';
+            }
+            
+            // Show onboarding only if not skipped
+            const skipOnboarding = localStorage.getItem('skipOnboarding');
+            if (skipOnboarding) {
+                localStorage.removeItem('skipOnboarding'); // Clear the flag
+                onboardingOverlay.classList.add('hidden');
+                console.log('Onboarding skipped (skipOnboarding flag was set)');
+            } else {
+                onboardingOverlay.classList.remove('hidden');
+                console.log('Onboarding should be visible now');
+            }
+            
+            // Continue project
+            continueProjectBtn.addEventListener('click', () => {
+                if (hasExistingData) {
+                    window.closeOnboarding();
+                    showNotification('Welcome back!', 'success');
+                }
+            });
+            
+            // New project
+            newProjectBtn.addEventListener('click', () => {
+                if (hasExistingData) {
+                    if (confirm('Starting a new project will clear your current data. Continue?')) {
+                        localStorage.removeItem('papermap_data');
+                        localStorage.removeItem('papermap_positions');
+                        localStorage.removeItem('papermap_zones'); // Clear tag zones
+                        localStorage.setItem('skipOnboarding', 'true'); // Skip onboarding after reload
+                        window.closeOnboarding();
+                        setTimeout(() => location.reload(), 100);
+                    }
+                } else {
+                    // Clear any leftover tag zones even for empty projects
+                    localStorage.removeItem('papermap_zones');
+                    tagZones = []; // Clear in-memory tag zones
+                    window.closeOnboarding();
+                    showNotification('Welcome to papergraph!', 'success');
+                }
+            });
+            
+            // Explore gallery - DISABLED (Coming Soon)
+            exploreGalleryBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Disabled - Coming Soon
+            });
+            
+            // Close onboarding when clicking anywhere on the overlay (except option buttons)
+            onboardingOverlay.addEventListener('click', (e) => {
+                console.log('Overlay clicked, target:', e.target.className, 'closest option:', e.target.closest('.onboarding-option'));
+                // Close unless clicking on an option button
+                const clickedOption = e.target.closest('.onboarding-option');
+                if (!clickedOption) {
+                    console.log('Closing onboarding from overlay click');
+                    window.closeOnboarding();
+                    if (!hasExistingData) {
+                        showNotification('Welcome to papergraph!', 'success');
+                    }
+                }
+            });
+            
+            // Close onboarding when clicking on toolbar buttons or toggle switch
+            document.querySelectorAll('.main-toolbar button, .main-tool-btn, .toggle-switch').forEach(btn => {
+                btn.addEventListener('click', window.closeOnboarding, { once: true });
+            });
+            
+            // Close on any keypress
+            document.addEventListener('keydown', function hideOnKey(e) {
+                console.log('Key pressed, closing onboarding');
+                window.closeOnboarding();
+                if (!hasExistingData) {
+                    showNotification('Welcome to papergraph!', 'success');
+                }
+            }, { once: true });
+        });
+        
+        // Save positions before page unload (refresh, close, etc.)
+        window.addEventListener('beforeunload', () => {
+            console.log('=== BEFORE UNLOAD - Saving positions ===');
+            if (network) {
+                const positions = network.getPositions();
+                console.log('Positions to save:', Object.keys(positions).length, 'nodes');
+                console.log('Sample positions:', Object.entries(positions).slice(0, 3));
+                localStorage.setItem('papermap_positions', JSON.stringify(positions));
+                console.log('✓ Positions saved to localStorage');
+            } else {
+                console.warn('⚠ Network not available, positions not saved');
+            }
+        });
+    </script>
 </body>
 </html>
-
