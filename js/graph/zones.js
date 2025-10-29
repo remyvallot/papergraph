@@ -123,6 +123,31 @@ function drawTagZones(ctx) {
     });
 }
 
+// Helper function to find all zones that are inside a parent zone
+function findNestedZones(parentZoneIndex) {
+    const parentZone = tagZones[parentZoneIndex];
+    const nestedZones = {};
+    
+    tagZones.forEach((zone, idx) => {
+        // Skip the parent itself
+        if (idx === parentZoneIndex) return;
+        
+        // Check if this zone is completely inside the parent zone
+        const isInside = 
+            zone.x >= parentZone.x &&
+            zone.y >= parentZone.y &&
+            zone.x + zone.width <= parentZone.x + parentZone.width &&
+            zone.y + zone.height <= parentZone.y + parentZone.height;
+        
+        if (isInside) {
+            nestedZones[idx] = { x: zone.x, y: zone.y, width: zone.width, height: zone.height };
+            console.log(`🔍 Found nested zone ${idx} (${zone.tag}) inside zone ${parentZoneIndex} (${parentZone.tag})`);
+        }
+    });
+    
+    return nestedZones;
+}
+
 function showZoneDeleteButton(zoneIndex) {
     showZoneRadialMenu(zoneIndex);
 }

@@ -168,16 +168,42 @@ function initializeGraph() {
                     }
                 });
                 
+                // Find and store nested zones
+                zoneMoving.originalNestedZones = findNestedZones(titleClick.zoneIndex);
+                
                 network.redraw();
                 return;
             }
             
-            // Check if clicking inside a zone
+            // Check if clicking inside a zone or selection box
             const clickPos = { x: event.offsetX, y: event.offsetY };
             const nodeId = network.getNodeAt(clickPos);
             const edgeId = network.getEdgeAt(clickPos);
             
             if (!nodeId && !edgeId) {
+                // PRIORITY 1: Check if clicking inside an existing selection box FIRST
+                if (multiSelection.selectionBox && multiSelection.selectionBox.style.display !== 'none') {
+                    const canvas = network.canvas.frame.canvas;
+                    const rect = canvas.getBoundingClientRect();
+                    const mouseX = event.clientX - rect.left;
+                    const mouseY = event.clientY - rect.top;
+                    
+                    const boxLeft = parseFloat(multiSelection.selectionBox.style.left);
+                    const boxTop = parseFloat(multiSelection.selectionBox.style.top);
+                    const boxWidth = parseFloat(multiSelection.selectionBox.style.width);
+                    const boxHeight = parseFloat(multiSelection.selectionBox.style.height);
+                    
+                    // Check if click is inside the selection box
+                    if (mouseX >= boxLeft && mouseX <= boxLeft + boxWidth &&
+                        mouseY >= boxTop && mouseY <= boxTop + boxHeight) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        startSelectionBoxDrag(event, mouseX, mouseY, boxLeft, boxTop);
+                        return;
+                    }
+                }
+                
+                // PRIORITY 2: Check if clicking inside a zone (only if NOT inside selection box)
                 const zoneClick = getZoneAtPosition(event);
                 if (zoneClick.zone !== null) {
                     event.preventDefault();
@@ -207,6 +233,9 @@ function initializeGraph() {
                         }
                     });
                     
+                    // Find and store nested zones
+                    zoneMoving.originalNestedZones = findNestedZones(zoneClick.zoneIndex);
+                    
                     network.redraw();
                     return;
                 } else {
@@ -216,28 +245,7 @@ function initializeGraph() {
                         network.redraw();
                     }
                     
-                    // Check if clicking inside an existing selection box
-                    if (multiSelection.selectionBox && multiSelection.selectionBox.style.display !== 'none') {
-                        const canvas = network.canvas.frame.canvas;
-                        const rect = canvas.getBoundingClientRect();
-                        const mouseX = event.clientX - rect.left;
-                        const mouseY = event.clientY - rect.top;
-                        
-                        const boxLeft = parseFloat(multiSelection.selectionBox.style.left);
-                        const boxTop = parseFloat(multiSelection.selectionBox.style.top);
-                        const boxWidth = parseFloat(multiSelection.selectionBox.style.width);
-                        const boxHeight = parseFloat(multiSelection.selectionBox.style.height);
-                        
-                        // Check if click is inside the selection box
-                        if (mouseX >= boxLeft && mouseX <= boxLeft + boxWidth &&
-                            mouseY >= boxTop && mouseY <= boxTop + boxHeight) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            startSelectionBoxDrag(event, mouseX, mouseY, boxLeft, boxTop);
-                            return;
-                        }
-                    }
-                    
+                    // PRIORITY 3: Start new selection box
                     event.preventDefault();
                     event.stopPropagation();
                     startSelectionBox(event);
