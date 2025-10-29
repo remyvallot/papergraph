@@ -222,6 +222,42 @@ function deleteArticleById(articleId) {
     // Remove article
     appData.articles = appData.articles.filter(a => a.id !== articleId);
     
+    // Find connections that will be removed
+    const connectionsToRemove = appData.connections.filter(c => 
+        c.from === articleId || c.to === articleId
+    );
+    
+    // Clean up control points for these connections
+    connectionsToRemove.forEach(conn => {
+        if (edgeControlPoints[conn.id]) {
+            const controlPointsToDelete = edgeControlPoints[conn.id];
+            console.log('🗑️ Cleaning up control points for connection', conn.id, ':', controlPointsToDelete);
+            
+            // Remove control point nodes from network
+            if (network && network.body && network.body.data) {
+                controlPointsToDelete.forEach(cpId => {
+                    try {
+                        network.body.data.nodes.remove(cpId);
+                    } catch (error) {
+                        console.error('Error removing control point node:', cpId, error);
+                    }
+                });
+                
+                // Remove segment edges
+                const segmentEdges = network.body.data.edges.get({
+                    filter: (edge) => edge.id.toString().startsWith(`${conn.id}_seg_`)
+                });
+                if (segmentEdges.length > 0) {
+                    network.body.data.edges.remove(segmentEdges.map(e => e.id));
+                    console.log('🗑️ Removed', segmentEdges.length, 'segment edges for connection', conn.id);
+                }
+            }
+            
+            // Remove from edgeControlPoints
+            delete edgeControlPoints[conn.id];
+        }
+    });
+    
     // Remove connections
     appData.connections = appData.connections.filter(c => 
         c.from !== articleId && c.to !== articleId

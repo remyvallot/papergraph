@@ -127,25 +127,45 @@ function processQuickImport() {
         return;
     }
     
-    // Detect if DOI or arXiv
-    if (value.includes('10.') || value.includes('doi.org')) {
-        // Extract DOI
+    // Detect if DOI or arXiv (check arXiv FIRST to avoid false DOI detection)
+    if (value.toLowerCase().includes('arxiv') || /\d{4}\.\d{4,5}/.test(value) || /[a-z\-]+\/\d{7}/i.test(value)) {
+        // arXiv formats:
+        // - New: 2301.12345 or 2301.12345v1
+        // - Old: 1210.0686 (2007-2014, YYMM.NNNN with 4 digits)
+        // - Very old: cs/0701001, hep-th/9901001 (pre-2007)
+        // - URL: https://arxiv.org/abs/1210.0686
+        
+        console.log('Attempting to extract arXiv ID from:', value);
+        
+        // Extract arXiv ID from various formats
+        let arxivMatch = null;
+        
+        // Try new/old numeric format (YYMM.NNNNN or YYMM.NNNN)
+        // Must have exactly 4 digits before dot, and 4 or 5 digits after
+        arxivMatch = value.match(/(\d{4}\.\d{4,5})(?:v\d+)?/);
+        
+        // Try old format (category/number like cs/0701001)
+        if (!arxivMatch) {
+            arxivMatch = value.match(/([a-z\-]+\/\d{7})(?:v\d+)?/i);
+        }
+        
+        console.log('Extracted arXiv ID:', arxivMatch ? arxivMatch[1] : 'none');
+        
+        if (arxivMatch) {
+            importFromArxiv(arxivMatch[1]);
+        } else {
+            showImportStatus('Format arXiv invalide - impossible d\'extraire l\'ID', 'error');
+        }
+    } else if (value.includes('10.') || value.includes('doi.org')) {
+        // Extract DOI (check this AFTER arXiv to avoid false positives like "1210.")
         const doiMatch = value.match(/10\.\d{4,}\/[^\s]+/);
         if (doiMatch) {
             importFromDoi(doiMatch[0]);
         } else {
             showImportStatus('Format DOI invalide', 'error');
         }
-    } else if (/^\d{4}\.\d{4,5}(v\d+)?$/.test(value) || value.includes('arxiv')) {
-        // arXiv format: 2301.12345 or arXiv:2301.12345
-        const arxivMatch = value.match(/(\d{4}\.\d{4,5}(v\d+)?)/);
-        if (arxivMatch) {
-            importFromArxiv(arxivMatch[1]);
-        } else {
-            showImportStatus('Format arXiv invalide', 'error');
-        }
     } else {
-        showImportStatus('Format non reconnu. Utilisez un DOI (10.xxxx/...), arXiv ID (2301.12345) ou BibTeX (@article{...})', 'error');
+        showImportStatus('Format non reconnu. Utilisez un DOI (10.xxxx/...), arXiv ID (2301.12345, 1210.0686 ou cs/0701001) ou BibTeX (@article{...})', 'error');
     }
 }
 
@@ -581,6 +601,8 @@ async function importFromDoi(doi) {
 // ===== ARXIV IMPORT =====
 
 async function importFromArxiv(arxivId) {
+    console.log('importFromArxiv called with:', arxivId);
+    
     if (!arxivId) {
         const input = document.getElementById('quickImport');
         if (input) arxivId = input.value.trim();
@@ -590,6 +612,8 @@ async function importFromArxiv(arxivId) {
         showImportStatus('Veuillez entrer un ID arXiv', 'error');
         return;
     }
+    
+    console.log('Processing arXiv ID:', arxivId);
     
     // Check if arXiv ID already exists (in link or pdf fields)
     const existingArticle = appData.articles.find(a => {
@@ -617,6 +641,7 @@ async function importFromArxiv(arxivId) {
     
     try {
         // Use arXiv API
+        console.log('Fetching arXiv ID:', arxivId);
         const response = await fetch(`https://export.arxiv.org/api/query?id_list=${arxivId}`);
         
         if (!response.ok) {
@@ -624,35 +649,68 @@ async function importFromArxiv(arxivId) {
         }
         
         const text = await response.text();
+        console.log('arXiv API response received, length:', text.length);
+        
         const parser = new DOMParser();
         const xml = parser.parseFromString(text, 'text/xml');
         
-        const entry = xml.querySelector('entry');
-        if (!entry) {
-            throw new Error('Article arXiv non trouvé');
+        // Check for parsing errors
+        const parserError = xml.querySelector('parsererror');
+        if (parserError) {
+            console.error('XML parsing error:', parserError.textContent);
+            throw new Error('Erreur de parsing XML de la réponse arXiv');
         }
         
-        // Extract metadata
-        const title = entry.querySelector('title')?.textContent.trim() || '';
-        const summary = entry.querySelector('summary')?.textContent.trim() || '';
+        const entry = xml.querySelector('entry');
+        if (!entry) {
+            console.error('No entry found in XML response');
+            console.log('Full XML content:', text);
+            
+            // Check if there's an error message in the feed
+            const totalResults = xml.querySelector('totalResults')?.textContent;
+            if (totalResults === '0') {
+                throw new Error(`Article arXiv non trouvé pour l'ID: ${arxivId}`);
+            }
+            
+            throw new Error('Article arXiv non trouvé - réponse invalide');
+        }
+        
+        console.log('Entry found, extracting metadata...');
+        
+        // Extract metadata with better error handling
+        const title = entry.querySelector('title')?.textContent.trim().replace(/\s+/g, ' ') || '';
+        const summary = entry.querySelector('summary')?.textContent.trim().replace(/\s+/g, ' ') || '';
         const authors = Array.from(entry.querySelectorAll('author name'))
             .map(a => a.textContent.trim())
             .join(', ');
         const pdfLink = entry.querySelector('link[title="pdf"]')?.getAttribute('href') || '';
         const htmlLink = entry.querySelector('id')?.textContent.trim() || '';
         
-        // Extract published date
+        // Extract published date (must be before using 'year' in log)
         const publishedDate = entry.querySelector('published')?.textContent.trim() || '';
         const year = publishedDate ? new Date(publishedDate).getFullYear() : '';
+        
+        console.log('Extracted:', { title: title.substring(0, 50), authors, year });
+        console.log('Published date:', publishedDate, '→ Year:', year);
+        
+        // Validate that we got meaningful data
+        if (!title || title.length < 5) {
+            throw new Error('Titre non trouvé dans la réponse arXiv');
+        }
         
         // Try to fetch BibTeX from arXiv (arxiv2bib service or similar)
         let bibtexData = null;
         try {
+            console.log('Fetching BibTeX from arXiv...');
             const bibtexUrl = `https://arxiv.org/bibtex/${arxivId}`;
             const bibtexResponse = await fetch(bibtexUrl);
             if (bibtexResponse.ok) {
                 const bibtexText = await bibtexResponse.text();
+                console.log('BibTeX response:', bibtexText.substring(0, 200));
                 bibtexData = await parseBibTeXEntry(bibtexText);
+                console.log('BibTeX parsed:', bibtexData);
+            } else {
+                console.log('BibTeX fetch failed with status:', bibtexResponse.status);
             }
         } catch (e) {
             console.log('arXiv BibTeX fetch failed:', e);

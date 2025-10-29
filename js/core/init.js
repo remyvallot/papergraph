@@ -206,9 +206,58 @@ function initializeEventListeners() {
     // Toolbar actions
     document.getElementById('addArticleBtn').addEventListener('click', () => openArticleModal());
     document.getElementById('categoryFilterBtn').addEventListener('click', toggleCategoryDropdown);
-    document.getElementById('fitGraphBtn').addEventListener('click', () => {
-        if (network) network.fit();
-    });
+    // Function to recenter/fit the graph view
+    function fitGraphView() {
+        if (!network) return;
+        
+        // Calculate bounding box including both nodes and tagzones
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        let hasContent = false;
+        
+        // Include nodes
+        const positions = network.getPositions();
+        Object.values(positions).forEach(pos => {
+            minX = Math.min(minX, pos.x);
+            minY = Math.min(minY, pos.y);
+            maxX = Math.max(maxX, pos.x);
+            maxY = Math.max(maxY, pos.y);
+            hasContent = true;
+        });
+        
+        // Include tagzones
+        if (tagZones && tagZones.length > 0) {
+            tagZones.forEach(zone => {
+                minX = Math.min(minX, zone.x);
+                minY = Math.min(minY, zone.y);
+                maxX = Math.max(maxX, zone.x + zone.width);
+                maxY = Math.max(maxY, zone.y + zone.height);
+                hasContent = true;
+            });
+        }
+        
+        if (hasContent) {
+            // Add padding (20% of the bounding box size to avoid menu bar)
+            const paddingX = (maxX - minX) * 0.2;
+            const paddingY = (maxY - minY) * 0.2;
+            
+            // Adjust view to include tagzones with padding
+            network.moveTo({
+                position: {
+                    x: (minX + maxX) / 2,
+                    y: (minY + maxY) / 2
+                },
+                scale: Math.min(
+                    network.canvas.frame.canvas.width / (maxX - minX + 2 * paddingX),
+                    network.canvas.frame.canvas.height / (maxY - minY + 2 * paddingY)
+                ) * 0.85
+            });
+        }
+    }
+    
+    // Expose globally for use in import/export
+    window.fitGraphView = fitGraphView;
+    
+    document.getElementById('fitGraphBtn').addEventListener('click', fitGraphView);
     
     document.getElementById('toggleGridBtn').addEventListener('click', toggleGrid);
     
@@ -393,13 +442,7 @@ function initializeEventListeners() {
         }
     });
     
-    // Edge menu actions
-    document.querySelector('.edge-delete')?.addEventListener('click', () => {
-        if (selectedEdgeId !== null) {
-            deleteConnection(selectedEdgeId);
-            hideEdgeMenu();
-        }
-    });
+    // Edge menu actions are now handled directly in showEdgeMenu() via onclick
 }
 
 function switchView(view) {

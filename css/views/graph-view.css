@@ -46,7 +46,15 @@
     left: 0;
     width: 100%;
     height: 100%;
-    overflow: visible;
+    overflow: hidden; /* Prevent canvas content from overflowing */
+    box-sizing: border-box;
+}
+
+/* Ensure vis.js canvas doesn't overflow */
+#graphContainer canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
 }
 
 /* View Toggle Overlay - Fixed top right */

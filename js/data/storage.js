@@ -23,6 +23,8 @@ function saveToLocalStorage(silent = false) {
         
         localStorage.setItem('papermap_data', JSON.stringify(appData));
         localStorage.setItem('papermap_zones', JSON.stringify(tagZones));
+        localStorage.setItem('papermap_edge_control_points', JSON.stringify(edgeControlPoints));
+        localStorage.setItem('papermap_next_control_point_id', nextControlPointId.toString());
         console.log('Data saved to localStorage');
         if (!silent) {
             // showNotification('Projet sauvegardé!', 'success');
@@ -48,6 +50,28 @@ function loadFromLocalStorage() {
         } else {
             // Create zones from existing tags if no zones saved
             initializeZonesFromTags();
+        }
+        
+        // Load edge control points
+        const savedControlPoints = localStorage.getItem('papermap_edge_control_points');
+        if (savedControlPoints) {
+            edgeControlPoints = JSON.parse(savedControlPoints);
+            window.edgeControlPoints = edgeControlPoints; // Update global reference
+            console.log('✓ Loaded edge control points:', Object.keys(edgeControlPoints).length, 'edges with control points');
+        } else {
+            edgeControlPoints = {};
+            window.edgeControlPoints = edgeControlPoints;
+        }
+        
+        // Load next control point ID
+        const savedNextId = localStorage.getItem('papermap_next_control_point_id');
+        if (savedNextId) {
+            nextControlPointId = parseInt(savedNextId);
+            window.nextControlPointId = nextControlPointId; // Update global reference
+            console.log('✓ Loaded next control point ID:', nextControlPointId);
+        } else {
+            nextControlPointId = -1;
+            window.nextControlPointId = nextControlPointId;
         }
         
         // Load saved node positions - CRITICAL for position persistence

@@ -14,10 +14,36 @@ function newProject() {
         selectedNodeId = null;
         selectedEdgeIndex = -1;
         
-        // Clear ALL localStorage data including positions
+        // Clear edge control points
+        edgeControlPoints = {};
+        window.edgeControlPoints = {};
+        nextControlPointId = -1;
+        window.nextControlPointId = -1;
+        
+        // Remove all control point nodes (negative IDs) from the network
+        if (network) {
+            const allNodes = network.body.data.nodes.get();
+            const controlPointNodes = allNodes.filter(node => node.id < 0);
+            if (controlPointNodes.length > 0) {
+                network.body.data.nodes.remove(controlPointNodes.map(n => n.id));
+                console.log('🗑️ Removed', controlPointNodes.length, 'control point nodes');
+            }
+            
+            // Remove all segment edges (IDs containing _seg_)
+            const allEdges = network.body.data.edges.get();
+            const segmentEdges = allEdges.filter(edge => edge.id.toString().includes('_seg_'));
+            if (segmentEdges.length > 0) {
+                network.body.data.edges.remove(segmentEdges.map(e => e.id));
+                console.log('🗑️ Removed', segmentEdges.length, 'segment edges');
+            }
+        }
+        
+        // Clear ALL localStorage data including positions and control points
         localStorage.removeItem('papermap_data');
         localStorage.removeItem('papermap_zones');
         localStorage.removeItem('papermap_positions');
+        localStorage.removeItem('papermap_edge_control_points');
+        localStorage.removeItem('papermap_next_control_point_id');
         window.savedNodePositions = {};
         
         saveToLocalStorage();
@@ -109,6 +135,14 @@ function importProject(e) {
                 }
                 
                 saveToLocalStorage();
+                
+                // Recenter the graph view to show all imported content
+                setTimeout(() => {
+                    if (typeof window.fitGraphView === 'function') {
+                        window.fitGraphView();
+                    }
+                }, 300); // Small delay to ensure graph is fully rendered
+                
                 showNotification('Projet importé!', 'success');
                 
                 // Close onboarding if it's open

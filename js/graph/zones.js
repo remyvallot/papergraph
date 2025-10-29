@@ -25,11 +25,18 @@ function drawTagZones(ctx) {
         ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.1)`;
         ctx.fillRect(zone.x, zone.y, zone.width, zone.height);
         
-        // Draw border
+        // Draw border (inset by half the lineWidth to prevent overflow)
         ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.3)`;
         ctx.lineWidth = 3;
         ctx.setLineDash([10, 5]);
-        ctx.strokeRect(zone.x, zone.y, zone.width, zone.height);
+        // Inset the stroke by 1.5px (half of lineWidth) to keep it within bounds
+        const halfStroke = ctx.lineWidth / 2;
+        ctx.strokeRect(
+            zone.x + halfStroke, 
+            zone.y + halfStroke, 
+            zone.width - ctx.lineWidth, 
+            zone.height - ctx.lineWidth
+        );
         ctx.setLineDash([]);
         
         // Draw tag name at top-left corner

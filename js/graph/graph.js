@@ -88,9 +88,12 @@ function initializeGraph() {
                 align: 'middle'
             },
             smooth: {
-                type: 'continuous'
+                enabled: true,
+                type: 'continuous', // Continuous smooth curves
+                roundness: 0.15 // Low roundness for smoother transitions at control points
             },
-            hoverWidth: 0
+            hoverWidth: 0,
+            chosen: false
         },
         physics: {
             enabled: false  // Physics disabled
@@ -408,8 +411,22 @@ function initializeGraph() {
     network.on('click', (params) => {
         if (connectionMode.active) {
             handleConnectionModeClick(params);
-        } else if (params.nodes.length > 0) {
+            return;
+        }
+        
+        if (params.nodes.length > 0) {
             const nodeId = params.nodes[0];
+            
+            // Check if it's a control point (negative ID)
+            if (isControlPoint(nodeId)) {
+                const container = document.getElementById('graphContainer');
+                const rect = container.getBoundingClientRect();
+                const screenX = rect.left + params.pointer.DOM.x;
+                const screenY = rect.top + params.pointer.DOM.y;
+                
+                showControlPointMenu(screenX, screenY, nodeId);
+                return;
+            }
             
             // Ctrl+Click for multi-selection
             if (params.event.srcEvent.ctrlKey || params.event.srcEvent.metaKey) {
@@ -551,22 +568,26 @@ function initializeGraph() {
             const edgeId = params.edges[0];
             const now = Date.now();
             
-            if (edgeId === lastEdgeClickId && now - lastEdgeClickTime < 300) {
-                const edge = network.body.data.edges.get(edgeId);
-                if (edge) {
-                    hideEdgeMenu();
-                    editEdgeLabelInline(edgeId, edge, params.pointer.DOM);
-                }
+            // Extract actual edge ID if it's a segment
+            let actualEdgeId = edgeId;
+            if (typeof edgeId === 'string' && edgeId.includes('_seg_')) {
+                actualEdgeId = parseInt(edgeId.split('_seg_')[0]);
+            }
+            
+            if (actualEdgeId === lastEdgeClickId && now - lastEdgeClickTime < 300) {
+                // Double-click detected - open inline editor for the ORIGINAL edge
+                hideEdgeMenu();
+                editEdgeLabelInline(actualEdgeId, null, params.pointer.DOM);
                 lastEdgeClickTime = 0;
                 lastEdgeClickId = null;
                 return;
             }
             
             lastEdgeClickTime = now;
-            lastEdgeClickId = edgeId;
+            lastEdgeClickId = actualEdgeId;
             
             if (!connectionMode.active) {
-                selectedEdgeId = edgeId;
+                selectedEdgeId = edgeId; // Keep the visual edge ID for menu
                 selectedNodeId = null;
                 
                 hideRadialMenu();
@@ -828,6 +849,29 @@ function initializeGraph() {
             window.savedNodePositions = positions;
             console.log('Node dragged - positions updated in memory:', Object.keys(positions).length, 'nodes');
             
+            // Check if any dragged node is a control point (negative ID)
+            const draggedControlPoints = params.nodes.filter(nodeId => nodeId < 0);
+            
+            if (draggedControlPoints.length > 0) {
+                console.log('🎯 Control point(s) moved:', draggedControlPoints);
+                
+                // Find all edges that use these control points and rebuild them
+                const edgesToRebuild = new Set();
+                for (const edgeId in window.edgeControlPoints) {
+                    const controlPoints = window.edgeControlPoints[edgeId];
+                    if (controlPoints.some(cpId => draggedControlPoints.includes(cpId))) {
+                        edgesToRebuild.add(edgeId);
+                    }
+                }
+                
+                console.log('🔄 Rebuilding', edgesToRebuild.size, 'edges to recalculate label position');
+                edgesToRebuild.forEach(edgeId => {
+                    if (typeof window.rebuildEdgeWithControlPoints === 'function') {
+                        window.rebuildEdgeWithControlPoints(parseInt(edgeId));
+                    }
+                });
+            }
+            
             // Save to localStorage
             saveToLocalStorage(true);
             
@@ -838,6 +882,9 @@ function initializeGraph() {
             if (typeof window.closeOnboarding === 'function') {
                 window.closeOnboarding();
             }
+            
+            // Force a complete redraw to clear any artifacts
+            network.redraw();
         }
     });
     
@@ -974,13 +1021,32 @@ function getGraphData() {
     }));
     
     const articleIds = new Set(filteredArticles.map(a => a.id));
+    
+    // Only create edges for connections WITHOUT control points
+    // Connections with control points will be built by rebuildEdgeWithControlPoints()
     const edges = new vis.DataSet(appData.connections
-        .filter(conn => articleIds.has(conn.from) && articleIds.has(conn.to))
+        .filter(conn => {
+            // Must connect valid articles
+            if (!articleIds.has(conn.from) || !articleIds.has(conn.to)) {
+                return false;
+            }
+            // Skip if this connection has control points (will be handled separately)
+            if (window.edgeControlPoints && window.edgeControlPoints[conn.id]) {
+                console.log('⏭️ Skipping edge', conn.id, 'in getGraphData (has control points)');
+                return false;
+            }
+            return true;
+        })
         .map(conn => ({
             id: conn.id,
             from: conn.from,
             to: conn.to,
-            label: conn.label || ''
+            label: conn.label || '',
+            smooth: {
+                enabled: true,
+                type: 'continuous',
+                roundness: 0.15
+            }
         })));
     
     console.log('Nodes:', nodes.get());
@@ -999,72 +1065,160 @@ function updateGraph() {
     try {
         searchHighlightedNodes = [];
         
-        // IMPORTANT: Get positions BEFORE setData (setData will reset positions)
+        // Get current view position and scale to restore later
+        const viewPosition = network.getViewPosition();
+        const scale = network.getScale();
+        
+        console.log('=== UPDATE GRAPH - Preserving view ===');
+        console.log('View position:', viewPosition, 'Scale:', scale);
+        
+        // IMPORTANT: Get positions BEFORE any updates
         const currentPositions = network.getPositions();
         const savedPositions = window.savedNodePositions || {};
         
-        console.log('=== UPDATE GRAPH DEBUG ===');
-        console.log('Current positions count:', Object.keys(currentPositions).length);
-        console.log('Saved positions count:', Object.keys(savedPositions).length);
+        // Get existing control point nodes to preserve them
+        const existingNodes = network.body.data.nodes.get();
+        const controlPointNodes = existingNodes.filter(node => node.id < 0);
+        const existingControlPointIds = new Set(controlPointNodes.map(n => n.id));
         
+        console.log('📊 Found', controlPointNodes.length, 'existing control point nodes');
+        
+        // Get new data from appData
         const graphData = getGraphData();
-        console.log('Graph data nodes count:', graphData.nodes.get().length);
+        const newNodesData = graphData.nodes.get();
+        const newEdgesData = graphData.edges.get();
         
-        network.setData(graphData);
+        // Get IDs
+        const newNodeIds = new Set(newNodesData.map(n => n.id));
+        const existingArticleNodeIds = existingNodes.filter(n => n.id > 0).map(n => n.id);
         
-        // Restore positions - prioritize savedPositions (from localStorage), then currentPositions
+        // Find nodes to remove (article nodes that no longer exist)
+        const nodesToRemove = existingArticleNodeIds.filter(id => !newNodeIds.has(id));
+        
+        // Find nodes to add (new article nodes)
+        const nodesToAdd = newNodesData.filter(node => {
+            const existing = network.body.data.nodes.get(node.id);
+            return !existing;
+        });
+        
+        // Update existing nodes (preserve control points)
         const nodesToUpdate = [];
-        const newNodes = []; // Nodes without any saved position
         
-        // Get all node IDs from the DataSet
-        const allNodes = graphData.nodes.get();
-        
-        allNodes.forEach(node => {
-            // PRIORITY 1: Saved positions from localStorage (persists across refreshes)
+        newNodesData.forEach(node => {
             if (savedPositions[node.id]) {
-                const savedPos = savedPositions[node.id];
-                // Accept any position (even 0,0 might be intentional)
-                console.log(`✓ Node ${node.id}: Using saved position`, savedPos);
                 nodesToUpdate.push({
                     id: node.id,
-                    x: savedPos.x,
-                    y: savedPos.y,
+                    x: savedPositions[node.id].x,
+                    y: savedPositions[node.id].y,
                     fixed: { x: false, y: false }
                 });
-            }
-            // PRIORITY 2: Current session positions (before setData)
-            else if (currentPositions[node.id]) {
-                const currPos = currentPositions[node.id];
-                console.log(`✓ Node ${node.id}: Using current position`, currPos);
+            } else if (currentPositions[node.id]) {
                 nodesToUpdate.push({
                     id: node.id,
-                    x: currPos.x,
-                    y: currPos.y,
+                    x: currentPositions[node.id].x,
+                    y: currentPositions[node.id].y,
                     fixed: { x: false, y: false }
                 });
-            } 
-            // NEW NODE: Needs positioning
-            else {
-                console.log(`⚠ Node ${node.id}: New node (no saved position)`);
-                newNodes.push(node.id);
             }
         });
         
+        // Apply changes
+        if (nodesToRemove.length > 0) {
+            console.log('🗑️ Removing', nodesToRemove.length, 'nodes');
+            network.body.data.nodes.remove(nodesToRemove);
+        }
+        
+        if (nodesToAdd.length > 0) {
+            console.log('➕ Adding', nodesToAdd.length, 'new nodes');
+            network.body.data.nodes.add(nodesToAdd);
+        }
+        
         if (nodesToUpdate.length > 0) {
-            console.log('Restoring positions for', nodesToUpdate.length, 'nodes');
+            console.log('🔄 Updating', nodesToUpdate.length, 'node positions');
             network.body.data.nodes.update(nodesToUpdate);
         }
         
-        // Only position new nodes to avoid overlap
-        if (newNodes.length > 0) {
-            console.log('Positioning new nodes:', newNodes);
-            positionNodesInZones();
+        // Update edges (preserve control point edges)
+        const existingEdges = network.body.data.edges.get();
+        const existingEdgeIds = new Set(existingEdges.map(e => e.id));
+        const newEdgeIds = new Set(newEdgesData.map(e => e.id));
+        
+        // Remove edges that no longer exist (but not segment edges)
+        const edgesToRemove = existingEdges
+            .filter(e => !e.id.toString().includes('_seg_') && !newEdgeIds.has(e.id))
+            .map(e => e.id);
+        
+        if (edgesToRemove.length > 0) {
+            console.log('🗑️ Removing', edgesToRemove.length, 'edges');
+            network.body.data.edges.remove(edgesToRemove);
+            
+            // Also clean up control points for removed edges
+            edgesToRemove.forEach(edgeId => {
+                if (edgeControlPoints[edgeId]) {
+                    const controlPointsToDelete = edgeControlPoints[edgeId];
+                    console.log('🗑️ Cleaning up control points for removed edge', edgeId, ':', controlPointsToDelete);
+                    
+                    // Remove control point nodes
+                    controlPointsToDelete.forEach(cpId => {
+                        try {
+                            network.body.data.nodes.remove(cpId);
+                        } catch (error) {
+                            console.error('Error removing control point node:', cpId, error);
+                        }
+                    });
+                    
+                    // Remove segment edges
+                    const segmentEdges = network.body.data.edges.get({
+                        filter: (edge) => edge.id.toString().startsWith(`${edgeId}_seg_`)
+                    });
+                    if (segmentEdges.length > 0) {
+                        network.body.data.edges.remove(segmentEdges.map(e => e.id));
+                        console.log('🗑️ Removed', segmentEdges.length, 'segment edges for edge', edgeId);
+                    }
+                    
+                    // Remove from edgeControlPoints
+                    delete edgeControlPoints[edgeId];
+                }
+            });
         }
         
-        // Don't call stabilize if we have saved positions
-        if (nodesToUpdate.length === 0 && newNodes.length === 0) {
-            network.stabilize(10);
-        }
+        // Add or update edges (only for edges WITHOUT control points)
+        newEdgesData.forEach(edge => {
+            // Double-check: never add/update an edge that has control points
+            if (edgeControlPoints[edge.id]) {
+                console.log('⏭️ Skipping edge', edge.id, 'in updateGraph (has control points)');
+                return;
+            }
+            
+            if (existingEdgeIds.has(edge.id)) {
+                network.body.data.edges.update(edge);
+            } else {
+                network.body.data.edges.add(edge);
+            }
+        });
+        
+        // Restore view position and scale
+        network.moveTo({
+            position: viewPosition,
+            scale: scale,
+            animation: false
+        });
+        
+        // Rebuild ALL edges with control points (not just ones without segments)
+        Object.keys(edgeControlPoints).forEach(edgeId => {
+            const edgeIdNum = parseInt(edgeId);
+            
+            // First, remove the simple edge if it exists
+            if (network.body.data.edges.get(edgeIdNum)) {
+                console.log('�️ Removing simple edge', edgeIdNum, 'before rebuilding with control points');
+                network.body.data.edges.remove(edgeIdNum);
+            }
+            
+            console.log('🔄 Rebuilding edge', edgeIdNum, 'with control points');
+            rebuildEdgeWithControlPoints(edgeIdNum);
+        });
+        
+        console.log('✓ Graph updated, view preserved');
     } catch (error) {
         console.error('Error updating graph:', error);
     }
@@ -1361,6 +1515,9 @@ function endSelectionBoxDrag() {
     if (!multiSelection.boxDragging) return;
     
     multiSelection.boxDragging = false;
+    
+    // Update zone membership for moved nodes
+    checkNodeZoneMembership();
     
     // Save positions
     const positions = network.getPositions();

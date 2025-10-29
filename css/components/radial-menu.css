@@ -126,18 +126,16 @@
 .edge-menu {
     position: fixed;
     display: none;
-    pointer-events: none;
+    pointer-events: all; /* Changed from none to all */
     z-index: 200;
-    gap: 8px;
 }
 
 .edge-menu.active {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+    display: block;
 }
 
 .edge-btn {
+    position: absolute;
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -152,6 +150,16 @@
     transition: all 0.2s;
     pointer-events: all;
     animation: edgePop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.edge-add-control-point:hover {
+    background: #4a90e2;
+    color: white;
+}
+
+.edge-edit-label:hover {
+    background: #4a90e2;
+    color: white;
 }
 
 .edge-btn:hover {
