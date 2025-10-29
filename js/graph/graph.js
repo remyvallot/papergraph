@@ -3,6 +3,24 @@
 
 let searchHighlightedNodes = [];
 
+// Calculate luminance to determine text color contrast
+function getContrastColor(hexColor) {
+    // Remove # if present
+    const hex = hexColor.replace('#', '');
+    
+    // Convert to RGB
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Calculate relative luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Return white for dark backgrounds, dark for light backgrounds
+    // Threshold adjusted to 0.55 to allow more dark text on lighter backgrounds
+    return luminance > 0.55 ? '#333333' : '#ffffff';
+}
+
 function initializeGraph() {
     const container = document.getElementById('graphContainer');
     const graphData = getGraphData();
@@ -75,25 +93,7 @@ function initializeGraph() {
             hoverWidth: 0
         },
         physics: {
-            enabled: false,  // Disabled by default
-            stabilization: {
-                enabled: true,
-                iterations: 50,
-                updateInterval: 25,
-                onlyDynamicEdges: false,
-                fit: true
-            },
-            barnesHut: {
-                gravitationalConstant: -1000,
-                centralGravity: 0.1,
-                springLength: 200,
-                springConstant: 0.02,
-                damping: 0.9,
-                avoidOverlap: 1.0  // Increased to prevent overlap
-            },
-            solver: 'barnesHut',
-            timestep: 0.35,
-            adaptiveTimestep: true
+            enabled: false  // Physics disabled
         },
         interaction: {
             hover: true,
@@ -213,6 +213,28 @@ function initializeGraph() {
                         network.redraw();
                     }
                     
+                    // Check if clicking inside an existing selection box
+                    if (multiSelection.selectionBox && multiSelection.selectionBox.style.display !== 'none') {
+                        const canvas = network.canvas.frame.canvas;
+                        const rect = canvas.getBoundingClientRect();
+                        const mouseX = event.clientX - rect.left;
+                        const mouseY = event.clientY - rect.top;
+                        
+                        const boxLeft = parseFloat(multiSelection.selectionBox.style.left);
+                        const boxTop = parseFloat(multiSelection.selectionBox.style.top);
+                        const boxWidth = parseFloat(multiSelection.selectionBox.style.width);
+                        const boxHeight = parseFloat(multiSelection.selectionBox.style.height);
+                        
+                        // Check if click is inside the selection box
+                        if (mouseX >= boxLeft && mouseX <= boxLeft + boxWidth &&
+                            mouseY >= boxTop && mouseY <= boxTop + boxHeight) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            startSelectionBoxDrag(event, mouseX, mouseY, boxLeft, boxTop);
+                            return;
+                        }
+                    }
+                    
                     event.preventDefault();
                     event.stopPropagation();
                     startSelectionBox(event);
@@ -284,13 +306,17 @@ function initializeGraph() {
             event.preventDefault();
             event.stopPropagation();
             updateZoneResize(event);
+        } else if (multiSelection.boxDragging) {
+            event.preventDefault();
+            event.stopPropagation();
+            updateSelectionBoxDrag(event);
         } else if (multiSelection.active) {
             event.preventDefault();
             event.stopPropagation();
             updateSelectionBox(event);
         }
         
-        if (!isDraggingView && !zoneMoving.active && !zoneResizing.active && !multiSelection.active && !connectionMode.active) {
+        if (!isDraggingView && !zoneMoving.active && !zoneResizing.active && !multiSelection.active && !multiSelection.boxDragging && !connectionMode.active) {
             updateZoneCursor(event);
         }
     }, true);
@@ -315,6 +341,10 @@ function initializeGraph() {
             event.preventDefault();
             event.stopPropagation();
             endZoneResize();
+        } else if (event.button === 0 && multiSelection.boxDragging) {
+            event.preventDefault();
+            event.stopPropagation();
+            endSelectionBoxDrag();
         } else if (event.button === 0 && multiSelection.active) {
             event.preventDefault();
             event.stopPropagation();
@@ -323,7 +353,7 @@ function initializeGraph() {
     }, true);
     
     network.canvas.body.container.addEventListener('mousemove', (event) => {
-        if (!isDraggingView && !zoneMoving.active && !zoneResizing.active && !multiSelection.active && !connectionMode.active && !zoneEditing.active) {
+        if (!isDraggingView && !zoneMoving.active && !zoneResizing.active && !multiSelection.active && !multiSelection.boxDragging && !connectionMode.active && !zoneEditing.active) {
             updateZoneCursor(event);
         }
     }, false);
@@ -353,6 +383,12 @@ function initializeGraph() {
                 setTimeout(() => {
                     network.fit();
                     console.log('Graph fitted after position restoration');
+                    
+                    // Check node zone membership to update colors after positions are restored
+                    if (typeof checkNodeZoneMembership === 'function' && tagZones.length > 0) {
+                        console.log('🎨 Checking zone membership after project load...');
+                        checkNodeZoneMembership();
+                    }
                 }, 100);
             }
         } else {
@@ -375,7 +411,126 @@ function initializeGraph() {
         } else if (params.nodes.length > 0) {
             const nodeId = params.nodes[0];
             
-            // Hide selection box when clicking on a node
+            // Ctrl+Click for multi-selection
+            if (params.event.srcEvent.ctrlKey || params.event.srcEvent.metaKey) {
+                console.log('🔵 Ctrl+Click on node:', nodeId);
+                
+                // If this node is NOT in the selection, add it
+                if (!multiSelection.selectedNodes.includes(nodeId)) {
+                    multiSelection.selectedNodes.push(nodeId);
+                    selectedNodeId = nodeId; // Update for next selection
+                } else {
+                    // Node already selected - remove it (toggle)
+                    multiSelection.selectedNodes = multiSelection.selectedNodes.filter(id => id !== nodeId);
+                    // Update selectedNodeId to the last remaining node or null
+                    selectedNodeId = multiSelection.selectedNodes.length > 0 ? multiSelection.selectedNodes[multiSelection.selectedNodes.length - 1] : null;
+                }
+                
+                console.log('→ Selection now:', multiSelection.selectedNodes);
+                
+                if (multiSelection.selectedNodes.length > 0) {
+                    network.selectNodes(multiSelection.selectedNodes);
+                    
+                    // Calculate bounding box of all selected nodes
+                    const positions = network.getPositions(multiSelection.selectedNodes);
+                    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    
+                    Object.values(positions).forEach(pos => {
+                        minX = Math.min(minX, pos.x);
+                        minY = Math.min(minY, pos.y);
+                        maxX = Math.max(maxX, pos.x);
+                        maxY = Math.max(maxY, pos.y);
+                    });
+                    
+                    // Add padding (50 units in canvas coordinates)
+                    const padding = 50;
+                    minX -= padding;
+                    minY -= padding;
+                    maxX += padding;
+                    maxY += padding;
+                    
+                    // Convert to DOM coordinates
+                    const topLeft = network.canvasToDOM({ x: minX, y: minY });
+                    const bottomRight = network.canvasToDOM({ x: maxX, y: maxY });
+                    
+                    const graphContainer = document.getElementById('graphContainer');
+                    const containerRect = graphContainer.getBoundingClientRect();
+                    
+                    // Create or update selection box
+                    if (!multiSelection.selectionBox) {
+                        multiSelection.selectionBox = document.createElement('div');
+                        multiSelection.selectionBox.id = 'selectionBox';
+                        multiSelection.selectionBox.style.position = 'absolute';
+                        multiSelection.selectionBox.style.pointerEvents = 'none';
+                        multiSelection.selectionBox.style.zIndex = '1000';
+                        document.querySelector('#graphContainer > div').appendChild(multiSelection.selectionBox);
+                    }
+                    
+                    multiSelection.selectionBox.style.border = '2px dashed #4a90e2';
+                    multiSelection.selectionBox.style.backgroundColor = 'rgba(74, 144, 226, 0.1)';
+                    multiSelection.selectionBox.style.left = topLeft.x + 'px';
+                    multiSelection.selectionBox.style.top = topLeft.y + 'px';
+                    multiSelection.selectionBox.style.width = (bottomRight.x - topLeft.x) + 'px';
+                    multiSelection.selectionBox.style.height = (bottomRight.y - topLeft.y) + 'px';
+                    multiSelection.selectionBox.style.display = 'block';
+                    
+                    console.log('📦 Calculating zones for selected nodes...');
+                    // Calculate which zones to drag with the selected nodes
+                    // For each node, find the SMALLEST zone that contains it
+                    const zonesSet = new Set();
+                    multiSelection.selectedNodes.forEach(nodeId => {
+                        const article = appData.articles.find(a => a.id === nodeId);
+                        console.log(`Node ${nodeId} categories:`, article?.categories);
+                        if (article && article.categories.length > 0) {
+                            // Find all zones for this node's categories
+                            const nodeZones = [];
+                            article.categories.forEach(tag => {
+                                const zoneIdx = tagZones.findIndex(z => z.tag === tag);
+                                if (zoneIdx !== -1) {
+                                    const zone = tagZones[zoneIdx];
+                                    nodeZones.push({ idx: zoneIdx, zone: zone, area: zone.width * zone.height });
+                                }
+                            });
+                            
+                            console.log(`Node ${nodeId} has ${nodeZones.length} zones:`, nodeZones);
+                            // Sort by size and keep only the smallest zone for this node
+                            if (nodeZones.length > 0) {
+                                nodeZones.sort((a, b) => a.area - b.area);
+                                zonesSet.add(nodeZones[0].idx); // Add only the smallest zone
+                                console.log(`Selected smallest zone ${nodeZones[0].idx} for node ${nodeId}`);
+                            }
+                        }
+                    });
+                    
+                    console.log('Final zones to drag:', Array.from(zonesSet));
+                    
+                    // Convert to array (already the smallest zones)
+                    multiSelection.selectedZonesForDrag = Array.from(zonesSet);
+                    
+                    // Position menu at center top of selection box
+                    const menuX = containerRect.left + (topLeft.x + bottomRight.x) / 2;
+                    const menuY = containerRect.top + topLeft.y - 30;
+                    
+                    showSelectionRadialMenu(menuX, menuY);
+                } else {
+                    hideSelectionRadialMenu();
+                    hideSelectionBox();
+                    network.unselectAll();
+                }
+                
+                closeArticlePreview();
+                hideRadialMenu();
+                
+                // Important: return here to avoid executing the rest of the click handler
+                return;
+            }
+            
+            // Set selected node ID for keyboard shortcuts
+            selectedNodeId = nodeId;
+            selectedEdgeId = null;
+            console.log('✅ Set selectedNodeId to:', selectedNodeId);
+            
+            // Hide selection box when clicking on a node (unless in multi-selection mode)
             hideSelectionBox();
             
             if (selectedNodeId !== null && selectedNodeId !== nodeId) {
@@ -419,8 +574,11 @@ function initializeGraph() {
                 hideSelectionRadialMenu();
                 closeArticlePreview();
                 
-                // Hide selection box when clicking on an edge
+                // Hide selection box when clicking on an edge and clear selection
                 hideSelectionBox();
+                multiSelection.selectedNodes = [];
+                multiSelection.selectedZonesForDrag = [];
+                if (network) network.unselectAll();
                 
                 const container = document.getElementById('graphContainer');
                 const rect = container.getBoundingClientRect();
@@ -445,16 +603,22 @@ function initializeGraph() {
             hideSelectionRadialMenu();
             closeArticlePreview();
             
-            // Hide selection box when clicking on empty space
+            // Hide selection box when clicking on empty space and clear selection
             hideSelectionBox();
+            multiSelection.selectedNodes = [];
+            multiSelection.selectedZonesForDrag = [];
+            if (network) network.unselectAll();
         }
     });
     
+    let isAdjustingViewForNode = false; // Flag to prevent infinite loops
+    
     function openRadialMenuForNode(nodeId) {
+        // Prevent recursive calls
+        if (isAdjustingViewForNode) return;
+        
         selectedNodeId = nodeId;
         selectedEdgeId = null;
-        
-        showArticlePreview(nodeId);
         
         const nodePosition = network.getPositions([nodeId])[nodeId];
         const canvasPosition = network.canvasToDOM(nodePosition);
@@ -462,14 +626,51 @@ function initializeGraph() {
         const container = document.getElementById('graphContainer');
         const rect = container.getBoundingClientRect();
         
-        const screenX = rect.left + canvasPosition.x;
-        const screenY = rect.top + canvasPosition.y;
-        
         const node = network.body.nodes[nodeId];
         const nodeWidth = node.shape.width || 100;
         const nodeHeight = node.shape.height || 50;
         
-        showRadialMenu(screenX, screenY, nodeId, nodeWidth, nodeHeight);
+        // Check if node or radial menu would be behind the preview card
+        const previewWidth = 400;
+        const menuRadius = 70; // Approximate radial menu radius
+        const margin = 70;
+        const leftThreshold = previewWidth + margin;
+        
+        // Check if menu buttons would be behind card
+        const menuLeft = canvasPosition.x - menuRadius;
+        
+        if (menuLeft < leftThreshold) {
+            isAdjustingViewForNode = true;
+            
+            const currentView = network.getViewPosition();
+            const currentScale = network.getScale();
+            
+            // Calculate how much to shift right (in canvas coordinates)
+            const targetX = leftThreshold + menuRadius;
+            const shiftNeeded = (targetX - canvasPosition.x) / currentScale;
+            
+            // Move view without animation to avoid loops
+            network.moveTo({
+                position: { x: currentView.x - shiftNeeded, y: currentView.y },
+                scale: currentScale,
+                animation: false
+            });
+            
+            // Wait for view to update then show menu
+            setTimeout(() => {
+                const newCanvasPosition = network.canvasToDOM(nodePosition);
+                const screenX = rect.left + newCanvasPosition.x;
+                const screenY = rect.top + newCanvasPosition.y;
+                showRadialMenu(screenX, screenY, nodeId, nodeWidth, nodeHeight);
+                showArticlePreview(nodeId);
+                isAdjustingViewForNode = false;
+            }, 50);
+        } else {
+            const screenX = rect.left + canvasPosition.x;
+            const screenY = rect.top + canvasPosition.y;
+            showRadialMenu(screenX, screenY, nodeId, nodeWidth, nodeHeight);
+            showArticlePreview(nodeId);
+        }
         
         network.setOptions({ 
             interaction: { 
@@ -497,7 +698,39 @@ function initializeGraph() {
                 multiSelection.menuActive = document.getElementById('selectionRadialMenu')?.classList.contains('active') || 
                                            multiSelection.selectedNodes.length > 0;
                 console.log('Dragging selection, saved state:', multiSelection);
+                
+                // Store initial positions of zones that are part of the selection
+                if (multiSelection.selectedZonesForDrag.length > 0) {
+                    multiSelection.zonesDragStart = {};
+                    multiSelection.selectedZonesForDrag.forEach(zoneIdx => {
+                        const zone = tagZones[zoneIdx];
+                        multiSelection.zonesDragStart[zoneIdx] = { x: zone.x, y: zone.y };
+                    });
+                    
+                    // Also store initial node position for calculating delta
+                    const firstNode = params.nodes[0];
+                    const pos = network.getPositions([firstNode])[firstNode];
+                    multiSelection.nodeDragStart = { x: pos.x, y: pos.y };
+                }
             }
+        }
+        
+        // Move zones along with nodes if they're part of the selection
+        if (params.nodes.length > 0 && multiSelection.selectedZonesForDrag.length > 0 && multiSelection.nodeDragStart) {
+            const firstNode = params.nodes[0];
+            const currentPos = network.getPositions([firstNode])[firstNode];
+            
+            const dx = currentPos.x - multiSelection.nodeDragStart.x;
+            const dy = currentPos.y - multiSelection.nodeDragStart.y;
+            
+            multiSelection.selectedZonesForDrag.forEach(zoneIdx => {
+                const zone = tagZones[zoneIdx];
+                const startPos = multiSelection.zonesDragStart[zoneIdx];
+                zone.x = startPos.x + dx;
+                zone.y = startPos.y + dy;
+            });
+            
+            network.redraw();
         }
         
         // Hide selection box and selection radial menu when dragging nodes
@@ -549,7 +782,8 @@ function initializeGraph() {
                             color: {
                                 background: zone.color,
                                 border: darkenColor(zone.color, 20)
-                            }
+                            },
+                            font: { color: getContrastColor(zone.color) }
                         });
                         saveToLocalStorage();
                         updateCategoryFilters();
@@ -562,7 +796,8 @@ function initializeGraph() {
                             color: {
                                 border: '#4a90e2',
                                 background: '#e3f2fd'
-                            }
+                            },
+                            font: { color: '#333333' }
                         });
                         saveToLocalStorage();
                         updateCategoryFilters();
@@ -576,6 +811,15 @@ function initializeGraph() {
     
     network.on('dragEnd', (params) => {
         if (params.nodes.length > 0) {
+            // Save zones to localStorage if they were moved during this drag
+            if (multiSelection.selectedZonesForDrag.length > 0) {
+                saveToLocalStorage(true);
+            }
+            
+            // Clean up zone drag tracking
+            multiSelection.zonesDragStart = {};
+            multiSelection.nodeDragStart = null;
+            
             updateZoneSizes();
             checkNodeZoneMembership();
             
@@ -637,10 +881,6 @@ function initializeGraph() {
         
         // Draw tag zones
         drawTagZones(ctx);
-        
-        if (network.physics.physicsEnabled) {
-            updateRadialMenuIfActive();
-        }
     });
     
     network.on('hoverNode', (params) => {
@@ -652,6 +892,19 @@ function initializeGraph() {
     network.on('blurNode', () => {
         if (connectionMode.active) {
             network.canvas.body.container.style.cursor = 'crosshair';
+        }
+    });
+    
+    network.on('zoom', () => {
+        // Close selection box and menu when zooming
+        if (multiSelection.selectionBox && multiSelection.selectionBox.style.display !== 'none') {
+            hideSelectionBox();
+            hideSelectionRadialMenu();
+            hideEmptyAreaMenu();
+            if (network) network.unselectAll();
+            multiSelection.selectedNodes = [];
+            multiSelection.selectedZonesForDrag = [];
+            multiSelection.emptyAreaSelection = null;
         }
     });
     
@@ -669,15 +922,29 @@ function getGraphData() {
     
     const nodes = new vis.DataSet(filteredArticles.map(article => {
         let nodeColor = { border: '#4a90e2', background: '#e3f2fd' };
+        let fontColor = '#333333'; // Default dark text
         
         if (article.categories.length > 0) {
-            const firstCategory = article.categories[0];
-            const zone = tagZones.find(z => z.tag === firstCategory);
-            if (zone) {
+            // Find the SMALLEST zone for this article (in case of nested zones)
+            const articleZones = [];
+            article.categories.forEach(tag => {
+                const zone = tagZones.find(z => z.tag === tag);
+                if (zone) {
+                    articleZones.push({ zone, area: zone.width * zone.height });
+                }
+            });
+            
+            if (articleZones.length > 0) {
+                // Sort by area and use the smallest zone
+                articleZones.sort((a, b) => a.area - b.area);
+                const smallestZone = articleZones[0].zone;
+                
                 nodeColor = {
-                    background: zone.color,
-                    border: darkenColor(zone.color, 20)
+                    background: smallestZone.color,
+                    border: darkenColor(smallestZone.color, 20)
                 };
+                // Calculate appropriate text color based on background
+                fontColor = getContrastColor(smallestZone.color);
             }
         }
         
@@ -686,7 +953,8 @@ function getGraphData() {
         const nodeData = {
             id: article.id,
             label: getNodeLabel(article, labelFormat),
-            color: nodeColor
+            color: nodeColor,
+            font: { color: fontColor }
         };
         
         // Load saved position if available
@@ -694,6 +962,12 @@ function getGraphData() {
             nodeData.x = window.savedNodePositions[article.id].x;
             nodeData.y = window.savedNodePositions[article.id].y;
             nodeData.fixed = { x: false, y: false }; // Allow manual movement but use saved position
+        }
+        // Check for initial position on article object (for newly imported articles)
+        else if (article.x !== undefined && article.y !== undefined) {
+            nodeData.x = article.x;
+            nodeData.y = article.y;
+            nodeData.fixed = { x: false, y: false };
         }
         
         return nodeData;
@@ -947,7 +1221,7 @@ function hideSelectionBox() {
     if (multiSelection.selectionBox) {
         multiSelection.selectionBox.style.display = 'none';
     }
-    multiSelection.selectedNodes = [];
+    // NOTE: Don't reset selectedNodes here - it's managed elsewhere
     multiSelection.active = false;
 }
 
@@ -988,6 +1262,123 @@ function startSelectionBox(event) {
     multiSelection.selectionBox.style.width = '0px';
     multiSelection.selectionBox.style.height = '0px';
     multiSelection.selectionBox.style.display = 'block';
+}
+
+function startSelectionBoxDrag(event, mouseX, mouseY, boxLeft, boxTop) {
+    multiSelection.boxDragging = true;
+    multiSelection.boxDragStart = { x: mouseX, y: mouseY };
+    multiSelection.originalBoxPosition = { left: boxLeft, top: boxTop };
+    
+    // Store initial positions of nodes and zones for dragging
+    const canvas = network.canvas.frame.canvas;
+    const rect = canvas.getBoundingClientRect();
+    const boxWidth = parseFloat(multiSelection.selectionBox.style.width);
+    const boxHeight = parseFloat(multiSelection.selectionBox.style.height);
+    
+    const topLeft = network.DOMtoCanvas({ x: boxLeft, y: boxTop });
+    const bottomRight = network.DOMtoCanvas({ x: boxLeft + boxWidth, y: boxTop + boxHeight });
+    
+    // Store initial node positions
+    multiSelection.nodeDragStart = {};
+    multiSelection.selectedNodes.forEach(nodeId => {
+        const pos = network.getPositions([nodeId])[nodeId];
+        if (pos) {
+            multiSelection.nodeDragStart[nodeId] = { x: pos.x, y: pos.y };
+        }
+    });
+    
+    // Store initial zone positions for zones fully inside the selection
+    multiSelection.zonesDragStart = {};
+    console.log(`📦 Storing start positions for ${multiSelection.selectedZonesForDrag.length} zones...`);
+    multiSelection.selectedZonesForDrag.forEach(zoneIdx => {
+        const zone = tagZones[zoneIdx];
+        multiSelection.zonesDragStart[zoneIdx] = { x: zone.x, y: zone.y };
+        console.log(`  Zone ${zoneIdx} (${zone.tag}): start at x=${zone.x.toFixed(1)}, y=${zone.y.toFixed(1)}`);
+    });
+    
+    network.setOptions({
+        interaction: {
+            dragNodes: false,
+            dragView: false,
+            zoomView: false,
+            hover: false
+        }
+    });
+}
+
+function updateSelectionBoxDrag(event) {
+    if (!multiSelection.boxDragging) return;
+    
+    const canvas = network.canvas.frame.canvas;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    
+    const dx = mouseX - multiSelection.boxDragStart.x;
+    const dy = mouseY - multiSelection.boxDragStart.y;
+    
+    // Move the selection box
+    const newLeft = multiSelection.originalBoxPosition.left + dx;
+    const newTop = multiSelection.originalBoxPosition.top + dy;
+    
+    multiSelection.selectionBox.style.left = newLeft + 'px';
+    multiSelection.selectionBox.style.top = newTop + 'px';
+    
+    // Calculate canvas coordinate delta
+    const canvasDxStart = network.DOMtoCanvas({ x: multiSelection.boxDragStart.x, y: multiSelection.boxDragStart.y });
+    const canvasDxCurrent = network.DOMtoCanvas({ x: mouseX, y: mouseY });
+    const canvasDx = canvasDxCurrent.x - canvasDxStart.x;
+    const canvasDy = canvasDxCurrent.y - canvasDxStart.y;
+    
+    // Move all selected nodes
+    Object.keys(multiSelection.nodeDragStart).forEach(nodeId => {
+        const startPos = multiSelection.nodeDragStart[nodeId];
+        network.moveNode(nodeId, startPos.x + canvasDx, startPos.y + canvasDy);
+    });
+    
+    // Move all selected zones
+    if (multiSelection.selectedZonesForDrag && multiSelection.selectedZonesForDrag.length > 0) {
+        console.log(`📦 Moving ${multiSelection.selectedZonesForDrag.length} zones with selection box...`);
+        multiSelection.selectedZonesForDrag.forEach(zoneIdx => {
+            const zone = tagZones[zoneIdx];
+            const startPos = multiSelection.zonesDragStart[zoneIdx];
+            if (startPos) {
+                zone.x = startPos.x + canvasDx;
+                zone.y = startPos.y + canvasDy;
+                console.log(`  Moved zone ${zoneIdx} (${zone.tag}) by dx=${canvasDx.toFixed(1)}, dy=${canvasDy.toFixed(1)}`);
+            } else {
+                console.warn(`  ⚠️ No start position for zone ${zoneIdx}`);
+            }
+        });
+    } else {
+        console.log('No zones to move (selectedZonesForDrag empty)');
+    }
+    
+    network.redraw();
+}
+
+function endSelectionBoxDrag() {
+    if (!multiSelection.boxDragging) return;
+    
+    multiSelection.boxDragging = false;
+    
+    // Save positions
+    const positions = network.getPositions();
+    window.savedNodePositions = positions;
+    saveToLocalStorage(true);
+    
+    network.setOptions({
+        interaction: {
+            dragNodes: true,
+            dragView: false,
+            zoomView: true,
+            hover: true,
+            hoverConnectedEdges: true,
+            selectConnectedEdges: true,
+            multiselect: true,
+            selectable: true
+        }
+    });
 }
 
 function updateSelectionBox(event) {
@@ -1050,12 +1441,41 @@ function endSelectionBox() {
     });
     
     multiSelection.selectedNodes = [];
+    
+    // Check if any tag zones are completely within the selection
+    const fullySelectedZones = [];
+    console.log('🔍 Checking for zones in selection box...');
+    tagZones.forEach((zone, idx) => {
+        const zoneFullyInSelection = zone.x >= topLeft.x && 
+                                     zone.y >= topLeft.y &&
+                                     zone.x + zone.width <= bottomRight.x &&
+                                     zone.y + zone.height <= bottomRight.y;
+        
+        if (zoneFullyInSelection) {
+            console.log(`✅ Zone "${zone.tag}" is fully selected`);
+            fullySelectedZones.push({ zone, idx });
+            
+            // Add all nodes with this zone's tag to selection
+            appData.articles.forEach(article => {
+                if (article.categories.includes(zone.tag) && !multiSelection.selectedNodes.includes(article.id)) {
+                    multiSelection.selectedNodes.push(article.id);
+                    console.log(`  Added node ${article.id} (has tag "${zone.tag}")`);
+                }
+            });
+        }
+    });
+    
+    console.log(`📦 Found ${fullySelectedZones.length} fully selected zones`);
+    
+    // Add nodes that are directly in the selection box
     appData.articles.forEach(article => {
         const pos = network.getPositions([article.id])[article.id];
         if (pos) {
             if (pos.x >= topLeft.x && pos.x <= bottomRight.x &&
                 pos.y >= topLeft.y && pos.y <= bottomRight.y) {
-                multiSelection.selectedNodes.push(article.id);
+                if (!multiSelection.selectedNodes.includes(article.id)) {
+                    multiSelection.selectedNodes.push(article.id);
+                }
             }
         }
     });
@@ -1064,6 +1484,17 @@ function endSelectionBox() {
         multiSelection.selectionBox.style.border = '2px dashed #4a90e2';
     }
     multiSelection.active = false;
+    
+    // Store fully selected zones for dragging, sorted by size (smallest first)
+    // This ensures the smallest zone is in the foreground when dragging
+    fullySelectedZones.sort((a, b) => {
+        const areaA = a.zone.width * a.zone.height;
+        const areaB = b.zone.width * b.zone.height;
+        return areaA - areaB;
+    });
+    multiSelection.selectedZonesForDrag = fullySelectedZones.map(fz => fz.idx);
+    console.log(`📦 Zones to drag:`, multiSelection.selectedZonesForDrag);
+    console.log(`📦 Selected ${multiSelection.selectedNodes.length} nodes total`);
     
     network.setOptions({
         interaction: {
@@ -1085,6 +1516,21 @@ function endSelectionBox() {
         const menuY = rect.top + boxTop - 30;
         
         showSelectionRadialMenu(menuX, menuY);
+    } else {
+        // No nodes selected, but allow creating a zone on the selected area
+        const menuX = rect.left + boxLeft + boxWidth / 2;
+        const menuY = rect.top + boxTop - 30;
+        
+        // Store the area for zone creation (reuse topLeft and bottomRight calculated above)
+        multiSelection.emptyAreaSelection = {
+            x: topLeft.x,
+            y: topLeft.y,
+            width: bottomRight.x - topLeft.x,
+            height: bottomRight.y - topLeft.y
+        };
+        
+        console.log('Empty area selection:', multiSelection.emptyAreaSelection);
+        showEmptyAreaMenu(menuX, menuY);
     }
 }
 

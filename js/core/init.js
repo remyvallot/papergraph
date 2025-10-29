@@ -210,7 +210,6 @@ function initializeEventListeners() {
         if (network) network.fit();
     });
     
-    document.getElementById('togglePhysicsBtn').addEventListener('click', togglePhysics);
     document.getElementById('toggleGridBtn').addEventListener('click', toggleGrid);
     
     // Load grid state from localStorage
@@ -327,7 +326,8 @@ function initializeEventListeners() {
             
             if (selectedNodeId !== null) {
                 if (confirm('Supprimer cet article ?')) {
-                    deleteArticle(selectedNodeId);
+                    deleteArticleById(selectedNodeId);
+                    selectedNodeId = null;
                     hideRadialMenu();
                 }
             } else if (selectedEdgeId !== null) {

@@ -225,6 +225,10 @@ async function processBibTeXImport() {
         if (articles.length === 1) {
             // Single entry: populate form (don't auto-open manual form)
             const article = articles[0];
+            
+            // Store the imported article data globally so it can be used when saving
+            pendingImportArticle = article;
+            
             fillFormWithArticleData(article);
             showImportStatus(`✓ Entrée BibTeX importée: ${article.title}`, 'success');
             hideBibTeXPasteArea();
@@ -235,15 +239,61 @@ async function processBibTeXImport() {
                 window.closeOnboarding();
             }
         } else {
-            // Multiple entries: import all directly
-            articles.forEach(article => {
+            // Multiple entries: import all directly with column layout
+            const verticalSpacing = 100; // Vertical spacing between nodes
+            const horizontalSpacing = 300; // Horizontal spacing between columns
+            const maxPerColumn = 10; // Maximum articles per column
+            
+            const numColumns = Math.ceil(articles.length / maxPerColumn);
+            
+            articles.forEach((article, index) => {
                 article.id = appData.nextArticleId++;
+                
+                // Calculate column and row position
+                const columnIndex = Math.floor(index / maxPerColumn);
+                const rowIndex = index % maxPerColumn;
+                const articlesInColumn = Math.min(maxPerColumn, articles.length - columnIndex * maxPerColumn);
+                
+                // Position in grid (centered)
+                article.x = (columnIndex - (numColumns - 1) / 2) * horizontalSpacing;
+                article.y = (rowIndex - (articlesInColumn - 1) / 2) * verticalSpacing;
+                
                 appData.articles.push(article);
             });
             
             saveToLocalStorage();
             updateGraph();
             renderListView();
+            
+            // Save initial positions to ensure they persist
+            setTimeout(() => {
+                if (network && window.savedNodePositions) {
+                    const positions = network.getPositions();
+                    window.savedNodePositions = { ...window.savedNodePositions, ...positions };
+                    console.log('Saved positions for newly imported articles');
+                    
+                    // Check node zone membership to update colors after positions are set
+                    if (typeof checkNodeZoneMembership === 'function') {
+                        console.log('Checking zone membership for imported nodes...');
+                        checkNodeZoneMembership();
+                        console.log('Applied zone colors to imported nodes');
+                        
+                        // Force graph update to reflect new colors
+                        const currentView = network.getViewPosition();
+                        const currentScale = network.getScale();
+                        updateGraph();
+                        // Restore view position
+                        network.moveTo({
+                            position: currentView,
+                            scale: currentScale,
+                            animation: false
+                        });
+                        console.log('Graph updated with correct colors');
+                    }
+                    
+                    saveToLocalStorage(true); // Silent save after all updates
+                }
+            }, 200);
             
             closeModal();
             
@@ -763,15 +813,61 @@ async function importBibtexFile(event) {
             return;
         }
         
-        // Import all articles
-        articles.forEach(article => {
+        // Import all articles with column layout
+        const verticalSpacing = 100; // Vertical spacing between nodes
+        const horizontalSpacing = 300; // Horizontal spacing between columns
+        const maxPerColumn = 10; // Maximum articles per column
+        
+        const numColumns = Math.ceil(articles.length / maxPerColumn);
+        
+        articles.forEach((article, index) => {
             article.id = appData.nextArticleId++;
+            
+            // Calculate column and row position
+            const columnIndex = Math.floor(index / maxPerColumn);
+            const rowIndex = index % maxPerColumn;
+            const articlesInColumn = Math.min(maxPerColumn, articles.length - columnIndex * maxPerColumn);
+            
+            // Position in grid (centered)
+            article.x = (columnIndex - (numColumns - 1) / 2) * horizontalSpacing;
+            article.y = (rowIndex - (articlesInColumn - 1) / 2) * verticalSpacing;
+            
             appData.articles.push(article);
         });
         
         saveToLocalStorage();
         updateGraph();
         renderListView();
+        
+        // Save initial positions to ensure they persist
+        setTimeout(() => {
+            if (network && window.savedNodePositions) {
+                const positions = network.getPositions();
+                window.savedNodePositions = { ...window.savedNodePositions, ...positions };
+                console.log('Saved positions for newly imported articles from .bib file');
+                
+                // Check node zone membership to update colors after positions are set
+                if (typeof checkNodeZoneMembership === 'function') {
+                    console.log('Checking zone membership for imported nodes from .bib file...');
+                    checkNodeZoneMembership();
+                    console.log('Applied zone colors to imported nodes from .bib file');
+                    
+                    // Force graph update to reflect new colors
+                    const currentView = network.getViewPosition();
+                    const currentScale = network.getScale();
+                    updateGraph();
+                    // Restore view position
+                    network.moveTo({
+                        position: currentView,
+                        scale: currentScale,
+                        animation: false
+                    });
+                    console.log('Graph updated with correct colors');
+                }
+                
+                saveToLocalStorage(true); // Silent save after all updates
+            }
+        }, 200);
         
         // Center view on imported nodes
         if (typeof network !== 'undefined' && network) {

@@ -70,6 +70,7 @@ function openArticleModal(articleId = null) {
 function closeModal() {
     document.getElementById('articleModal').classList.remove('active');
     currentEditingArticleId = null;
+    pendingImportArticle = null; // Clear pending import data
     resetImportZone();
 }
 
@@ -150,9 +151,35 @@ function saveArticle(e) {
             categories
         };
         
-        // Generate BibTeX ID for new article
-        if (authors || title) {
-            newArticle.bibtexId = generateBibtexId(newArticle);
+        // If this is from a BibTeX import, preserve imported fields
+        if (pendingImportArticle) {
+            // Preserve important BibTeX fields
+            newArticle.bibtexId = pendingImportArticle.bibtexId;
+            newArticle.citationKey = pendingImportArticle.citationKey;
+            newArticle.entryType = pendingImportArticle.entryType;
+            newArticle.originalBibTeX = pendingImportArticle.originalBibTeX;
+            
+            // Preserve additional BibTeX fields that might not be in the form
+            if (pendingImportArticle.booktitle) newArticle.booktitle = pendingImportArticle.booktitle;
+            if (pendingImportArticle.month) newArticle.month = pendingImportArticle.month;
+            if (pendingImportArticle.date) newArticle.date = pendingImportArticle.date;
+            if (pendingImportArticle.institution) newArticle.institution = pendingImportArticle.institution;
+            if (pendingImportArticle.organization) newArticle.organization = pendingImportArticle.organization;
+            if (pendingImportArticle.school) newArticle.school = pendingImportArticle.school;
+            if (pendingImportArticle.edition) newArticle.edition = pendingImportArticle.edition;
+            if (pendingImportArticle.series) newArticle.series = pendingImportArticle.series;
+            if (pendingImportArticle.chapter) newArticle.chapter = pendingImportArticle.chapter;
+            if (pendingImportArticle.address) newArticle.address = pendingImportArticle.address;
+            if (pendingImportArticle.howpublished) newArticle.howpublished = pendingImportArticle.howpublished;
+            if (pendingImportArticle.keywords) newArticle.keywords = pendingImportArticle.keywords;
+            
+            // Clear the pending import
+            pendingImportArticle = null;
+        } else {
+            // Generate BibTeX ID for manually created article
+            if (authors || title) {
+                newArticle.bibtexId = generateBibtexId(newArticle);
+            }
         }
         
         appData.articles.push(newArticle);

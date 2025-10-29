@@ -85,14 +85,44 @@ async function parseBibTeXEntry(bibtexString) {
     // Extract all fields
     const fields = {};
     
-    // Regular expression to match field = {value} or field = "value"
-    const fieldRegex = /(\w+)\s*=\s*\{([^}]*)\}|(\w+)\s*=\s*"([^"]*)"/g;
+    // Find all field = {value} or field = "value" pairs
+    // We need to handle nested braces properly
+    const fieldPattern = /(\w+)\s*=\s*(["{])/g;
     let match;
     
-    while ((match = fieldRegex.exec(bibtexString)) !== null) {
-        const fieldName = (match[1] || match[3]).toLowerCase();
-        const fieldValue = (match[2] || match[4]).trim();
-        fields[fieldName] = fieldValue;
+    while ((match = fieldPattern.exec(bibtexString)) !== null) {
+        const fieldName = match[1].toLowerCase();
+        const delimiter = match[2]; // Either { or "
+        const startPos = match.index + match[0].length;
+        
+        let fieldValue = '';
+        
+        if (delimiter === '{') {
+            // Count braces to find the end
+            let braceCount = 1;
+            let pos = startPos;
+            
+            while (pos < bibtexString.length && braceCount > 0) {
+                if (bibtexString[pos] === '{') {
+                    braceCount++;
+                } else if (bibtexString[pos] === '}') {
+                    braceCount--;
+                }
+                if (braceCount > 0) {
+                    fieldValue += bibtexString[pos];
+                }
+                pos++;
+            }
+        } else {
+            // Find closing quote
+            let pos = startPos;
+            while (pos < bibtexString.length && bibtexString[pos] !== '"') {
+                fieldValue += bibtexString[pos];
+                pos++;
+            }
+        }
+        
+        fields[fieldName] = fieldValue.trim();
     }
     
     // Check if we need to fetch arXiv abstract
@@ -243,12 +273,42 @@ async function parseMultipleBibTeXEntries(text) {
     if (!text || typeof text !== 'string') return [];
     
     const entries = [];
-    const entryRegex = /@\w+\s*\{[^@]*\}/g;
-    let match;
     const matches = [];
     
-    while ((match = entryRegex.exec(text)) !== null) {
-        matches.push(match[0]);
+    // Find all @ENTRYTYPE{ positions
+    const entryStarts = [];
+    const entryTypeRegex = /@(\w+)\s*\{/g;
+    let match;
+    
+    while ((match = entryTypeRegex.exec(text)) !== null) {
+        entryStarts.push({
+            index: match.index,
+            type: match[1],
+            openBraceIndex: match.index + match[0].length - 1
+        });
+    }
+    
+    // Extract each complete entry by matching braces
+    for (let i = 0; i < entryStarts.length; i++) {
+        const start = entryStarts[i];
+        let braceCount = 1;
+        let pos = start.openBraceIndex + 1;
+        
+        // Find the matching closing brace
+        while (pos < text.length && braceCount > 0) {
+            if (text[pos] === '{') {
+                braceCount++;
+            } else if (text[pos] === '}') {
+                braceCount--;
+            }
+            pos++;
+        }
+        
+        if (braceCount === 0) {
+            // Extract the complete entry
+            const entryText = text.substring(start.index, pos);
+            matches.push(entryText);
+        }
     }
     
     // Parse entries sequentially to allow arXiv fetching

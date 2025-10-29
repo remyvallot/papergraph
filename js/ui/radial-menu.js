@@ -301,3 +301,148 @@ function hideSelectionRadialMenu() {
     }
     multiSelection.menuActive = false;
 }
+
+function showEmptyAreaMenu(x, y) {
+    // Remove existing menu if any
+    hideEmptyAreaMenu();
+    
+    const menuContainer = document.createElement('div');
+    menuContainer.id = 'emptyAreaMenu';
+    menuContainer.style.position = 'fixed';
+    menuContainer.style.pointerEvents = 'none';
+    menuContainer.style.zIndex = '10000';
+    document.body.appendChild(menuContainer);
+    
+    const btn = document.createElement('button');
+    btn.id = 'empty-area-zone-btn';
+    btn.className = 'empty-area-btn';
+    btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+        <line x1="7" y1="7" x2="7.01" y2="7"/>
+    </svg>`;
+    btn.style.position = 'fixed';
+    btn.style.width = '44px';
+    btn.style.height = '44px';
+    btn.style.borderRadius = '50%';
+    btn.style.border = 'none';
+    btn.style.background = 'white';
+    btn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+    btn.style.cursor = 'pointer';
+    btn.style.display = 'flex';
+    btn.style.alignItems = 'center';
+    btn.style.justifyContent = 'center';
+    btn.style.color = '#333';
+    btn.style.transition = 'transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s';
+    btn.style.pointerEvents = 'all';
+    btn.style.left = x + 'px';
+    btn.style.top = y + 'px';
+    btn.style.opacity = '0';
+    btn.style.transform = 'scale(0)';
+    
+    btn.addEventListener('mouseenter', () => {
+        btn.style.background = '#27ae60';
+        btn.style.color = 'white';
+        btn.style.transform = 'scale(1.15)';
+        btn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.35)';
+    });
+    
+    btn.addEventListener('mouseleave', () => {
+        btn.style.background = 'white';
+        btn.style.color = '#333';
+        btn.style.transform = 'scale(1)';
+        btn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+    });
+    
+    btn.addEventListener('click', () => {
+        // Remove click outside handler when opening dialog
+        if (multiSelection.emptyAreaClickHandler) {
+            document.removeEventListener('click', multiSelection.emptyAreaClickHandler);
+            multiSelection.emptyAreaClickHandler = null;
+        }
+        openMultiTagDialog(true); // true = isEmptyAreaMode
+    });
+    
+    menuContainer.appendChild(btn);
+    
+    setTimeout(() => {
+        btn.style.opacity = '1';
+        btn.style.transform = 'scale(1)';
+    }, 50);
+    
+    // Click outside handler
+    const clickHandler = (e) => {
+        const menu = document.getElementById('emptyAreaMenu');
+        const modal = document.getElementById('multiTagModal');
+        // Don't close if clicking inside the menu or if modal is open
+        if ((menu && !menu.contains(e.target)) && !modal) {
+            hideEmptyAreaMenu();
+            if (multiSelection.selectionBox) {
+                multiSelection.selectionBox.style.display = 'none';
+            }
+            multiSelection.emptyAreaSelection = null;
+            document.removeEventListener('click', clickHandler);
+            multiSelection.emptyAreaClickHandler = null;
+        }
+    };
+    // Store reference to the handler
+    multiSelection.emptyAreaClickHandler = clickHandler;
+    
+    // Add listener after a short delay to avoid immediate triggering
+    setTimeout(() => {
+        document.addEventListener('click', clickHandler);
+    }, 100);
+    
+    // Escape key handler
+    const keyHandler = (e) => {
+        if (e.key === 'Escape') {
+            hideEmptyAreaMenu();
+            if (multiSelection.selectionBox) {
+                multiSelection.selectionBox.style.display = 'none';
+            }
+            multiSelection.emptyAreaSelection = null;
+            document.removeEventListener('keydown', keyHandler);
+            if (multiSelection.emptyAreaClickHandler) {
+                document.removeEventListener('click', multiSelection.emptyAreaClickHandler);
+                multiSelection.emptyAreaClickHandler = null;
+            }
+        }
+    };
+    document.addEventListener('keydown', keyHandler);
+}
+
+function hideEmptyAreaMenu() {
+    const menu = document.getElementById('emptyAreaMenu');
+    if (menu) {
+        menu.remove();
+    }
+    
+    // Clean up click outside handler
+    if (multiSelection.emptyAreaClickHandler) {
+        document.removeEventListener('click', multiSelection.emptyAreaClickHandler);
+        multiSelection.emptyAreaClickHandler = null;
+    }
+    
+    // DON'T clear the empty area selection here - it needs to persist for zone creation
+    // It will be cleared after the zone is created or when the selection is cancelled
+    
+    // DON'T hide selection box here - keep it visible until zone is created
+}
+
+function openEmptyAreaZoneDialog() {
+    if (!multiSelection.emptyAreaSelection) return;
+    
+    hideEmptyAreaMenu();
+    
+    // Use the same dialog as multi-tag dialog but for empty area
+    openMultiTagDialog(true); // Pass true to indicate empty area mode
+}
+
+function closeEmptyAreaZoneDialog() {
+    closeMultiTagDialog();
+}
+
+function applyEmptyAreaZone(zoneColor) {
+    // This function is now handled by applyEmptyAreaZoneFromDialog in toolbar.js
+    applyEmptyAreaZoneFromDialog(zoneColor);
+}
+

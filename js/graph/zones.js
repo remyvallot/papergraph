@@ -7,7 +7,14 @@ function drawTagZones(ctx) {
     // Track title positions to prevent overlaps
     const titleBounds = [];
     
-    tagZones.forEach((zone, index) => {
+    // Sort zones by size (largest first) so smaller zones are drawn on top
+    const sortedZones = [...tagZones].sort((a, b) => {
+        const areaA = a.width * a.height;
+        const areaB = b.width * b.height;
+        return areaB - areaA; // Descending order (largest first)
+    });
+    
+    sortedZones.forEach((zone, index) => {
         // Convert color to rgba with low opacity
         const color = zone.color;
         const r = parseInt(color.substr(1, 2), 16);
@@ -110,11 +117,15 @@ function drawTagZones(ctx) {
 }
 
 function showZoneDeleteButton(zoneIndex) {
+    showZoneRadialMenu(zoneIndex);
+}
+
+function showZoneRadialMenu(zoneIndex) {
     const zone = tagZones[zoneIndex];
     const canvas = network.canvas.frame.canvas;
     const rect = canvas.getBoundingClientRect();
     
-    // Calculate text width to center button above title
+    // Calculate text width to center menu above title
     const ctx = canvas.getContext('2d');
     ctx.font = 'bold 24px Arial';
     const textMetrics = ctx.measureText(zone.tag);
@@ -122,42 +133,294 @@ function showZoneDeleteButton(zoneIndex) {
     const textPadding = 10;
     
     // Position: centered above the zone title
-    const buttonCanvasPos = {
+    const menuCanvasPos = {
         x: zone.x + 10 + textPadding + (textWidth / 2),
         y: zone.y + 10 - 35
     };
-    const buttonDomPos = network.canvasToDOM(buttonCanvasPos);
+    const menuDomPos = network.canvasToDOM(menuCanvasPos);
+    const menuX = rect.left + menuDomPos.x;
+    const menuY = rect.top + menuDomPos.y;
     
-    // Create or update delete button
-    let deleteBtn = document.getElementById('zoneDeleteBtn');
-    if (!deleteBtn) {
-        deleteBtn = document.createElement('button');
-        deleteBtn.id = 'zoneDeleteBtn';
-        deleteBtn.className = 'zone-delete-btn';
-        deleteBtn.title = 'Supprimer la zone';
-        deleteBtn.innerHTML = `
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    // Remove existing menu if any
+    hideZoneDeleteButton();
+    
+    // Create menu container
+    const menuContainer = document.createElement('div');
+    menuContainer.id = 'zoneRadialMenu';
+    menuContainer.className = 'zone-radial-menu';
+    menuContainer.style.position = 'fixed';
+    menuContainer.style.pointerEvents = 'none';
+    menuContainer.style.zIndex = '10000';
+    document.body.appendChild(menuContainer);
+    
+    const buttons = [
+        {
+            id: 'zone-color-btn',
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+            </svg>`,
+            action: () => openZoneColorDialog(zoneIndex),
+            hoverColor: '#9b59b6',
+            offsetX: -50,
+            offsetY: 0,
+            title: 'Changer la couleur'
+        },
+        {
+            id: 'zone-delete-btn',
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="3 6 5 6 21 6"/>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-            </svg>
-        `;
-        deleteBtn.addEventListener('click', () => {
-            if (selectedZoneIndex !== -1) {
-                if (confirm('Supprimer cette zone/tag ?')) {
-                    deleteZone(selectedZoneIndex);
-                    hideZoneDeleteButton();
+            </svg>`,
+            action: () => {
+                if (selectedZoneIndex !== -1) {
+                    if (confirm('Supprimer cette zone/tag ?')) {
+                        deleteZone(selectedZoneIndex);
+                        hideZoneDeleteButton();
+                    }
                 }
+            },
+            hoverColor: '#e74c3c',
+            offsetX: 50,
+            offsetY: 0,
+            title: 'Supprimer la zone'
+        }
+    ];
+    
+    buttons.forEach((btnConfig, index) => {
+        const btn = document.createElement('button');
+        btn.id = btnConfig.id;
+        btn.className = 'zone-radial-btn';
+        btn.title = btnConfig.title;
+        btn.innerHTML = btnConfig.icon;
+        btn.style.position = 'fixed';
+        btn.style.width = '40px';
+        btn.style.height = '40px';
+        btn.style.borderRadius = '50%';
+        btn.style.border = 'none';
+        btn.style.background = 'white';
+        btn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+        btn.style.cursor = 'pointer';
+        btn.style.display = 'flex';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+        btn.style.color = '#333';
+        btn.style.transition = 'transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s';
+        btn.style.pointerEvents = 'all';
+        btn.style.left = (menuX + btnConfig.offsetX) + 'px';
+        btn.style.top = (menuY + btnConfig.offsetY) + 'px';
+        btn.style.opacity = '0';
+        btn.style.transform = 'scale(0)';
+        
+        btn.addEventListener('mouseenter', () => {
+            btn.style.background = btnConfig.hoverColor;
+            btn.style.color = 'white';
+            btn.style.transform = 'scale(1.15)';
+            btn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.35)';
+        });
+        
+        btn.addEventListener('mouseleave', () => {
+            btn.style.background = 'white';
+            btn.style.color = '#333';
+            btn.style.transform = 'scale(1)';
+            btn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+        });
+        
+        btn.addEventListener('click', () => {
+            btnConfig.action();
+        });
+        
+        menuContainer.appendChild(btn);
+        
+        setTimeout(() => {
+            btn.style.opacity = '1';
+            btn.style.transform = 'scale(1)';
+        }, index * 50);
+    });
+}
+
+function openZoneColorDialog(zoneIndex) {
+    const zone = tagZones[zoneIndex];
+    
+    const defaultColors = [
+        '#e74c3c', '#f39c12', '#f1c40f', '#2ecc71',
+        '#1abc9c', '#3498db', '#9b59b6'
+    ];
+    
+    const modal = document.createElement('div');
+    modal.id = 'zoneColorModal';
+    modal.style.position = 'fixed';
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.backgroundColor = 'white';
+    modal.style.border = '2px solid #4a90e2';
+    modal.style.borderRadius = '12px';
+    modal.style.padding = '24px';
+    modal.style.boxShadow = '0 8px 32px rgba(0,0,0,0.3)';
+    modal.style.zIndex = '10002';
+    modal.style.minWidth = '340px';
+    
+    const colorPaletteHTML = defaultColors.map(color => 
+        `<div class="color-option" data-color="${color}" 
+              style="width: 28px; height: 28px; background: ${color}; border-radius: 6px; cursor: pointer; 
+                     border: ${zone.color === color ? '2px solid #2c3e50' : '2px solid transparent'}; 
+                     transform: ${zone.color === color ? 'scale(1.1)' : 'scale(1)'}; 
+                     transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+         </div>`
+    ).join('');
+    
+    modal.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 15px; color: #2c3e50; font-size: 1.1rem;">
+            Changer la couleur de "${zone.tag}"
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 8px; color: #666; font-size: 0.9rem; font-weight: 600;">Couleur de la zone :</label>
+            <div id="zoneColorPalette" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px;">
+                ${colorPaletteHTML}
+                <div class="color-option color-picker-option" id="zoneCustomColorOption"
+                     style="width: 28px; height: 28px; background: ${zone.color}; border-radius: 6px; cursor: pointer; 
+                            border: 2px solid transparent; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: relative; display: flex; align-items: center; justify-content: center;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <div id="zoneCustomColorPicker" style="display: none; margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="color" id="zoneColorPickerInput" value="${zone.color}" style="width: 48px; height: 48px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                    <input type="text" id="zoneColorHex" value="${zone.color}" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 0.9rem;">
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button id="cancelZoneColor" style="flex: 1; padding: 10px; background: #e0e0e0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem;">
+                Annuler
+            </button>
+            <button id="applyZoneColor" style="flex: 1; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem;">
+                Appliquer
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    let selectedColor = zone.color;
+    
+    const colorOptions = document.querySelectorAll('#zoneColorPalette .color-option:not(#zoneCustomColorOption)');
+    const customColorOption = document.getElementById('zoneCustomColorOption');
+    const customColorPickerDiv = document.getElementById('zoneCustomColorPicker');
+    const colorPickerInput = document.getElementById('zoneColorPickerInput');
+    const colorHex = document.getElementById('zoneColorHex');
+    
+    if (colorPickerInput && colorHex) {
+        colorPickerInput.addEventListener('input', (e) => {
+            selectedColor = e.target.value;
+            colorHex.value = selectedColor;
+            customColorOption.style.background = selectedColor;
+        });
+        
+        colorHex.addEventListener('input', (e) => {
+            const hex = e.target.value;
+            if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                selectedColor = hex;
+                colorPickerInput.value = hex;
+                customColorOption.style.background = hex;
             }
         });
-        document.body.appendChild(deleteBtn);
     }
     
-    deleteBtn.style.left = (rect.left + buttonDomPos.x - 20) + 'px';
-    deleteBtn.style.top = (rect.top + buttonDomPos.y - 20) + 'px';
-    deleteBtn.classList.add('active');
+    colorOptions.forEach((option) => {
+        option.addEventListener('click', () => {
+            customColorPickerDiv.style.display = 'none';
+            document.querySelectorAll('#zoneColorPalette .color-option').forEach(opt => {
+                opt.style.border = '2px solid transparent';
+                opt.style.transform = 'scale(1)';
+            });
+            option.style.border = '2px solid #2c3e50';
+            option.style.transform = 'scale(1.1)';
+            selectedColor = option.getAttribute('data-color');
+        });
+        
+        option.addEventListener('mouseenter', () => {
+            if (option.style.border !== '2px solid #2c3e50') {
+                option.style.transform = 'scale(1.05)';
+            }
+        });
+        option.addEventListener('mouseleave', () => {
+            if (option.style.border !== '2px solid #2c3e50') {
+                option.style.transform = 'scale(1)';
+            }
+        });
+    });
+    
+    customColorOption.addEventListener('click', () => {
+        const isVisible = customColorPickerDiv.style.display !== 'none';
+        customColorPickerDiv.style.display = isVisible ? 'none' : 'block';
+        
+        if (!isVisible) {
+            document.querySelectorAll('#zoneColorPalette .color-option:not(#zoneCustomColorOption)').forEach(opt => {
+                opt.style.border = '2px solid transparent';
+                opt.style.transform = 'scale(1)';
+            });
+            customColorOption.style.border = '2px solid #2c3e50';
+            customColorOption.style.transform = 'scale(1.1)';
+            selectedColor = colorPickerInput.value;
+            setTimeout(() => colorPickerInput.click(), 100);
+        }
+    });
+    
+    document.getElementById('applyZoneColor').addEventListener('click', () => {
+        applyZoneColor(zoneIndex, selectedColor);
+    });
+    document.getElementById('cancelZoneColor').addEventListener('click', closeZoneColorDialog);
+    
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeZoneColorDialog();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+}
+
+function closeZoneColorDialog() {
+    const modal = document.getElementById('zoneColorModal');
+    if (modal) modal.remove();
+}
+
+function applyZoneColor(zoneIndex, newColor) {
+    if (zoneIndex < 0 || zoneIndex >= tagZones.length) return;
+    
+    const zone = tagZones[zoneIndex];
+    zone.color = newColor;
+    
+    saveToLocalStorage();
+    
+    // Update graph to refresh node colors immediately
+    if (network) {
+        const currentView = network.getViewPosition();
+        const currentScale = network.getScale();
+        updateGraph();
+        // Restore view position to avoid movement
+        network.moveTo({
+            position: currentView,
+            scale: currentScale,
+            animation: false
+        });
+    }
+    
+    closeZoneColorDialog();
+    hideZoneDeleteButton(); // Close the radial menu
+    showNotification(`Couleur de "${zone.tag}" mise à jour`, 'success');
 }
 
 function hideZoneDeleteButton() {
+    const menu = document.getElementById('zoneRadialMenu');
+    if (menu) {
+        menu.remove();
+    }
+    
+    // Also hide any old delete button if it exists
     const deleteBtn = document.getElementById('zoneDeleteBtn');
     if (deleteBtn) {
         deleteBtn.classList.remove('active');
@@ -208,9 +471,14 @@ function updateZoneSizes() {
 }
 
 function checkNodeZoneMembership() {
+    console.log('🎨 checkNodeZoneMembership called');
+    let updatedCount = 0;
+    
     appData.articles.forEach(article => {
         const pos = network.getPositions([article.id])[article.id];
-        if (!pos) return;
+        if (!pos) {
+            return;
+        }
         
         // Find all zones containing this node
         const containingZones = [];
@@ -248,8 +516,10 @@ function checkNodeZoneMembership() {
                 color: {
                     background: smallestZone.color,
                     border: darkenColor(smallestZone.color, 20)
-                }
+                },
+                font: { color: getContrastColor(smallestZone.color) }
             });
+            updatedCount++;
         } else {
             // Node not in any zone - use default color
             network.body.data.nodes.update({
@@ -257,10 +527,13 @@ function checkNodeZoneMembership() {
                 color: {
                     border: '#4a90e2',
                     background: '#e3f2fd'
-                }
+                },
+                font: { color: '#333333' }
             });
         }
     });
+    
+    console.log(`✅ checkNodeZoneMembership completed - updated ${updatedCount} nodes with zone colors`);
     
     saveToLocalStorage();
     updateCategoryFilters();
@@ -274,7 +547,7 @@ function getZoneResizeHandle(event) {
     const mouseY = event.clientY - rect.top;
     const mousePos = network.DOMtoCanvas({ x: mouseX, y: mouseY });
     
-    const handleSize = 20 / network.getScale();
+    const handleSize = 10 / network.getScale(); // Reduced from 20 to 10
     
     for (let i = 0; i < tagZones.length; i++) {
         const zone = tagZones[i];
@@ -350,8 +623,10 @@ function getZoneAtPosition(event) {
     
     const handleSize = 20 / network.getScale();
     
-    // Check zones from top to bottom
-    for (let i = tagZones.length - 1; i >= 0; i--) {
+    // Find ALL zones that contain this point
+    const matchingZones = [];
+    
+    for (let i = 0; i < tagZones.length; i++) {
         const zone = tagZones[i];
         
         if (mousePos.x >= zone.x && mousePos.x <= zone.x + zone.width &&
@@ -378,8 +653,14 @@ function getZoneAtPosition(event) {
                 continue;
             }
             
-            return { zoneIndex: i, zone: zone };
+            matchingZones.push({ zoneIndex: i, zone: zone, area: zone.width * zone.height });
         }
+    }
+    
+    // Return the smallest zone (highest priority)
+    if (matchingZones.length > 0) {
+        matchingZones.sort((a, b) => a.area - b.area); // Smallest first
+        return { zoneIndex: matchingZones[0].zoneIndex, zone: matchingZones[0].zone };
     }
     
     return { zoneIndex: -1, zone: null };
@@ -392,6 +673,9 @@ function getZoneTitleClick(event) {
     const mouseY = event.clientY - rect.top;
     const mousePos = network.DOMtoCanvas({ x: mouseX, y: mouseY });
     
+    // Find ALL zones whose title contains this point
+    const matchingZones = [];
+    
     for (let i = 0; i < tagZones.length; i++) {
         const zone = tagZones[i];
         
@@ -402,8 +686,14 @@ function getZoneTitleClick(event) {
         
         if (mousePos.x >= titleX && mousePos.x <= titleX + titleWidth &&
             mousePos.y >= titleY && mousePos.y <= titleY + titleHeight) {
-            return { zoneIndex: i, zone: zone };
+            matchingZones.push({ zoneIndex: i, zone: zone, area: zone.width * zone.height });
         }
+    }
+    
+    // Return the smallest zone (highest priority)
+    if (matchingZones.length > 0) {
+        matchingZones.sort((a, b) => a.area - b.area); // Smallest first
+        return { zoneIndex: matchingZones[0].zoneIndex, zone: matchingZones[0].zone };
     }
     
     return { zoneIndex: -1, zone: null };
@@ -434,6 +724,29 @@ function startZoneMove(event, zoneIndex) {
             }
         }
     });
+    
+    // Store original positions of nested zones (zones completely inside this zone)
+    zoneMoving.originalNestedZones = {};
+    const tolerance = 5; // Small tolerance for floating point errors
+    
+    tagZones.forEach((otherZone, idx) => {
+        if (idx !== zoneIndex) {
+            // Check if otherZone is completely inside the moving zone (with tolerance)
+            const isInside = otherZone.x >= (zone.x - tolerance) &&
+                           otherZone.y >= (zone.y - tolerance) &&
+                           (otherZone.x + otherZone.width) <= (zone.x + zone.width + tolerance) &&
+                           (otherZone.y + otherZone.height) <= (zone.y + zone.height + tolerance);
+            
+            if (isInside) {
+                zoneMoving.originalNestedZones[idx] = {
+                    x: otherZone.x,
+                    y: otherZone.y
+                };
+            }
+        }
+    });
+    
+    console.log(`📦 Moving zone "${zone.tag}" with ${Object.keys(zoneMoving.originalNestedZones).length} nested zones`);
     
     // Disable network interactions
     network.setOptions({
@@ -473,6 +786,21 @@ function updateZoneMove(event) {
         });
     }
     
+    // Move nested zones
+    if (zoneMoving.originalNestedZones) {
+        const nestedCount = Object.keys(zoneMoving.originalNestedZones).length;
+        if (nestedCount > 0) {
+            console.log(`📦 Moving ${nestedCount} nested zones...`);
+        }
+        Object.keys(zoneMoving.originalNestedZones).forEach(zoneIdx => {
+            const idx = parseInt(zoneIdx);
+            const origZone = zoneMoving.originalNestedZones[zoneIdx];
+            tagZones[idx].x = origZone.x + dx;
+            tagZones[idx].y = origZone.y + dy;
+            console.log(`📦 Moved nested zone ${idx} (${tagZones[idx].tag}) by dx=${dx.toFixed(1)}, dy=${dy.toFixed(1)}`);
+        });
+    }
+    
     network.redraw();
 }
 
@@ -482,6 +810,7 @@ function endZoneMove() {
     zoneMoving.zoneIndex = -1;
     zoneMoving.originalZone = null;
     zoneMoving.originalNodePositions = {};
+    zoneMoving.originalNestedZones = {};
     
     // Re-enable network interactions
     network.setOptions({

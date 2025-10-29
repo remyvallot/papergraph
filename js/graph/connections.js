@@ -98,8 +98,11 @@ function editEdgeLabelInline(edgeId, edge, pointerDOM) {
     input.focus();
     input.select();
     
+    isEditingEdgeLabel = true;
+    
     const save = () => {
         connection.label = input.value.trim();
+        isEditingEdgeLabel = false;
         updateGraph();
         saveToLocalStorage();
         input.remove();
@@ -113,9 +116,21 @@ function editEdgeLabelInline(edgeId, edge, pointerDOM) {
         if (e.key === 'Enter') {
             save();
         } else if (e.key === 'Escape') {
+            isEditingEdgeLabel = false;
             input.remove();
         }
     });
+    
+    // Close when clicking outside
+    const clickHandler = (e) => {
+        if (e.target !== input && input.parentElement) {
+            save();
+            document.removeEventListener('click', clickHandler);
+        }
+    };
+    setTimeout(() => {
+        document.addEventListener('click', clickHandler);
+    }, 100);
 }
 
 function deleteConnection(edgeId) {

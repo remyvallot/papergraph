@@ -381,13 +381,6 @@
                 </svg>
                 <span class="btn-label">Recentrer</span>
             </button>
-            <button id="togglePhysicsBtn" class="main-tool-btn graph-only active">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="5" y="11" width="14" height="10" rx="2" ry="2"/>
-                    <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
-                </svg>
-                <span class="btn-label">Verrouiller</span>
-            </button>
             <button id="toggleGridBtn" class="main-tool-btn graph-only">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="6" cy="6" r="1" fill="currentColor"/>
@@ -589,7 +582,6 @@
         <div id="onboardingOverlay" class="onboarding-overlay">
             <div class="onboarding-content">
                 <div class="onboarding-header">
-                    <img src="assets/logo-papergraph.svg" alt="papergraph" class="onboarding-logo">
                     <h1>Welcome to papergraph</h1>
                 </div>
                 
@@ -732,12 +724,6 @@
             setTimeout(() => {
                 initializeGraph();
                 
-                // Sync physics button state with actual physics state
-                const physicsBtn = document.getElementById('togglePhysicsBtn');
-                if (physicsBtn && !physicsEnabled) {
-                    physicsBtn.classList.add('active');
-                }
-                
                 // Note: Node positioning is handled in stabilizationIterationsDone event
                 // in graph.js, which checks for savedNodePositions first
             }, 100);
@@ -788,6 +774,12 @@
             } else {
                 onboardingOverlay.classList.remove('hidden');
                 console.log('Onboarding should be visible now');
+                
+                // Open main dropdown menu when onboarding is shown
+                setTimeout(() => {
+                    const mainDropdown = document.getElementById('mainDropdown');
+                    if (mainDropdown) mainDropdown.classList.add('active');
+                }, 0);
             }
             
             // Continue project

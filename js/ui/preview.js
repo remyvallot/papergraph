@@ -57,8 +57,8 @@ function showArticlePreview(articleId) {
             badge.style.borderRadius = '12px';
             badge.style.fontSize = '0.75rem';
             badge.style.fontWeight = '600';
-            badge.style.marginRight = '6px';
-            badge.style.marginBottom = '4px';
+            badge.style.marginRight = '0px';
+            badge.style.marginBottom = '0px';
             categoryBadge.appendChild(badge);
         });
         

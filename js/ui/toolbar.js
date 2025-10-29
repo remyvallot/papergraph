@@ -6,31 +6,6 @@ function toggleCategoryDropdown() {
     dropdown.classList.toggle('active');
 }
 
-function togglePhysics() {
-    if (!network) return;
-    
-    physicsEnabled = !physicsEnabled;
-    const btn = document.getElementById('togglePhysicsBtn');
-    const label = btn.querySelector('.btn-label');
-    
-    if (physicsEnabled) {
-        network.setOptions({ physics: true });
-        btn.classList.remove('active');
-        btn.title = 'Désactiver la physique';
-        if (label) label.textContent = 'Physique';
-        showNotification('Physique activée', 'info');
-    } else {
-        network.setOptions({ physics: false });
-        btn.classList.add('active');
-        btn.title = 'Activer la physique';
-        if (label) label.textContent = 'Physique';
-        showNotification('Physique désactivée', 'info');
-    }
-    
-    // Force button style update
-    btn.offsetHeight; // Trigger reflow
-}
-
 function toggleGrid() {
     if (!network) return;
     
@@ -69,12 +44,13 @@ function openQuickTagModal(articleId) {
     }
 }
 
-function openMultiTagDialog() {
-    const savedSelectedNodes = [...multiSelection.selectedNodes];
-    console.log('Opening tag dialog, saved nodes:', savedSelectedNodes);
+function openMultiTagDialog(isEmptyAreaMode = false) {
+    const savedSelectedNodes = isEmptyAreaMode ? [] : [...multiSelection.selectedNodes];
     
-    hideSelectionRadialMenu();
-    multiSelection.selectedNodes = savedSelectedNodes;
+    if (!isEmptyAreaMode) {
+        hideSelectionRadialMenu();
+        multiSelection.selectedNodes = savedSelectedNodes;
+    }
     
     const defaultColors = [
         '#e74c3c', '#f39c12', '#f1c40f', '#2ecc71',
@@ -104,13 +80,18 @@ function openMultiTagDialog() {
     
     modal.innerHTML = `
         <div style="font-weight: bold; margin-bottom: 15px; color: #2c3e50; font-size: 1.1rem;">
-            Ajouter un tag
+            ${isEmptyAreaMode ? 'Créer une zone de tag' : 'Ajouter un tag'}
         </div>
-        <div style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">
+        ${!isEmptyAreaMode ? `<div style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">
             ${multiSelection.selectedNodes.length} nœud(s) sélectionné(s)
+        </div>` : ''}
+        <div style="position: relative; margin-bottom: 15px;">
+            <input type="text" id="multiTagInput" placeholder="Nom du tag" 
+                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 0.95rem;">
+            <div id="tagWarning" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #e74c3c; font-size: 0.85rem; font-weight: 600; display: none;">
+                ⚠ Tag existe déjà
+            </div>
         </div>
-        <input type="text" id="multiTagInput" placeholder="Nom du tag" 
-               style="width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 0.95rem;">
         <div style="margin-bottom: 15px;">
             <label style="display: block; margin-bottom: 8px; color: #666; font-size: 0.9rem; font-weight: 600;">Couleur du tag :</label>
             <div id="colorPalette" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px;">
@@ -135,7 +116,7 @@ function openMultiTagDialog() {
                 Annuler
             </button>
             <button id="applyMultiTag" style="flex: 1; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem;">
-                Appliquer
+                ${isEmptyAreaMode ? 'Créer' : 'Appliquer'}
             </button>
         </div>
     `;
@@ -144,7 +125,34 @@ function openMultiTagDialog() {
     
     let selectedColor = defaultColors[0];
     
-    document.getElementById('multiTagInput').focus();
+    const tagInput = document.getElementById('multiTagInput');
+    const tagWarning = document.getElementById('tagWarning');
+    
+    tagInput.focus();
+    
+    // Check if tag exists in real-time
+    tagInput.addEventListener('input', (e) => {
+        const tagName = e.target.value.trim();
+        if (tagName) {
+            const existingTag = appData.articles.some(article => 
+                article.categories.some(cat => cat.toLowerCase() === tagName.toLowerCase())
+            );
+            const existingZone = tagZones.some(zone => 
+                zone.tag.toLowerCase() === tagName.toLowerCase()
+            );
+            
+            if (existingTag || existingZone) {
+                tagWarning.style.display = 'block';
+                tagInput.style.paddingRight = '150px';
+            } else {
+                tagWarning.style.display = 'none';
+                tagInput.style.paddingRight = '10px';
+            }
+        } else {
+            tagWarning.style.display = 'none';
+            tagInput.style.paddingRight = '10px';
+        }
+    });
     
     const colorOptions = document.querySelectorAll('.color-option:not(#customColorOption)');
     const customColorOption = document.getElementById('customColorOption');
@@ -215,7 +223,11 @@ function openMultiTagDialog() {
     });
     
     document.getElementById('applyMultiTag').addEventListener('click', () => {
-        applyMultiTagFromDialog(selectedColor);
+        if (isEmptyAreaMode) {
+            applyEmptyAreaZoneFromDialog(selectedColor);
+        } else {
+            applyMultiTagFromDialog(selectedColor);
+        }
     });
     document.getElementById('cancelMultiTag').addEventListener('click', closeMultiTagDialog);
     
@@ -229,7 +241,11 @@ function openMultiTagDialog() {
     
     document.getElementById('multiTagInput').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            applyMultiTagFromDialog(selectedColor);
+            if (isEmptyAreaMode) {
+                applyEmptyAreaZoneFromDialog(selectedColor);
+            } else {
+                applyMultiTagFromDialog(selectedColor);
+            }
         }
     });
 }
@@ -245,6 +261,12 @@ function closeMultiTagDialog() {
     
     if (network) network.unselectAll();
     multiSelection.selectedNodes = [];
+    
+    // Clear empty area selection when dialog is closed/cancelled
+    if (multiSelection.emptyAreaSelection) {
+        multiSelection.emptyAreaSelection = null;
+        hideEmptyAreaMenu();
+    }
 }
 
 function applyMultiTagFromDialog(tagColor) {
@@ -316,6 +338,66 @@ function applyMultiTagFromDialog(tagColor) {
     const appliedCount = multiSelection.selectedNodes.length;
     showNotification(`Tag "${tagName}" appliqué à ${appliedCount} nœud(s)`, 'success');
     closeMultiTagDialog();
+}
+
+function applyEmptyAreaZoneFromDialog(zoneColor) {
+    const zoneName = document.getElementById('multiTagInput').value.trim();
+    
+    if (!zoneName) {
+        showNotification('Veuillez entrer un nom de zone', 'error');
+        return;
+    }
+    
+    if (!multiSelection.emptyAreaSelection) {
+        showNotification('Aucune zone sélectionnée', 'error');
+        return;
+    }
+    
+    const area = multiSelection.emptyAreaSelection;
+    
+    const zone = {
+        tag: zoneName,
+        color: zoneColor || '#e74c3c',
+        x: area.x,
+        y: area.y,
+        width: area.width,
+        height: area.height
+    };
+    
+    // Check if zone with this tag already exists
+    const existingZoneIndex = tagZones.findIndex(z => z.tag === zoneName);
+    if (existingZoneIndex !== -1) {
+        showNotification('Une zone avec ce tag existe déjà', 'error');
+        return;
+    }
+    
+    tagZones.push(zone);
+    
+    // Save current view position before updating graph
+    const currentView = network.getViewPosition();
+    const currentScale = network.getScale();
+    
+    saveToLocalStorage();
+    updateCategoryFilters();
+    updateGraph();
+    
+    // Restore view position to avoid camera movement
+    network.moveTo({
+        position: currentView,
+        scale: currentScale,
+        animation: false
+    });
+    
+    closeMultiTagDialog();
+    hideEmptyAreaMenu();
+    
+    // Clear the empty area selection and hide selection box
+    multiSelection.emptyAreaSelection = null;
+    if (multiSelection.selectionBox) {
+        multiSelection.selectionBox.style.display = 'none';
+    }
+    
+    showNotification(`Zone "${zoneName}" créée`, 'success');
 }
 
 function deleteSelectedNodes() {
