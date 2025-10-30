@@ -127,7 +127,30 @@ function processQuickImport() {
         return;
     }
     
-    // Detect if DOI or arXiv (check arXiv FIRST to avoid false DOI detection)
+    // PRIORITY 1: Check for DOI FIRST (always starts with "10.")
+    // This prevents false arXiv detection for DOIs like "10.1016/j.ress.2024.110120"
+    if (value.includes('10.') || value.includes('doi.org')) {
+        console.log('Attempting to extract DOI from:', value);
+        
+        // More robust DOI extraction - allow letters, numbers, dots, slashes, hyphens, parentheses
+        // Remove any trailing punctuation that's not part of the DOI
+        const doiMatch = value.match(/10\.\d{4,}(?:\.\d+)?\/[A-Za-z0-9\.\-_\(\)\/]+/);
+        
+        console.log('Extracted DOI:', doiMatch ? doiMatch[0] : 'none');
+        
+        if (doiMatch) {
+            // Clean up trailing punctuation if user pasted URL with period at end
+            let doi = doiMatch[0].replace(/[.,;:!?]+$/, '');
+            console.log('Cleaned DOI:', doi);
+            importFromDoi(doi);
+            return;
+        } else {
+            showImportStatus('Format DOI invalide', 'error');
+            return;
+        }
+    }
+    
+    // PRIORITY 2: Check for arXiv (only if NOT a DOI)
     if (value.toLowerCase().includes('arxiv') || /\d{4}\.\d{4,5}/.test(value) || /[a-z\-]+\/\d{7}/i.test(value)) {
         // arXiv formats:
         // - New: 2301.12345 or 2301.12345v1
@@ -155,14 +178,6 @@ function processQuickImport() {
             importFromArxiv(arxivMatch[1]);
         } else {
             showImportStatus('Format arXiv invalide - impossible d\'extraire l\'ID', 'error');
-        }
-    } else if (value.includes('10.') || value.includes('doi.org')) {
-        // Extract DOI (check this AFTER arXiv to avoid false positives like "1210.")
-        const doiMatch = value.match(/10\.\d{4,}\/[^\s]+/);
-        if (doiMatch) {
-            importFromDoi(doiMatch[0]);
-        } else {
-            showImportStatus('Format DOI invalide', 'error');
         }
     } else {
         showImportStatus('Format non reconnu. Utilisez un DOI (10.xxxx/...), arXiv ID (2301.12345, 1210.0686 ou cs/0701001) ou BibTeX (@article{...})', 'error');
@@ -490,30 +505,40 @@ async function importFromDoi(doi) {
         }
     }
     
+    console.log('📚 Importing DOI:', doi);
     showImportStatus('Récupération des métadonnées...', 'loading');
     
     try {
         // Try to fetch BibTeX first for better metadata
         let bibtexData = null;
         try {
+            console.log('Fetching BibTeX from CrossRef...');
             const bibtexResponse = await fetch(`https://api.crossref.org/works/${doi}/transform/application/x-bibtex`);
+            console.log('BibTeX response status:', bibtexResponse.status);
             if (bibtexResponse.ok) {
                 const bibtexText = await bibtexResponse.text();
+                console.log('BibTeX text received:', bibtexText.substring(0, 200) + '...');
                 bibtexData = await parseBibTeXEntry(bibtexText);
+                console.log('BibTeX parsed:', bibtexData);
             }
         } catch (e) {
             console.log('BibTeX fetch failed, falling back to JSON:', e);
         }
         
         // Use CrossRef API to get metadata
+        console.log('Fetching JSON metadata from CrossRef...');
         const response = await fetch(`https://api.crossref.org/works/${doi}`);
+        console.log('JSON response status:', response.status);
         
         if (!response.ok) {
-            throw new Error('DOI non trouvé');
+            const errorText = await response.text();
+            console.error('CrossRef API error:', errorText);
+            throw new Error(`DOI non trouvé (status ${response.status})`);
         }
         
         const data = await response.json();
         const work = data.message;
+        console.log('Work data received:', work);
         
         // Fill form fields - prioritize BibTeX data if available
         const titleField = document.getElementById('articleTitle');
