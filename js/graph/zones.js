@@ -14,7 +14,10 @@ function drawTagZones(ctx) {
         return areaB - areaA; // Descending order (largest first)
     });
     
-    sortedZones.forEach((zone, index) => {
+    sortedZones.forEach((zone, sortedIndex) => {
+        // Find the original index of this zone in tagZones array
+        const originalIndex = tagZones.findIndex(z => z === zone);
+        
         // Convert color to rgba with low opacity
         const color = zone.color;
         const r = parseInt(color.substr(1, 2), 16);
@@ -98,8 +101,8 @@ function drawTagZones(ctx) {
         const finalTextMetrics = ctx.measureText(displayText);
         const finalTextWidth = finalTextMetrics.width;
         
-        // Only draw background and text if NOT editing this zone
-        if (!zoneEditing.active || zoneEditing.zoneIndex !== index) {
+        // Only draw background and text if NOT editing this zone (use original index)
+        if (!zoneEditing.active || zoneEditing.zoneIndex !== originalIndex) {
             ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.2)`;
             ctx.fillRect(
                 titleX, 
@@ -229,13 +232,10 @@ function showZoneRadialMenu(zoneIndex) {
         btn.style.height = '40px';
         btn.style.borderRadius = '50%';
         btn.style.border = 'none';
-        btn.style.background = 'white';
-        btn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
         btn.style.cursor = 'pointer';
         btn.style.display = 'flex';
         btn.style.alignItems = 'center';
         btn.style.justifyContent = 'center';
-        btn.style.color = '#333';
         btn.style.transition = 'transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s';
         btn.style.pointerEvents = 'all';
         btn.style.left = (menuX + btnConfig.offsetX) + 'px';
@@ -243,18 +243,18 @@ function showZoneRadialMenu(zoneIndex) {
         btn.style.opacity = '0';
         btn.style.transform = 'scale(0)';
         
+        // Store hover color as data attribute
+        btn.dataset.hoverColor = btnConfig.hoverColor;
+        
         btn.addEventListener('mouseenter', () => {
             btn.style.background = btnConfig.hoverColor;
             btn.style.color = 'white';
-            btn.style.transform = 'scale(1.15)';
-            btn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.35)';
+            // No scale transform on hover for zone buttons
         });
         
         btn.addEventListener('mouseleave', () => {
-            btn.style.background = 'white';
-            btn.style.color = '#333';
-            btn.style.transform = 'scale(1)';
-            btn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+            btn.style.background = '';
+            btn.style.color = '';
         });
         
         btn.addEventListener('click', () => {
@@ -270,7 +270,14 @@ function showZoneRadialMenu(zoneIndex) {
     });
 }
 
+// Global variables to store modal event handlers
+let zoneColorDialogEscapeHandler = null;
+let zoneColorDialogClickOutsideHandler = null;
+
 function openZoneColorDialog(zoneIndex) {
+    // Close any existing modal first
+    closeZoneColorDialog();
+    
     const zone = tagZones[zoneIndex];
     
     const defaultColors = [
@@ -280,33 +287,32 @@ function openZoneColorDialog(zoneIndex) {
     
     const modal = document.createElement('div');
     modal.id = 'zoneColorModal';
+    modal.className = 'zone-color-modal';
     modal.style.position = 'fixed';
     modal.style.top = '50%';
     modal.style.left = '50%';
     modal.style.transform = 'translate(-50%, -50%)';
-    modal.style.backgroundColor = 'white';
-    modal.style.border = '2px solid #4a90e2';
     modal.style.borderRadius = '12px';
     modal.style.padding = '24px';
     modal.style.boxShadow = '0 8px 32px rgba(0,0,0,0.3)';
     modal.style.zIndex = '10002';
     modal.style.minWidth = '340px';
     
+    const isDarkTheme = document.body.classList.contains('dark-theme');
+    const borderColor = isDarkTheme ? '#e8eaf0' : '#2c3e50';
+    
     const colorPaletteHTML = defaultColors.map(color => 
         `<div class="color-option" data-color="${color}" 
               style="width: 28px; height: 28px; background: ${color}; border-radius: 6px; cursor: pointer; 
-                     border: ${zone.color === color ? '2px solid #2c3e50' : '2px solid transparent'}; 
+                     border: ${zone.color === color ? `2px solid ${borderColor}` : '2px solid transparent'}; 
                      transform: ${zone.color === color ? 'scale(1.1)' : 'scale(1)'}; 
                      transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
          </div>`
     ).join('');
     
     modal.innerHTML = `
-        <div style="font-weight: bold; margin-bottom: 15px; color: #2c3e50; font-size: 1.1rem;">
-            Changer la couleur de "${zone.tag}"
-        </div>
         <div style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 8px; color: #666; font-size: 0.9rem; font-weight: 600;">Couleur de la zone :</label>
+            <label class="zone-color-label" style="display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600;">Tag color:</label>
             <div id="zoneColorPalette" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px;">
                 ${colorPaletteHTML}
                 <div class="color-option color-picker-option" id="zoneCustomColorOption"
@@ -317,19 +323,19 @@ function openZoneColorDialog(zoneIndex) {
                     </svg>
                 </div>
             </div>
-            <div id="zoneCustomColorPicker" style="display: none; margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0;">
+            <div id="zoneCustomColorPicker" class="zone-custom-picker" style="display: none; margin-top: 12px; padding: 12px; border-radius: 8px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <input type="color" id="zoneColorPickerInput" value="${zone.color}" style="width: 48px; height: 48px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
-                    <input type="text" id="zoneColorHex" value="${zone.color}" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 0.9rem;">
+                    <input type="color" id="zoneColorPickerInput" value="${zone.color}" style="width: 48px; height: 48px; border-radius: 4px; cursor: pointer;">
+                    <input type="text" id="zoneColorHex" class="zone-color-hex-input" value="${zone.color}" style="flex: 1; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 0.9rem;">
                 </div>
             </div>
         </div>
         <div style="display: flex; gap: 10px;">
-            <button id="cancelZoneColor" style="flex: 1; padding: 10px; background: #e0e0e0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem;">
-                Annuler
+            <button id="cancelZoneColor" class="zone-color-btn zone-color-btn-cancel" style="flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem;">
+                Cancel
             </button>
-            <button id="applyZoneColor" style="flex: 1; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem;">
-                Appliquer
+            <button id="applyZoneColor" class="zone-color-btn zone-color-btn-apply" style="flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem;">
+                Apply
             </button>
         </div>
     `;
@@ -368,13 +374,13 @@ function openZoneColorDialog(zoneIndex) {
                 opt.style.border = '2px solid transparent';
                 opt.style.transform = 'scale(1)';
             });
-            option.style.border = '2px solid #2c3e50';
+            option.style.border = `2px solid ${borderColor}`;
             option.style.transform = 'scale(1.1)';
             selectedColor = option.getAttribute('data-color');
         });
         
         option.addEventListener('mouseenter', () => {
-            if (option.style.border !== '2px solid #2c3e50') {
+            if (option.style.border !== `2px solid ${borderColor}`) {
                 option.style.transform = 'scale(1.05)';
             }
         });
@@ -394,7 +400,7 @@ function openZoneColorDialog(zoneIndex) {
                 opt.style.border = '2px solid transparent';
                 opt.style.transform = 'scale(1)';
             });
-            customColorOption.style.border = '2px solid #2c3e50';
+            customColorOption.style.border = `2px solid ${borderColor}`;
             customColorOption.style.transform = 'scale(1.1)';
             selectedColor = colorPickerInput.value;
             setTimeout(() => colorPickerInput.click(), 100);
@@ -406,18 +412,42 @@ function openZoneColorDialog(zoneIndex) {
     });
     document.getElementById('cancelZoneColor').addEventListener('click', closeZoneColorDialog);
     
-    const escapeHandler = (e) => {
+    // Escape key handler
+    zoneColorDialogEscapeHandler = (e) => {
         if (e.key === 'Escape') {
             closeZoneColorDialog();
-            document.removeEventListener('keydown', escapeHandler);
         }
     };
-    document.addEventListener('keydown', escapeHandler);
+    document.addEventListener('keydown', zoneColorDialogEscapeHandler);
+    
+    // Click outside to close
+    zoneColorDialogClickOutsideHandler = (e) => {
+        const modal = document.getElementById('zoneColorModal');
+        if (modal && !modal.contains(e.target)) {
+            closeZoneColorDialog();
+        }
+    };
+    // Add click listener after a short delay to avoid immediate closing
+    setTimeout(() => {
+        document.addEventListener('click', zoneColorDialogClickOutsideHandler);
+    }, 200);
 }
 
 function closeZoneColorDialog() {
     const modal = document.getElementById('zoneColorModal');
-    if (modal) modal.remove();
+    if (modal) {
+        modal.remove();
+    }
+    
+    // Clean up event listeners
+    if (zoneColorDialogEscapeHandler) {
+        document.removeEventListener('keydown', zoneColorDialogEscapeHandler);
+        zoneColorDialogEscapeHandler = null;
+    }
+    if (zoneColorDialogClickOutsideHandler) {
+        document.removeEventListener('click', zoneColorDialogClickOutsideHandler);
+        zoneColorDialogClickOutsideHandler = null;
+    }
 }
 
 function applyZoneColor(zoneIndex, newColor) {
@@ -428,17 +458,45 @@ function applyZoneColor(zoneIndex, newColor) {
     
     saveToLocalStorage();
     
-    // Update graph to refresh node colors immediately
+    // Update node colors with priority for smallest zone (same logic as checkNodeZoneMembership)
     if (network) {
-        const currentView = network.getViewPosition();
-        const currentScale = network.getScale();
-        updateGraph();
-        // Restore view position to avoid movement
-        network.moveTo({
-            position: currentView,
-            scale: currentScale,
-            animation: false
+        const nodesToUpdate = [];
+        
+        appData.articles.forEach(article => {
+            // Check if this article has this zone's tag in its categories
+            if (article.categories && article.categories.includes(zone.tag)) {
+                // Find all zones containing this article's tags
+                const articleZones = tagZones.filter(z => article.categories.includes(z.tag));
+                
+                if (articleZones.length > 0) {
+                    // Sort by area to find smallest zone (priority)
+                    articleZones.sort((a, b) => {
+                        const areaA = a.width * a.height;
+                        const areaB = b.width * b.height;
+                        return areaA - areaB;
+                    });
+                    
+                    // Apply color from smallest zone
+                    const smallestZone = articleZones[0];
+                    nodesToUpdate.push({
+                        id: article.id,
+                        color: {
+                            background: smallestZone.color,
+                            border: darkenColor(smallestZone.color, 20)
+                        },
+                        font: { color: getContrastColor(smallestZone.color) }
+                    });
+                }
+            }
         });
+        
+        if (nodesToUpdate.length > 0) {
+            network.body.data.nodes.update(nodesToUpdate);
+        }
+        
+        // Also redraw to update zones and refresh list view
+        network.redraw();
+        renderListView();
     }
     
     closeZoneColorDialog();

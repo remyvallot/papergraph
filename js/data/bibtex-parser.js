@@ -14,7 +14,8 @@ function generateBibtexId(article) {
     
     // Get first author's last name
     if (article.authors) {
-        const authors = article.authors.split(',').map(a => a.trim());
+        // Split by comma or "and" to handle both BibTeX formats
+        const authors = article.authors.split(/,| and /i).map(a => a.trim());
         if (authors.length === 1) {
             // Single author: get last name
             const parts = authors[0].split(' ').filter(p => p);

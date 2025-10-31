@@ -168,7 +168,8 @@
 .article-list-title-container .citation-key:focus {
     background: #fff;
     border: 2px solid #4a90e2;
-    outline: none;
+    outline: 2px solid #4a90e2 !important;
+    outline-offset: -2px;
     color: #2c3e50;
 }
 
@@ -189,10 +190,12 @@
     background: #f8f9fa;
 }
 
-.article-list-title.editing {
+.article-list-title.editing,
+.article-list-title:focus {
     background: #fff;
     border: 2px solid #4a90e2;
-    outline: none;
+    outline: 2px solid #4a90e2 !important;
+    outline-offset: -2px;
 }
 
 .article-list-title:empty::before {
@@ -263,10 +266,12 @@
     background: #f8f9fa;
 }
 
-.article-list-authors.editing {
+.article-list-authors.editing,
+.article-list-authors:focus {
     background: #fff;
     border: 2px solid #4a90e2;
-    outline: none;
+    outline: 2px solid #4a90e2 !important;
+    outline-offset: -2px;
 }
 
 .article-list-authors:empty::before {
@@ -275,18 +280,23 @@
 }
 
 .article-list-categories {
-    display: flex;
-    gap: 0.5rem;
+    display: inline-flex;
+    gap: 6px;
     flex-wrap: wrap;
+    padding: 4px;
+    background: rgba(74, 144, 226, 0.1);
+    border: 1px solid rgba(74, 144, 226, 0.2);
+    border-radius: 50px;
+    width: fit-content;
 }
 
 .article-list-category {
     background: #e3f2fd;
     border: 1px solid #90caf9;
     color: #1976d2;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-size: 0.75rem;
     font-weight: 600;
 }
 
@@ -307,10 +317,12 @@
     background: #f8f9fa;
 }
 
-.article-list-text.editing {
+.article-list-text.editing,
+.article-list-text:focus {
     background: #fff;
     border: 2px solid #4a90e2;
-    outline: none;
+    outline: 2px solid #4a90e2 !important;
+    outline-offset: -2px;
 }
 
 .article-list-text:empty::before {

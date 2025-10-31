@@ -79,3 +79,71 @@
     box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
     transform: translateY(-1px);
 }
+
+/* Dark Theme Toggle Button */
+.theme-toggle-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: white;
+    border-radius: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    z-index: 1000;
+}
+
+.theme-toggle-btn:hover {
+    background: #4a90e2;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+    transform: translateY(-1px);
+}
+
+.theme-icon {
+    transition: all 0.2s;
+    stroke: #4a90e2;
+}
+
+.theme-toggle-btn:hover .theme-icon {
+    stroke: white;
+}
+
+/* Hide moon icon by default, show sun */
+.moon-icon {
+    display: none;
+}
+
+.sun-icon {
+    display: block;
+}
+
+/* Dark mode active - show moon, hide sun */
+body.dark-theme .moon-icon {
+    display: block;
+}
+
+body.dark-theme .sun-icon {
+    display: none;
+}
+
+body.dark-theme .theme-toggle-btn {
+    background: #2c3e50;
+}
+
+body.dark-theme .theme-toggle-btn:hover {
+    background: #34495e;
+}
+
+body.dark-theme .theme-icon {
+    stroke: #f39c12;
+}
+
+body.dark-theme .theme-toggle-btn:hover .theme-icon {
+    stroke: #f1c40f;
+}

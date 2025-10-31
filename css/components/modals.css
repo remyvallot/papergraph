@@ -390,3 +390,43 @@
     color: #721c24;
     border: 1px solid rgba(245, 198, 203, 0.8);
 }
+
+/* Zone Color Modal */
+.zone-color-modal {
+    background: white;
+    border: 2px solid #4a90e2;
+}
+
+.zone-color-label {
+    color: #666;
+}
+
+.zone-custom-picker {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+}
+
+.zone-color-hex-input {
+    background: white;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.zone-color-btn-cancel {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.zone-color-btn-cancel:hover {
+    background: #d0d0d0;
+}
+
+.zone-color-btn-apply {
+    background: #4a90e2;
+    color: white;
+}
+
+.zone-color-btn-apply:hover {
+    background: #3a80d2;
+}
+

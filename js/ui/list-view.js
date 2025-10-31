@@ -211,6 +211,15 @@ function renderListView(searchTerm = '') {
                 const badge = document.createElement('span');
                 badge.className = 'article-list-category';
                 badge.textContent = cat;
+                
+                // Find zone color for this category
+                const zone = tagZones.find(z => z.tag === cat);
+                if (zone) {
+                    badge.style.background = zone.color;
+                    badge.style.borderColor = zone.color;
+                    badge.style.color = getContrastColor(zone.color);
+                }
+                
                 categories.appendChild(badge);
             });
             meta.appendChild(categories);

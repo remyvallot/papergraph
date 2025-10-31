@@ -923,8 +923,9 @@ function initializeGraph() {
             const minY = Math.floor(topLeft.y / spacing) * spacing;
             const maxY = Math.ceil(bottomRight.y / spacing) * spacing;
             
-            // Draw grid dots
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            // Draw grid dots - check dark theme
+            const isDarkTheme = document.body.classList.contains('dark-theme');
+            ctx.fillStyle = isDarkTheme ? 'rgba(232, 234, 240, 0.2)' : 'rgba(0, 0, 0, 0.15)';
             for (let x = minX; x <= maxX; x += spacing) {
                 for (let y = minY; y <= maxY; y += spacing) {
                     ctx.beginPath();
@@ -1175,9 +1176,15 @@ function updateGraph() {
                         }
                     });
                     
-                    // Remove segment edges
+                    // Remove segment edges - use exact matching to avoid removing wrong segments
                     const segmentEdges = network.body.data.edges.get({
-                        filter: (edge) => edge.id.toString().startsWith(`${edgeId}_seg_`)
+                        filter: (edge) => {
+                            const edgeIdStr = edge.id.toString();
+                            if (!edgeIdStr.includes('_seg_')) return false;
+                            const parts = edgeIdStr.split('_seg_');
+                            const edgeNum = parseInt(parts[0]);
+                            return edgeNum === edgeId;
+                        }
                     });
                     if (segmentEdges.length > 0) {
                         network.body.data.edges.remove(segmentEdges.map(e => e.id));
@@ -1216,9 +1223,28 @@ function updateGraph() {
         Object.keys(edgeControlPoints).forEach(edgeId => {
             const edgeIdNum = parseInt(edgeId);
             
+            // Check if the connection still exists in appData
+            const connectionExists = appData.connections.find(c => c.id === edgeIdNum);
+            if (!connectionExists) {
+                console.warn('⚠️ Edge', edgeIdNum, 'has control points but no connection in appData - cleaning up');
+                // Clean up orphaned control points
+                const controlPointsToDelete = edgeControlPoints[edgeIdNum];
+                if (controlPointsToDelete) {
+                    controlPointsToDelete.forEach(cpId => {
+                        try {
+                            network.body.data.nodes.remove(cpId);
+                        } catch (error) {
+                            console.error('Error removing orphaned control point:', cpId, error);
+                        }
+                    });
+                }
+                delete edgeControlPoints[edgeIdNum];
+                return;
+            }
+            
             // First, remove the simple edge if it exists
             if (network.body.data.edges.get(edgeIdNum)) {
-                console.log('�️ Removing simple edge', edgeIdNum, 'before rebuilding with control points');
+                console.log('Removing simple edge', edgeIdNum, 'before rebuilding with control points');
                 network.body.data.edges.remove(edgeIdNum);
             }
             
@@ -1738,11 +1764,15 @@ function getNodeLabel(article, format) {
         case 'title':
             return article.title || 'Untitled';
         case 'citation':
-            const author = article.authors ? article.authors.split(',')[0].trim() : 'Unknown';
+            // Split by comma or "and" to handle both formats
+            const authorsList = article.authors ? article.authors.split(/,| and /i) : [];
+            const author = authorsList.length > 0 ? authorsList[0].trim() : 'Unknown';
             const year = article.year || 'n.d.';
             return `${author}, ${year}`;
         case 'author':
-            return article.authors ? article.authors.split(',')[0].trim() : 'Unknown Author';
+            // Split by comma or "and" to handle both formats
+            const authors = article.authors ? article.authors.split(/,| and /i) : [];
+            return authors.length > 0 ? authors[0].trim() : 'Unknown Author';
         default:
             return article.title || 'Untitled';
     }

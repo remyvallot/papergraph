@@ -47,7 +47,27 @@
     max-height: calc(100vh - 140px);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Custom scrollbar for article card */
+.article-card::-webkit-scrollbar {
+    width: 8px;
+}
+
+.article-card::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.article-card::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.article-card::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
 .citation-key {
@@ -68,10 +88,12 @@
     color: #7f8c8d;
 }
 
-.citation-key.editing {
+.citation-key.editing,
+.citation-key:focus {
     background: #fff;
     border: 2px solid #4a90e2;
-    outline: none;
+    outline: 2px solid #4a90e2 !important;
+    outline-offset: -2px;
     color: #2c3e50;
 }
 
@@ -91,10 +113,12 @@
     background: #f8f9fa;
 }
 
-.article-title.editing {
+.article-title.editing,
+.article-title:focus {
     background: #fff;
     border: 2px solid #4a90e2;
-    outline: none;
+    outline: 2px solid #4a90e2 !important;
+    outline-offset: -2px;
 }
 
 .article-meta {
@@ -112,10 +136,12 @@
     background: #f8f9fa;
 }
 
-.article-meta.editing {
+.article-meta.editing,
+.article-meta:focus {
     background: #fff;
     border: 2px solid #4a90e2;
-    outline: none;
+    outline: 2px solid #4a90e2 !important;
+    outline-offset: -2px;
 }
 
 .article-meta:empty::before {
@@ -124,18 +150,27 @@
     font-style: italic;
 }
 
+.category-badge-container {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 4px;
+    background: rgba(74, 144, 226, 0.1);
+    border: 1px solid rgba(74, 144, 226, 0.2);
+    border-radius: 50px;
+    width: fit-content;
+}
+
 .category-badge {
     display: inline-block;
     background: #e3f2fd;
     border: 1px solid #90caf9;
     color: #1976d2;
-    padding: 6px 6px;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-size: 0.75rem;
     font-weight: 600;
-    margin-bottom: 20px;
     flex-shrink: 0;
-    align-self: flex-start;
 }
 
 .article-section {
@@ -176,10 +211,12 @@
     background: white;
 }
 
-.article-description.editing {
+.article-description.editing,
+.article-description:focus {
     background: #fff;
     border: 2px solid #4a90e2;
-    outline: none;
+    outline: 2px solid #4a90e2 !important;
+    outline-offset: -2px;
     min-height: 100px;
 }
 

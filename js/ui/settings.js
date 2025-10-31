@@ -118,10 +118,13 @@ function updateNodeLabels() {
         switch (appSettings.nodeLabelFormat) {
             case 'firstAuthorYear':
                 if (article.authors && article.year) {
-                    const firstAuthor = article.authors.split(',')[0].trim().split(' ').pop();
+                    // Split by comma or "and" to handle both formats
+                    const authorsList = article.authors.split(/,| and /i);
+                    const firstAuthor = authorsList[0].trim().split(' ').pop();
                     label = `${firstAuthor} ${article.year}`;
                 } else if (article.authors) {
-                    label = article.authors.split(',')[0].trim().split(' ').pop();
+                    const authorsList = article.authors.split(/,| and /i);
+                    label = authorsList[0].trim().split(' ').pop();
                 } else if (article.year) {
                     label = article.year;
                 } else {
@@ -164,7 +167,9 @@ function updateNodeLabels() {
 // Helper function for BibTeX-style citation keys
 function generateCitationKey(article) {
     if (article.authors && article.year) {
-        const firstAuthor = article.authors.split(',')[0].trim().split(' ').pop().replace(/[^a-zA-Z]/g, '');
+        // Split by comma or "and" to handle both formats
+        const authorsList = article.authors.split(/,| and /i);
+        const firstAuthor = authorsList[0].trim().split(' ').pop().replace(/[^a-zA-Z]/g, '');
         return `${firstAuthor}${article.year}`;
     }
     return `Article${article.id}`;

@@ -243,9 +243,15 @@ function deleteArticleById(articleId) {
                     }
                 });
                 
-                // Remove segment edges
+                // Remove segment edges - use exact matching to avoid removing wrong segments
                 const segmentEdges = network.body.data.edges.get({
-                    filter: (edge) => edge.id.toString().startsWith(`${conn.id}_seg_`)
+                    filter: (edge) => {
+                        const edgeIdStr = edge.id.toString();
+                        if (!edgeIdStr.includes('_seg_')) return false;
+                        const parts = edgeIdStr.split('_seg_');
+                        const edgeNum = parseInt(parts[0]);
+                        return edgeNum === conn.id;
+                    }
                 });
                 if (segmentEdges.length > 0) {
                     network.body.data.edges.remove(segmentEdges.map(e => e.id));

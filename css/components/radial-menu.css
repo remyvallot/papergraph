@@ -122,6 +122,25 @@
     color: white;
 }
 
+/* Zone Radial Menu Buttons */
+.zone-radial-btn {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    transition: background 0.2s, color 0.2s;
+    pointer-events: all;
+    z-index: 10000;
+}
+
 /* Edge Menu */
 .edge-menu {
     position: fixed;
@@ -153,7 +172,7 @@
 }
 
 .edge-add-control-point:hover {
-    background: #4a90e2;
+    background: #f39c12;
     color: white;
 }
 

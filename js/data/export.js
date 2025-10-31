@@ -90,7 +90,413 @@ function exportToImage() {
     a.download = `papergraph_${new Date().toISOString().split('T')[0]}.png`;
     a.click();
     
-    showNotification('Image exportée!', 'success');
+    showNotification('Image exportée en PNG!', 'success');
+}
+
+function exportToSVG() {
+    if (!network) {
+        showNotification('Le graphe n\'est pas encore initialisé', 'error');
+        return;
+    }
+    
+    try {
+        const canvas = network.canvas.frame.canvas;
+        
+        // Use the actual canvas dimensions (what's visible)
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        // Get all positions in canvas coordinates
+        const positions = network.getPositions();
+        const scale = network.getScale();
+        const viewPosition = network.getViewPosition();
+        
+        let svgElements = [];
+        
+        // Get nodes data first (needed for edge arrow positioning)
+        const nodes = network.body.data.nodes.get();
+        
+        // Draw zones first (background)
+        if (tagZones && tagZones.length > 0) {
+            const sortedZones = [...tagZones].sort((a, b) => {
+                const areaA = a.width * a.height;
+                const areaB = b.width * b.height;
+                return areaB - areaA;
+            });
+            
+            sortedZones.forEach(zone => {
+                const topLeft = network.canvasToDOM({ x: zone.x, y: zone.y });
+                const bottomRight = network.canvasToDOM({ x: zone.x + zone.width, y: zone.y + zone.height });
+                
+                const x = topLeft.x;
+                const y = topLeft.y;
+                const w = bottomRight.x - topLeft.x;
+                const h = bottomRight.y - topLeft.y;
+                
+                const color = zone.color;
+                const r = parseInt(color.substr(1, 2), 16);
+                const g = parseInt(color.substr(3, 2), 16);
+                const b = parseInt(color.substr(5, 2), 16);
+                
+                // Zone background (with scaled stroke)
+                const zoneStrokeWidth = 3 * scale;
+                const zoneDashArray = `${10 * scale},${5 * scale}`;
+                svgElements.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" 
+                    fill="rgba(${r},${g},${b},0.1)" 
+                    stroke="rgba(${r},${g},${b},0.3)" 
+                    stroke-width="${zoneStrokeWidth}" 
+                    stroke-dasharray="${zoneDashArray}"/>`);
+                
+                // Zone title with background (only if tag is not empty)
+                if (zone.tag && zone.tag.trim() !== '') {
+                    const titleCanvasX = zone.x + 10;
+                    const titleCanvasY = zone.y + 10;
+                    const titlePos = network.canvasToDOM({ x: titleCanvasX, y: titleCanvasY });
+                    const titleX = titlePos.x;
+                    const titleY = titlePos.y;
+                    const textPadding = 10 * scale;
+                    const textPaddingRight = 5 * scale; // Less padding on the right
+                    
+                    // Font size scaled by zoom level
+                    const fontSize = 24 * scale;
+                    
+                    // Measure text width accurately using canvas
+                    const ctx = network.canvas.frame.canvas.getContext('2d');
+                    ctx.save();
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    const textWidth = ctx.measureText(zone.tag).width;
+                    ctx.restore();
+                    
+                    const textHeight = fontSize * 1.2;
+                    
+                    // Title background rectangle
+                    svgElements.push(`<rect x="${titleX}" y="${titleY}" 
+                        width="${textWidth + textPadding + textPaddingRight}" 
+                        height="${textHeight + textPadding}" 
+                        fill="rgba(${r},${g},${b},0.2)"/>`);
+                    
+                    // Title text (centered vertically in the background)
+                    const textY = titleY + textPadding + fontSize * 0.8;
+                    svgElements.push(`<text x="${titleX + textPadding}" y="${textY}" 
+                        font-family="Arial" font-size="${fontSize}" font-weight="bold" 
+                        fill="${color}">${escapeXml(zone.tag)}</text>`);
+                }
+            });
+        }
+        
+        // Draw edges
+        const edges = network.body.data.edges.get();
+        edges.forEach(edge => {
+            const fromPos = positions[edge.from];
+            const toPos = positions[edge.to];
+            
+            if (fromPos && toPos) {
+                const from = network.canvasToDOM(fromPos);
+                const to = network.canvasToDOM(toPos);
+                
+                let x1 = from.x;
+                let y1 = from.y;
+                let x2 = to.x;
+                let y2 = to.y;
+                
+                // Save original positions for label placement
+                const origX1 = x1;
+                const origY1 = y1;
+                const origX2 = x2;
+                const origY2 = y2;
+                
+                // Get edge style properties
+                const color = edge.color?.color || '#848484';
+                const width = (edge.width || 1) * scale;
+                
+                // Variable to track the last point before reaching the target (for arrow angle)
+                let arrowFromX = x1;
+                let arrowFromY = y1;
+                
+                // Check if edge has control points (smooth curve)
+                const edgeId = `${edge.from}_${edge.to}`;
+                const controlPointIds = window.edgeControlPoints?.[edgeId];
+                
+                if (controlPointIds && controlPointIds.length > 0) {
+                    // Draw smooth curve using quadratic/cubic bezier
+                    const controlPoints = controlPointIds.map(cpId => {
+                        const cpPos = positions[cpId];
+                        if (cpPos) {
+                            const cpDom = network.canvasToDOM(cpPos);
+                            return { x: cpDom.x, y: cpDom.y };
+                        }
+                        return null;
+                    }).filter(cp => cp !== null);
+                    
+                    if (controlPoints.length > 0) {
+                        let pathData = `M ${x1} ${y1}`;
+                        
+                        if (controlPoints.length === 1) {
+                            // Quadratic bezier with one control point
+                            pathData += ` Q ${controlPoints[0].x} ${controlPoints[0].y}, ${x2} ${y2}`;
+                            // For arrow: tangent is from control point to end point
+                            arrowFromX = controlPoints[0].x;
+                            arrowFromY = controlPoints[0].y;
+                        } else {
+                            // Cubic bezier or smooth curve through multiple points
+                            controlPoints.forEach((cp, i) => {
+                                if (i === 0) {
+                                    pathData += ` L ${cp.x} ${cp.y}`;
+                                } else {
+                                    pathData += ` L ${cp.x} ${cp.y}`;
+                                }
+                            });
+                            pathData += ` L ${x2} ${y2}`;
+                            // For arrow: use last control point
+                            const lastCP = controlPoints[controlPoints.length - 1];
+                            arrowFromX = lastCP.x;
+                            arrowFromY = lastCP.y;
+                        }
+                        
+                        svgElements.push(`<path d="${pathData}" 
+                            stroke="${color}" stroke-width="${width}" 
+                            fill="none"/>`);
+                    } else {
+                        // No valid control points, draw straight line with smooth curve
+                        const midX = (x1 + x2) / 2;
+                        const midY = (y1 + y2) / 2;
+                        const dx = x2 - x1;
+                        const dy = y2 - y1;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // Add slight curve (continuous roundness: 0.15)
+                        const offset = dist * 0.15;
+                        const perpX = -dy / dist * offset;
+                        const perpY = dx / dist * offset;
+                        const cx = midX + perpX;
+                        const cy = midY + perpY;
+                        
+                        svgElements.push(`<path d="M ${x1} ${y1} Q ${cx} ${cy}, ${x2} ${y2}" 
+                            stroke="${color}" stroke-width="${width}" 
+                            fill="none"/>`);
+                        
+                        // For arrow: tangent is from control point to end point
+                        arrowFromX = cx;
+                        arrowFromY = cy;
+                    }
+                } else {
+                    // Draw smooth curved line (continuous roundness: 0.15)
+                    const midX = (x1 + x2) / 2;
+                    const midY = (y1 + y2) / 2;
+                    const dx = x2 - x1;
+                    const dy = y2 - y1;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Add slight curve
+                    const offset = dist * 0.15;
+                    const perpX = -dy / dist * offset;
+                    const perpY = dx / dist * offset;
+                    const cx = midX + perpX;
+                    const cy = midY + perpY;
+                    
+                    svgElements.push(`<path d="M ${x1} ${y1} Q ${cx} ${cy}, ${x2} ${y2}" 
+                        stroke="${color}" stroke-width="${width}" 
+                        fill="none"/>`);
+                    
+                    // For arrow: tangent is from control point to end point
+                    arrowFromX = cx;
+                    arrowFromY = cy;
+                }
+                
+                // Draw arrow only if target is not a control point (subnode)
+                if (edge.to >= 0) {
+                    const visToNode = network.body.nodes[edge.to];
+                    if (!visToNode || !visToNode.shape) {
+                        return;
+                    }
+                    
+                    // Step 1: Calculate the tangent at the end of the quadratic Bezier curve
+                    // For a quadratic Bezier Q(t) = (1-t)²P0 + 2(1-t)t P1 + t²P2
+                    // The derivative at t=1 is: Q'(1) = 2(P2 - P1)
+                    // So the tangent direction is from the control point to the end point
+                    const dx = x2 - arrowFromX;
+                    const dy = y2 - arrowFromY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance === 0) return; // Avoid division by zero
+                    
+                    // Normalized direction vector (tangent to the curve at endpoint)
+                    const dirX = dx / distance;
+                    const dirY = dy / distance;
+                    
+                    // Step 2: Get node dimensions in canvas space and convert to DOM space
+                    const nodeCanvasW = visToNode.shape.width || 100;
+                    const nodeCanvasH = visToNode.shape.height || 40;
+                    
+                    // Transform node dimensions to DOM space using scale
+                    // The scale factor is already embedded in the network transformation
+                    // We need to convert a size difference in canvas to DOM
+                    const topLeft = network.canvasToDOM({ x: toPos.x - nodeCanvasW/2, y: toPos.y - nodeCanvasH/2 });
+                    const bottomRight = network.canvasToDOM({ x: toPos.x + nodeCanvasW/2, y: toPos.y + nodeCanvasH/2 });
+                    const nodeW = bottomRight.x - topLeft.x;
+                    const nodeH = bottomRight.y - topLeft.y;
+                    
+                    // Step 3: Calculate intersection with node border (rectangle)
+                    // Using parametric approach: find where ray hits the rectangle
+                    const halfW = nodeW / 2;
+                    const halfH = nodeH / 2;
+                    
+                    // Calculate distance from node center to border along the direction vector
+                    let borderDist;
+                    if (Math.abs(dirX) > 0.001) {
+                        const tX = halfW / Math.abs(dirX);
+                        const tY = Math.abs(dirY) > 0.001 ? halfH / Math.abs(dirY) : Infinity;
+                        borderDist = Math.min(tX, tY);
+                    } else {
+                        borderDist = halfH / Math.abs(dirY);
+                    }
+                    
+                    // Step 4: Position arrow tip at the node border
+                    const tipX = x2 - dirX * borderDist;
+                    const tipY = y2 - dirY * borderDist;
+                    
+                    // Step 5: Calculate arrow angle
+                    const angle = Math.atan2(dirY, dirX);
+                    
+                    // Step 6: Draw arrow wings
+                    const arrowSize = 10 * scale;
+                    const arrowAngle = Math.PI / 6; // 30 degrees
+                    
+                    const wing1X = tipX - arrowSize * Math.cos(angle - arrowAngle);
+                    const wing1Y = tipY - arrowSize * Math.sin(angle - arrowAngle);
+                    const wing2X = tipX - arrowSize * Math.cos(angle + arrowAngle);
+                    const wing2Y = tipY - arrowSize * Math.sin(angle + arrowAngle);
+                    
+                    svgElements.push(`<path d="M ${tipX} ${tipY} L ${wing1X} ${wing1Y} L ${wing2X} ${wing2Y} Z" fill="${color}"/>`);
+                }
+                
+                // Draw edge label if present
+                if (edge.label) {
+                    // Use original positions for label placement on the curve
+                    const midX = (origX1 + origX2) / 2;
+                    const midY = (origY1 + origY2) / 2;
+                    
+                    // Get label font properties (scaled by zoom)
+                    const labelFontSize = (edge.font?.size || 11) * scale;
+                    const labelFontColor = edge.font?.color || '#666666';
+                    const labelFontFace = (edge.font?.face || 'Arial, sans-serif').replace(/["']/g, '');
+                    
+                    // White background for label readability
+                    const labelWidth = String(edge.label).length * labelFontSize * 0.6;
+                    const labelHeight = labelFontSize + 4;
+                    
+                    svgElements.push(`<rect x="${midX - labelWidth/2}" y="${midY - labelHeight/2}" 
+                        width="${labelWidth}" height="${labelHeight}" 
+                        fill="white" fill-opacity="0.8"/>`);
+                    
+                    svgElements.push(`<text x="${midX}" y="${midY}" 
+                        font-family="${labelFontFace}" font-size="${labelFontSize}" 
+                        fill="${labelFontColor}" text-anchor="middle" 
+                        dominant-baseline="middle">${escapeXml(edge.label)}</text>`);
+                }
+            }
+        });
+        
+        // Draw nodes (already retrieved at the beginning)
+        nodes.forEach(node => {
+            const pos = positions[node.id];
+            if (!pos) return;
+            
+            const domPos = network.canvasToDOM(pos);
+            const x = domPos.x;
+            const y = domPos.y;
+            
+            // Skip control points (negative IDs)
+            if (node.id < 0) {
+                // Draw small control point (scaled appropriately)
+                const cpRadius = 3 * scale;
+                svgElements.push(`<circle cx="${x}" cy="${y}" r="${cpRadius}" 
+                    fill="#848484" stroke="none"/>`);
+                return;
+            }
+            
+            // Get the actual rendered node from vis-network
+            const visNode = network.body.nodes[node.id];
+            if (!visNode) return;
+            
+            // Get node visual properties
+            const color = node.color?.background || '#e3f2fd';
+            const borderColor = node.color?.border || '#4a90e2';
+            const borderWidth = (node.borderWidth || 3) * scale;
+            
+            // Get font properties (scaled by zoom)
+            const fontSize = (node.font?.size || 14) * scale;
+            const fontColor = node.font?.color || '#333333';
+            const fontFace = (node.font?.face || 'Arial').replace(/["']/g, '');
+            
+            // Get actual size from vis-network's rendering (scaled by zoom)
+            const shape = visNode.shape;
+            let nodeWidth = (shape.width || 100) * scale;
+            let nodeHeight = (shape.height || 40) * scale;
+            
+            // Draw node as rounded rectangle (box shape)
+            const nodeX = x - nodeWidth / 2;
+            const nodeY = y - nodeHeight / 2;
+            const borderRadius = 20 * scale;
+            
+            svgElements.push(`<rect x="${nodeX}" y="${nodeY}" 
+                width="${nodeWidth}" height="${nodeHeight}" 
+                rx="${borderRadius}" ry="${borderRadius}"
+                fill="${color}" 
+                stroke="${borderColor}" 
+                stroke-width="${borderWidth}"/>`);
+            
+            // Draw node label if present
+            const label = node.label || '';
+            if (label) {
+                const lines = String(label).split('\n');
+                const lineHeight = fontSize * 1.2;
+                const startY = y - ((lines.length - 1) * lineHeight) / 2;
+                
+                lines.forEach((line, i) => {
+                    svgElements.push(`<text x="${x}" y="${startY + i * lineHeight}" 
+                        font-family="${fontFace}" font-size="${fontSize}" 
+                        fill="${fontColor}" text-anchor="middle" 
+                        dominant-baseline="middle">${escapeXml(line)}</text>`);
+                });
+            }
+        });
+        
+        // Create SVG content
+        const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" 
+     width="${width}" height="${height}" 
+     viewBox="0 0 ${width} ${height}">
+  <title>PaperGraph Export</title>
+  <rect width="100%" height="100%" fill="white"/>
+  ${svgElements.join('\n  ')}
+</svg>`;
+        
+        const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `papergraph_${new Date().toISOString().split('T')[0]}.svg`;
+        a.click();
+        
+        URL.revokeObjectURL(url);
+        showNotification('Image vectorielle exportée en SVG!', 'success');
+    } catch (error) {
+        console.error('Erreur lors de l\'export SVG:', error);
+        showNotification('Erreur lors de l\'export SVG: ' + error.message, 'error');
+    }
+}
+
+// Helper function to escape XML special characters
+function escapeXml(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
 }
 
 function importProject(e) {

@@ -123,6 +123,21 @@ function initializeEventListeners() {
         savedOption.classList.add('selected');
     }
     
+    // Dark Theme Toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    
+    // Apply saved theme on load
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+    }
+    
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-theme');
+        const isDark = document.body.classList.contains('dark-theme');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+    
     // Dropdown menu actions
     document.getElementById('actionNewProject').addEventListener('click', () => {
         newProject();
@@ -174,6 +189,12 @@ function initializeEventListeners() {
     
     document.getElementById('actionExportImage').addEventListener('click', () => {
         exportToImage();
+        mainDropdown.classList.remove('active');
+        closeAllSubmenus();
+    });
+    
+    document.getElementById('actionExportSVG').addEventListener('click', () => {
+        exportToSVG();
         mainDropdown.classList.remove('active');
         closeAllSubmenus();
     });

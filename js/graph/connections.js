@@ -127,10 +127,10 @@ function deleteConnection(edgeId) {
         console.log('📍 Detected segment edge, actual edge ID:', actualEdgeId);
     }
     
-    // Delete all control points for this edge
+    // Delete all control points for THIS SPECIFIC edge only
     if (edgeControlPoints[actualEdgeId]) {
         const controlPointsToDelete = edgeControlPoints[actualEdgeId];
-        console.log('🗑️ Deleting', controlPointsToDelete.length, 'control points:', controlPointsToDelete);
+        console.log('🗑️ Deleting', controlPointsToDelete.length, 'control points for edge', actualEdgeId, ':', controlPointsToDelete);
         
         // Remove control point nodes from network
         controlPointsToDelete.forEach(cpId => {
@@ -142,9 +142,36 @@ function deleteConnection(edgeId) {
             }
         });
         
+        // Remove segment edges for THIS SPECIFIC edge only
+        // Use exact matching to avoid removing segments from other edges
+        const segmentEdgesToRemove = network.body.data.edges.get({
+            filter: (edge) => {
+                const edgeIdStr = edge.id.toString();
+                if (!edgeIdStr.includes('_seg_')) return false;
+                const parts = edgeIdStr.split('_seg_');
+                const edgeNum = parseInt(parts[0]);
+                return edgeNum === actualEdgeId;
+            }
+        });
+        
+        if (segmentEdgesToRemove.length > 0) {
+            console.log('🗑️ Removing', segmentEdgesToRemove.length, 'segment edges for edge', actualEdgeId);
+            network.body.data.edges.remove(segmentEdgesToRemove.map(e => e.id));
+        }
+        
         // Remove from edgeControlPoints map
         delete edgeControlPoints[actualEdgeId];
         console.log('✅ Cleared control points for edge', actualEdgeId);
+    }
+    
+    // Remove the main edge if it exists (it might not if it has control points)
+    try {
+        if (network.body.data.edges.get(actualEdgeId)) {
+            network.body.data.edges.remove(actualEdgeId);
+            console.log('✅ Removed main edge:', actualEdgeId);
+        }
+    } catch (error) {
+        console.log('Note: Main edge', actualEdgeId, 'not found in network (this is ok if it had control points)');
     }
     
     // Remove the connection from appData
@@ -159,7 +186,10 @@ function deleteConnection(edgeId) {
 function showEdgeMenu(x, y, edgeId) {
     const menu = document.getElementById('edgeMenu');
     
-    console.log('📍 Showing edge menu at:', x, y, 'for edge:', edgeId);
+    console.log('📍 ========== SHOWING EDGE MENU ==========');
+    console.log('📍 Position:', x, y);
+    console.log('📍 Edge ID:', edgeId, 'Type:', typeof edgeId);
+    console.log('📍 =========================================');
     
     // Store original click position (screen coordinates)
     menu.dataset.originalX = x;
@@ -188,16 +218,17 @@ function showEdgeMenu(x, y, edgeId) {
         button.style.left = (btnX - 22) + 'px';
         button.style.top = (btnY - 22) + 'px';
         
-        // Remove old handlers to avoid duplicates
-        button.onclick = null;
+        // Clone button to remove ALL old event listeners
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
         
-        // Attach click handlers directly with proper event handling
-        button.addEventListener('click', function handleEdgeButtonClick(e) {
+        // Attach click handler to the clean button with the correct edgeId captured in closure
+        newButton.addEventListener('click', function handleEdgeButtonClick(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('🔵 Edge button clicked:', button.dataset.action, 'for edge:', edgeId);
+            console.log('🔵 Edge button clicked:', newButton.dataset.action, 'for edge:', edgeId);
             
-            const action = button.dataset.action;
+            const action = newButton.dataset.action;
             
             if (action === 'add-control') {
                 console.log('Adding control point to edge:', edgeId);
@@ -208,6 +239,7 @@ function showEdgeMenu(x, y, edgeId) {
                 const originalY = parseFloat(menu.dataset.originalY);
                 const canvasPos = network.DOMtoCanvas({ x: originalX, y: originalY });
                 
+                console.log('📍 Canvas position for control point:', canvasPos);
                 addControlPointToEdge(edgeId, canvasPos);
             } else if (action === 'edit-label') {
                 console.log('Editing label for edge:', edgeId);
@@ -229,12 +261,9 @@ function showEdgeMenu(x, y, edgeId) {
                 hideEdgeMenu();
                 deleteConnection(edgeId);
             }
-            
-            // Remove this handler after use
-            button.removeEventListener('click', handleEdgeButtonClick);
         });
         
-        console.log(`Button ${index} (${button.dataset.action}) positioned at:`, button.style.left, button.style.top);
+        console.log(`Button ${index} (${newButton.dataset.action}) positioned at:`, newButton.style.left, newButton.style.top);
     });
     
     // Store edgeId for the menu actions
@@ -524,9 +553,12 @@ window.nextControlPointId = nextControlPointId;
 
 // Add control point to an edge
 function addControlPointToEdge(edgeId, clickPosition = null) {
-    console.log('🔵 addControlPointToEdge called with edgeId:', edgeId, 'clickPosition:', clickPosition);
-    console.log('📊 Current edgeControlPoints:', edgeControlPoints);
-    console.log('📊 Next control point ID:', nextControlPointId);
+    console.log('🔵 ========== ADD CONTROL POINT TO EDGE ==========');
+    console.log('🔵 Called with edgeId:', edgeId, 'Type:', typeof edgeId);
+    console.log('🔵 Click position:', clickPosition);
+    console.log('� Current edgeControlPoints:', JSON.stringify(edgeControlPoints));
+    console.log('� Next control point ID:', nextControlPointId);
+    console.log('🔵 ================================================');
     
     // Check if this is a segment edge (contains _seg_)
     let actualEdgeId = edgeId;
@@ -554,8 +586,10 @@ function addControlPointToEdge(edgeId, clickPosition = null) {
     if (segmentIndex >= 0) {
         // Get the segment edge
         edge = network.body.data.edges.get(edgeId);
+        console.log('📍 Using segment edge:', edgeId, edge);
     } else {
         edge = network.body.data.edges.get(actualEdgeId);
+        console.log('📍 Using main edge:', actualEdgeId, edge);
     }
     
     if (!edge) {
@@ -565,11 +599,28 @@ function addControlPointToEdge(edgeId, clickPosition = null) {
     }
     
     console.log('✓ Edge found in network:', edge);
+    console.log('✓ Edge connects from node', edge.from, 'to node', edge.to);
+    
+    // Verify the edge belongs to the correct connection
+    if (segmentIndex < 0) {
+        // For main edges, verify from/to match the connection
+        if (edge.from !== connection.from || edge.to !== connection.to) {
+            console.error('❌ Edge mismatch! Edge:', edge, 'Connection:', connection);
+            console.error('This edge does not belong to the expected connection!');
+            return;
+        }
+    }
     
     const fromPos = network.getPositions([edge.from])[edge.from];
     const toPos = network.getPositions([edge.to])[edge.to];
     
-    console.log('📍 From position:', fromPos, 'To position:', toPos);
+    console.log('📍 From node', edge.from, 'position:', fromPos);
+    console.log('📍 To node', edge.to, 'position:', toPos);
+    
+    if (!fromPos || !toPos) {
+        console.error('❌ Could not get positions for edge nodes');
+        return;
+    }
     
     // Create control point node at click position or middle of the segment
     const controlPointId = nextControlPointId--;
@@ -584,6 +635,7 @@ function addControlPointToEdge(edgeId, clickPosition = null) {
     };
     
     console.log('🎯 Creating control point node:', controlPointId, 'at:', controlPoint, clickPosition ? '(click position)' : '(center)');
+    console.log('🎯 For edge', actualEdgeId, 'connecting', connection.from, '->', connection.to);
     
     // Add control point node - small center with transparent border for larger interaction
     try {
@@ -628,9 +680,18 @@ function addControlPointToEdge(edgeId, clickPosition = null) {
         return;
     }
     
-    // Store control point at the right position
+    // Store control point at the right position - ONLY for this specific edge
     if (!edgeControlPoints[actualEdgeId]) {
         edgeControlPoints[actualEdgeId] = [];
+        console.log('📝 Created new control points array for edge', actualEdgeId);
+    }
+    
+    // Double-check that this control point doesn't already exist in ANY edge
+    for (const [existingEdgeId, existingPoints] of Object.entries(edgeControlPoints)) {
+        if (existingPoints.includes(controlPointId)) {
+            console.error('❌ Control point', controlPointId, 'already exists in edge', existingEdgeId);
+            return;
+        }
     }
     
     if (segmentIndex >= 0 && edgeControlPoints[actualEdgeId].length > 0) {
@@ -643,14 +704,15 @@ function addControlPointToEdge(edgeId, clickPosition = null) {
         // So clicking on segment i means we want to insert AFTER cp[i-1]
         // which is at position i in the array
         edgeControlPoints[actualEdgeId].splice(segmentIndex, 0, controlPointId);
-        console.log('✅ Control point inserted at index', segmentIndex, 'in existing chain');
+        console.log('✅ Control point', controlPointId, 'inserted at index', segmentIndex, 'in existing chain for edge', actualEdgeId);
     } else {
         // First control point or clicking on original edge
         edgeControlPoints[actualEdgeId].push(controlPointId);
-        console.log('✅ Control point added (first or at end)');
+        console.log('✅ Control point', controlPointId, 'added to edge', actualEdgeId, '(first or at end)');
     }
     
     console.log('✅ Edge', actualEdgeId, 'now has points:', edgeControlPoints[actualEdgeId]);
+    console.log('📊 All edgeControlPoints:', edgeControlPoints);
     
     // Rebuild edges through control points
     console.log('🔄 Calling rebuildEdgeWithControlPoints...');
@@ -717,14 +779,18 @@ function rebuildEdgeWithControlPoints(edgeId) {
     console.log('� Edge', edgeId, 'has', controlPoints.length, 'control points:', controlPoints);
     console.log('📊 Connection:', connection);
     
-    // Remove all intermediate edges for this connection
+    // Remove all intermediate edges for this connection - use exact matching
     const edgesToRemove = network.body.data.edges.get({
         filter: (edge) => {
-            return edge.id.toString().startsWith(`${edgeId}_seg_`);
+            const edgeIdStr = edge.id.toString();
+            if (!edgeIdStr.includes('_seg_')) return false;
+            const parts = edgeIdStr.split('_seg_');
+            const edgeNum = parseInt(parts[0]);
+            return edgeNum === edgeId;
         }
     });
     
-    console.log('🗑️ Removing', edgesToRemove.length, 'segment edges');
+    console.log('🗑️ Removing', edgesToRemove.length, 'segment edges for edge', edgeId);
     network.body.data.edges.remove(edgesToRemove.map(e => e.id));
     
     if (controlPoints.length === 0) {

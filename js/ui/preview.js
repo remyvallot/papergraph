@@ -40,25 +40,17 @@ function showArticlePreview(articleId) {
         // Create a badge for each category
         article.categories.forEach(category => {
             const badge = document.createElement('span');
-            badge.className = 'category-badge-item';
+            badge.className = 'category-badge';
             badge.textContent = category;
-            badge.style.display = 'inline-block';
             
-            // Use zone color if available (same as graph), otherwise generate
+            // Use zone color if available (same as graph)
             const zone = tagZones.find(z => z.tag === category);
             if (zone) {
                 badge.style.background = zone.color;
-            } else {
-                badge.style.background = generateColorFromString(category);
+                badge.style.borderColor = zone.color;
+                badge.style.color = getContrastColor(zone.color);
             }
             
-            badge.style.color = '#fff';
-            badge.style.padding = '4px 10px';
-            badge.style.borderRadius = '12px';
-            badge.style.fontSize = '0.75rem';
-            badge.style.fontWeight = '600';
-            badge.style.marginRight = '0px';
-            badge.style.marginBottom = '0px';
             categoryBadge.appendChild(badge);
         });
         
