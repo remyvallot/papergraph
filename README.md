@@ -1,36 +1,63 @@
 # ![](./assets/logo-papergraph.svg) papergraph
 
-**Map your research. Connect ideas. Export citations.**
+## Overview
 
-A minimalist web application for organizing research articles with graph and list views. 100% front-end, no installation required.
+**papergraph** is a lightweight, browser-based research organization tool designed to facilitate the management and visualization of academic literature. The application provides an interactive graph-based interface for mapping conceptual relationships between scholarly articles, complemented by a traditional list view for systematic bibliographic management.
 
-## Features
+As a client-side web application, papergraph requires no installation or server infrastructure, operating entirely within the user's browser environment with local data persistence.
 
-- 📊 **Dual View**: Switch between interactive graph and sortable list
-- 🔗 **Visual Connections**: Link related articles with labeled relationships
-- 🏷️ **Tag System**: Organize with color-coded categories
-- 📥 **Import**: DOI, arXiv, BibTeX, PDF metadata extraction
-- 💾 **Export**: JSON projects, BibTeX, PDF reports, PNG images
-- 🔍 **Smart Search**: Filter by title, author, year, or tags
-- 🎨 **Zone System**: Visual groupings with draggable boundaries
+## Key Features
 
-## Quick Start
+The application provides the following core functionality:
 
-1. Open `index.html` in any modern browser
-2. That's it. No installation, no build process.
+- **Dual Visualization Modes**: Interactive network graph and sortable tabular list view
+- **Semantic Relationship Mapping**: Support for labeled edges connecting related articles
+- **Categorical Organization**: Color-coded tagging system for thematic classification
+- **Multi-format Import**: Integration with DOI, arXiv, BibTeX, and PDF metadata extraction
+- **Flexible Export Options**: JSON project files, BibTeX bibliographies, PDF reports, and PNG visualizations
+- **Advanced Filtering**: Full-text search across titles, authors, publication years, and tags
+- **Spatial Clustering**: Zone-based grouping system with customizable boundaries
 
-Your data is saved locally in your browser.
+## Installation and Usage
 
-## Technology
+papergraph requires only a modern web browser supporting ES6+ JavaScript:
 
-Pure vanilla JavaScript (ES6+) with modular architecture:
-- [vis-network](https://visjs.org/) for graph visualization
-- [jsPDF](https://github.com/parallax/jsPDF) for PDF export
-- localStorage for persistence
+1. Open `index.html` in a contemporary web browser
+2. Begin adding articles and establishing relationships
 
-## Documentation
+All data is persisted locally using the browser's localStorage API.
 
-See [USER_MANUAL.md](USER_MANUAL.md) for complete feature documentation.
+## Technical Architecture
+
+The application is implemented using pure vanilla JavaScript (ES6+) with a modular architecture, leveraging the following libraries:
+
+- **vis-network** ([visjs.org](https://visjs.org/)): Interactive network graph rendering and manipulation
+- **jsPDF** ([github.com/parallax/jsPDF](https://github.com/parallax/jsPDF)): Client-side PDF generation
+- **localStorage API**: Browser-based data persistence layer
+
+
+## Citation
+
+If you use papergraph in your research or find it helpful for your academic work, please cite this software:
+
+```bibtex
+@misc{papergraph,
+  title = {papergraph: A minimalist browser-native tool for visual literature mapping and note taking},
+  author = {Vallot, Remy},
+  year = {2025},
+  url = {https://github.com/remyvallot/papergraph},
+}
+```
+
+We encourage researchers to share how papergraph has contributed to their workflow and literature review processes.
+
+## Contributions
+Contributions of all sizes are welcome.
+
+For bugs: include steps to reproduce and console errors if applicable.  
+For features: explain the use case and expected behavior.
+
+By submitting a contribution, you agree to license your work under the license.
 
 ## License
 
