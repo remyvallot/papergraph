@@ -1,0 +1,203 @@
+/**
+ * Custom Cursors - GLOBAL OVERRIDE
+ * Using SVG cursors with !important to ensure global application
+ * Note: Default cursor WITHOUT !important to allow dynamic cursor changes via JS
+ */
+
+/* Default cursor - NO !important to allow JS override for resize/interactive elements */
+* {
+    cursor: url('../../assets/cursors/default.svg'), auto;
+}
+
+/* Pointer cursor (links, buttons, clickable elements) */
+a, 
+button, 
+.clickable,
+[role="button"],
+.pg-btn,
+.modal-close,
+.toolbar-btn,
+input[type="submit"],
+input[type="button"] {
+    cursor: url('../../assets/cursors/pointer.svg'), pointer !important;
+}
+
+/* Text cursor (inputs, text areas, editable) */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea,
+.editable,
+[contenteditable="true"] {
+    cursor: url('../../assets/cursors/text.svg'), text !important;
+}
+
+/* Resize cursors - corners */
+.resize-nw, 
+.top_left_corner {
+    cursor: url('../../assets/cursors/top_left_corner.svg'), nw-resize !important;
+}
+
+.resize-ne, 
+.top_right_corner {
+    cursor: url('../../assets/cursors/top_right_corner.svg'), ne-resize !important;
+}
+
+.resize-se, 
+.bottom_right_corner {
+    cursor: url('../../assets/cursors/bottom_right_corner.svg'), se-resize !important;
+}
+
+.resize-sw, 
+.bottom_left_corner {
+    cursor: url('../../assets/cursors/bottom_left_corner.svg'), sw-resize !important;
+}
+
+/* Resize cursors - sides (using bidirectional arrows) */
+.resize-n, 
+.top_side {
+    cursor: url('../../assets/cursors/size_ver.svg'), n-resize !important;
+}
+
+.resize-s, 
+.bottom_side {
+    cursor: url('../../assets/cursors/size_ver.svg'), s-resize !important;
+}
+
+.resize-e, 
+.right_side {
+    cursor: url('../../assets/cursors/size_hor.svg'), e-resize !important;
+}
+
+.resize-w, 
+.left_side {
+    cursor: url('../../assets/cursors/size_hor.svg'), w-resize !important;
+}
+
+/* Resize cursors - bidirectional */
+.size_fdiag,
+.nwse-resize {
+    cursor: url('../../assets/cursors/size_fdiag.svg'), nwse-resize !important;
+}
+
+.size_bdiag,
+.nesw-resize {
+    cursor: url('../../assets/cursors/size_bdiag.svg'), nesw-resize !important;
+}
+
+.size_hor,
+.ew-resize {
+    cursor: url('../../assets/cursors/size_hor.svg'), ew-resize !important;
+}
+
+.size_ver,
+.ns-resize {
+    cursor: url('../../assets/cursors/size_ver.svg'), ns-resize !important;
+}
+
+/* Move/drag cursor */
+.draggable, 
+.moveable, 
+.dnd-move,
+.moving {
+    cursor: url('../../assets/cursors/dnd-move.svg'), move !important;
+}
+
+.fleur {
+    cursor: url('../../assets/cursors/fleur.svg'), all-scroll !important;
+}
+
+/* Wait/loading cursor */
+.loading, 
+.wait {
+    cursor: url('../../assets/cursors/wait.svg'), wait !important;
+}
+
+/* Not allowed cursor */
+.disabled, 
+[disabled], 
+.not-allowed {
+    cursor: url('../../assets/cursors/not-allowed.svg'), not-allowed !important;
+}
+
+/* Grab cursor */
+.grabbable, 
+.openhand {
+    cursor: url('../../assets/cursors/openhand.svg'), grab !important;
+}
+
+.grabbable:active,
+.grabbing {
+    cursor: url('../../assets/cursors/openhand.svg'), grabbing !important;
+}
+
+/* Help cursor */
+.help {
+    cursor: url('../../assets/cursors/help.svg'), help !important;
+}
+
+/* Crosshair cursor */
+.crosshair {
+    cursor: url('../../assets/cursors/crosshair.svg'), crosshair !important;
+}
+
+/* Zoom cursors */
+.zoom-in {
+    cursor: url('../../assets/cursors/zoom-in.svg'), zoom-in !important;
+}
+
+.zoom-out {
+    cursor: url('../../assets/cursors/zoom-out.svg'), zoom-out !important;
+}
+
+/* Context menu cursor */
+.context-menu {
+    cursor: url('../../assets/cursors/context-menu.svg'), context-menu !important;
+}
+
+/* Copy cursor */
+.copy {
+    cursor: url('../../assets/cursors/copy.svg'), copy !important;
+}
+
+/* Alias/shortcut cursor */
+.alias {
+    cursor: url('../../assets/cursors/alias.svg'), alias !important;
+}
+
+/* Progress cursor */
+.progress {
+    cursor: url('../../assets/cursors/progress.svg'), progress !important;
+}
+
+/* Cell cursor */
+.cell {
+    cursor: url('../../assets/cursors/cell.svg'), cell !important;
+}
+
+/* Vertical text cursor */
+.vertical-text {
+    cursor: url('../../assets/cursors/vertical-text.svg'), vertical-text !important;
+}
+
+/* No drop cursor */
+.no-drop, 
+.dnd-no-drop {
+    cursor: url('../../assets/cursors/dnd-no-drop.svg'), no-drop !important;
+}
+
+/* Column resize cursor */
+.col-resize {
+    cursor: url('../../assets/cursors/col-resize.svg'), col-resize !important;
+}
+
+/* Row resize cursor */
+.row-resize {
+    cursor: url('../../assets/cursors/row-resize.svg'), row-resize !important;
+}
+
+/* All scroll cursor */
+.all-scroll {
+    cursor: url('../../assets/cursors/all-scroll.svg'), all-scroll !important;
+}

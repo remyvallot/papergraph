@@ -1,6 +1,24 @@
 // ===== INITIALIZATION & EVENT LISTENERS =====
 // Application initialization and all event bindings
 
+// Check if we're in read-only mode (gallery project)
+const urlParams = new URLSearchParams(window.location.search);
+const isReadOnlyMode = urlParams.get('mode') === 'readonly';
+let galleryProjectData = null;
+
+if (isReadOnlyMode) {
+    // Load gallery project from sessionStorage
+    const galleryData = sessionStorage.getItem('galleryProject');
+    if (galleryData) {
+        galleryProjectData = JSON.parse(galleryData);
+        console.log('📖 Read-only mode active - Gallery project loaded');
+    }
+}
+
+// Export read-only state
+window.isReadOnlyMode = isReadOnlyMode;
+window.galleryProjectData = galleryProjectData;
+
 function initializeEventListeners() {
     // View toggle switch
     const viewToggle = document.getElementById('viewToggle');
@@ -37,6 +55,7 @@ function initializeEventListeners() {
     
     // Position and show submenu
     function showSubmenu(submenu, triggerButton) {
+        if (!submenu) return; // Safety check
         closeAllSubmenus();
         const rect = triggerButton.getBoundingClientRect();
         submenu.style.top = `${rect.top}px`;
@@ -50,17 +69,24 @@ function initializeEventListeners() {
     const exportMenuBtn = document.getElementById('actionExportMenu');
     const nodeLabelMenuBtn = document.getElementById('actionNodeLabelMenu');
     
-    importMenuBtn.addEventListener('mouseenter', function() {
-        showSubmenu(importSubmenu, this);
-    });
+    if (importMenuBtn) {
+        importMenuBtn.addEventListener('mouseenter', function() {
+            showSubmenu(importSubmenu, this);
+        });
+    }
     
-    exportMenuBtn.addEventListener('mouseenter', function() {
-        showSubmenu(exportSubmenu, this);
-    });
+    if (exportMenuBtn) {
+        exportMenuBtn.addEventListener('mouseenter', function() {
+            showSubmenu(exportSubmenu, this);
+        });
+    }
     
-    nodeLabelMenuBtn.addEventListener('mouseenter', function() {
-        showSubmenu(nodeLabelSubmenu, this);
-    });
+    if (nodeLabelMenuBtn) {
+        nodeLabelMenuBtn.addEventListener('mouseenter', function() {
+            showSubmenu(nodeLabelSubmenu, this);
+        });
+    }
+
     
     // Close submenus when hovering over non-submenu items in main dropdown only
     const mainDropdownItems = mainDropdown.querySelectorAll('.dropdown-menu-item:not(.has-submenu)');
@@ -71,7 +97,7 @@ function initializeEventListeners() {
     });
     
     // Keep submenu open when hovering over it
-    [importSubmenu, exportSubmenu, nodeLabelSubmenu].forEach(submenu => {
+    [importSubmenu, exportSubmenu, nodeLabelSubmenu].filter(Boolean).forEach(submenu => {
         submenu.addEventListener('mouseenter', function() {
             this.classList.add('active');
         });
@@ -85,9 +111,12 @@ function initializeEventListeners() {
     mainDropdown.addEventListener('mouseleave', function(e) {
         // Only close if not moving to a submenu
         setTimeout(() => {
-            if (!importSubmenu.matches(':hover') && 
-                !exportSubmenu.matches(':hover') && 
-                !nodeLabelSubmenu.matches(':hover')) {
+            const notHoveringAnySubmenu = 
+                (!importSubmenu || !importSubmenu.matches(':hover')) && 
+                (!exportSubmenu || !exportSubmenu.matches(':hover')) && 
+                (!nodeLabelSubmenu || !nodeLabelSubmenu.matches(':hover'));
+            
+            if (notHoveringAnySubmenu) {
                 closeAllSubmenus();
             }
         }, 100);
@@ -95,9 +124,13 @@ function initializeEventListeners() {
     
     // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
-        if (!mainDropdown.contains(e.target) && !logoMenuBtn.contains(e.target) &&
-            !importSubmenu.contains(e.target) && !exportSubmenu.contains(e.target) && 
-            !nodeLabelSubmenu.contains(e.target)) {
+        const clickedInDropdown = mainDropdown.contains(e.target) || logoMenuBtn.contains(e.target);
+        const clickedInSubmenu = 
+            (importSubmenu && importSubmenu.contains(e.target)) ||
+            (exportSubmenu && exportSubmenu.contains(e.target)) ||
+            (nodeLabelSubmenu && nodeLabelSubmenu.contains(e.target));
+        
+        if (!clickedInDropdown && !clickedInSubmenu) {
             mainDropdown.classList.remove('active');
             closeAllSubmenus();
         }
@@ -123,51 +156,148 @@ function initializeEventListeners() {
         savedOption.classList.add('selected');
     }
     
-    // Dark Theme Toggle
-    const themeToggle = document.getElementById('themeToggle');
+    // Setup Editor User Dropdown
+    async function setupEditorUserDropdown() {
+        try {
+            const config = await import('../auth/config.js');
+            const { data: { session } } = await config.supabase.auth.getSession();
+            
+            if (session && session.user) {
+                const user = session.user;
+                const editorUserAvatarBtn = document.getElementById('editorUserAvatarBtn');
+                const editorUserAvatar = document.getElementById('editorUserAvatar');
+                const editorUserDropdown = document.getElementById('editorUserDropdown');
+                
+                if (!editorUserAvatarBtn || !editorUserAvatar || !editorUserDropdown) {
+                    console.error('User dropdown elements not found');
+                    return;
+                }
+                
+                // Populate user info
+                const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+                const username = user.user_metadata?.username;
+                const displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0];
+                const email = user.email;
+                const provider = user.app_metadata?.provider || 'email';
+                
+                if (avatarUrl) {
+                    editorUserAvatar.src = avatarUrl;
+                    const editorUserAvatarDropdown = document.getElementById('editorUserAvatarDropdown');
+                    if (editorUserAvatarDropdown) {
+                        editorUserAvatarDropdown.src = avatarUrl;
+                    }
+                }
+                
+                // Display name first, then username below
+                const editorUserNameDropdown = document.getElementById('editorUserNameDropdown');
+                if (editorUserNameDropdown) {
+                    editorUserNameDropdown.textContent = displayName;
+                }
+                
+                const usernameElement = document.getElementById('editorUserUsernameDropdown');
+                if (usernameElement) {
+                    if (username) {
+                        usernameElement.textContent = `@${username}`;
+                        usernameElement.style.display = 'block';
+                    } else {
+                        usernameElement.style.display = 'none';
+                    }
+                }
+                
+                editorUserAvatarBtn.style.display = 'flex';
+                
+                // Remove existing event listeners by cloning and replacing
+                const newAvatarBtn = editorUserAvatarBtn.cloneNode(true);
+                editorUserAvatarBtn.parentNode.replaceChild(newAvatarBtn, editorUserAvatarBtn);
+                
+                // Toggle dropdown - attach to new button
+                newAvatarBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    editorUserDropdown.classList.toggle('active');
+                });
+                
+                // Close dropdown when clicking outside
+                const closeDropdownHandler = (e) => {
+                    if (!newAvatarBtn.contains(e.target) && !editorUserDropdown.contains(e.target)) {
+                        editorUserDropdown.classList.remove('active');
+                    }
+                };
+                
+                // Remove any previous handler with same identifier
+                document.removeEventListener('click', window.editorDropdownCloseHandler);
+                window.editorDropdownCloseHandler = closeDropdownHandler;
+                document.addEventListener('click', closeDropdownHandler);
+                
+                // Sign out button
+                const editorSignOut = document.getElementById('editorSignOut');
+                if (editorSignOut) {
+                    // Remove existing listeners
+                    const newSignOutBtn = editorSignOut.cloneNode(true);
+                    editorSignOut.parentNode.replaceChild(newSignOutBtn, editorSignOut);
+                    
+                    newSignOutBtn.addEventListener('click', async () => {
+                        await config.supabase.auth.signOut();
+                        window.location.href = 'index.html';
+                    });
+                }
+            }
+        } catch (error) {
+            console.log('User not authenticated or error loading user data');
+        }
+    }
+    
+    setupEditorUserDropdown();
+    
+    // Dark Theme Toggle (in user dropdown)
+    const editorThemeToggle = document.getElementById('editorThemeToggle');
+    const themeToggleText = document.getElementById('themeToggleText');
     const savedTheme = localStorage.getItem('theme') || 'light';
     
     // Apply saved theme on load
     if (savedTheme === 'dark') {
         document.body.classList.add('dark-theme');
+        if (themeToggleText) themeToggleText.textContent = 'Light Mode';
     }
     
-    themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark-theme');
-        const isDark = document.body.classList.contains('dark-theme');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    });
+    if (editorThemeToggle) {
+        editorThemeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            if (themeToggleText) {
+                themeToggleText.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            }
+        });
+    }
     
     // Dropdown menu actions
-    document.getElementById('actionNewProject').addEventListener('click', () => {
-        newProject();
-        mainDropdown.classList.remove('active');
-        closeAllSubmenus();
-        // Close onboarding if it's open
-        if (typeof window.closeOnboarding === 'function') {
-            window.closeOnboarding();
-        }
-    });
+    // Note: actionNewProject button removed from dropdown menu
     
-    document.getElementById('actionImport').addEventListener('click', () => {
-        document.getElementById('fileInput').click();
-        mainDropdown.classList.remove('active');
-        closeAllSubmenus();
-        // Close onboarding if it's open
-        if (typeof window.closeOnboarding === 'function') {
-            window.closeOnboarding();
-        }
-    });
+    const actionImportBtn = document.getElementById('actionImport');
+    if (actionImportBtn) {
+        actionImportBtn.addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+            mainDropdown.classList.remove('active');
+            closeAllSubmenus();
+            // Close onboarding if it's open
+            if (typeof window.closeOnboarding === 'function') {
+                window.closeOnboarding();
+            }
+        });
+    }
     
-    document.getElementById('actionImportBibtex').addEventListener('click', () => {
-        document.getElementById('bibtexFileInput').click();
-        mainDropdown.classList.remove('active');
-        closeAllSubmenus();
-        // Close onboarding if it's open
-        if (typeof window.closeOnboarding === 'function') {
-            window.closeOnboarding();
-        }
-    });
+    const actionImportBibtexBtn = document.getElementById('actionImportBibtex');
+    if (actionImportBibtexBtn) {
+        actionImportBibtexBtn.addEventListener('click', () => {
+            document.getElementById('bibtexFileInput').click();
+            mainDropdown.classList.remove('active');
+            closeAllSubmenus();
+            // Close onboarding if it's open
+            if (typeof window.closeOnboarding === 'function') {
+                window.closeOnboarding();
+            }
+        });
+    }
     
     document.getElementById('actionExport').addEventListener('click', () => {
         exportProject();
@@ -206,14 +336,39 @@ function initializeEventListeners() {
         closeAllSubmenus();
     });
     
-    // Explore Gallery - DISABLED (Coming Soon)
-    document.getElementById('actionExploreGallery').addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        // Disabled - Coming Soon
+    // Gallery menu actions
+    document.getElementById('actionExploreGallery').addEventListener('click', () => {
+        window.location.href = 'gallery.html';
         mainDropdown.classList.remove('active');
         closeAllSubmenus();
     });
+    
+    const actionSubmitToGalleryBtn = document.getElementById('actionSubmitToGallery');
+    if (actionSubmitToGalleryBtn) {
+        actionSubmitToGalleryBtn.addEventListener('click', async () => {
+            mainDropdown.classList.remove('active');
+            closeAllSubmenus();
+            
+            // Check if user is logged in
+            try {
+                const { supabase } = await import('../auth/config.js');
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    if (confirm('You need to be signed in to submit to the gallery. Go to sign in page?')) {
+                        window.location.href = 'index.html#auth';
+                    }
+                    return;
+                }
+                
+                // Import and call the submit function
+                const { openSubmitToGalleryModal } = await import('../data/github-submit.js');
+                await openSubmitToGalleryModal();
+            } catch (error) {
+                console.error('Error opening submit modal:', error);
+                alert('Failed to open submit modal. Please try again.');
+            }
+        });
+    }
     
     document.getElementById('actionReportBug').addEventListener('click', () => {
         window.open('https://github.com/remyvallot/papergraph/issues/new', '_blank');
@@ -221,11 +376,20 @@ function initializeEventListeners() {
         closeAllSubmenus();
     });
     
-    document.getElementById('fileInput').addEventListener('change', importProject);
-    document.getElementById('bibtexFileInput').addEventListener('change', importBibtexFile);
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+        fileInput.addEventListener('change', importProject);
+    }
+    
+    const bibtexFileInput = document.getElementById('bibtexFileInput');
+    if (bibtexFileInput) {
+        bibtexFileInput.addEventListener('change', importBibtexFile);
+    }
     
     // Toolbar actions
-    document.getElementById('addArticleBtn').addEventListener('click', () => openArticleModal());
+    document.getElementById('addArticleBtn').addEventListener('click', () => {
+        openArticleModal();
+    });
     document.getElementById('categoryFilterBtn').addEventListener('click', toggleCategoryDropdown);
     // Function to recenter/fit the graph view
     function fitGraphView() {
@@ -395,18 +559,18 @@ function initializeEventListeners() {
             e.preventDefault();
             
             if (selectedNodeId !== null) {
-                if (confirm('Supprimer cet article ?')) {
+                if (confirm('Delete this article?')) {
                     deleteArticleById(selectedNodeId);
                     selectedNodeId = null;
                     hideRadialMenu();
                 }
             } else if (selectedEdgeId !== null) {
-                if (confirm('Supprimer cette connexion ?')) {
+                if (confirm('Delete this connection?')) {
                     deleteConnection(selectedEdgeId);
                     hideEdgeMenu();
                 }
             } else if (selectedZoneIndex !== -1) {
-                if (confirm('Supprimer cette zone/tag ?')) {
+                if (confirm('Delete this zone/tag?')) {
                     deleteZone(selectedZoneIndex);
                 }
             }
@@ -432,8 +596,12 @@ function initializeEventListeners() {
     document.getElementById('cancelConnectionMode').addEventListener('click', cancelConnectionMode);
     
     // Modal
-    document.getElementById('articleForm').addEventListener('submit', saveArticle);
-    document.getElementById('deleteArticleBtn').addEventListener('click', deleteArticle);
+    document.getElementById('articleForm').addEventListener('submit', (e) => {
+        saveArticle(e);
+    });
+    document.getElementById('deleteArticleBtn').addEventListener('click', () => {
+        deleteArticle();
+    });
     
     // Import functionality
     setupImportZone();

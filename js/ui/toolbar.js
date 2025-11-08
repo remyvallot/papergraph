@@ -16,12 +16,12 @@ function toggleGrid() {
     
     if (gridEnabled) {
         btn.classList.add('active');
-        btn.title = 'Masquer la grille';
-        if (label) label.textContent = 'Grille';
+        btn.title = 'Hide grid';
+        if (label) label.textContent = 'Grid';
     } else {
         btn.classList.remove('active');
-        btn.title = 'Afficher la grille';
-        if (label) label.textContent = 'Grille';
+        btn.title = 'Show grid';
+        if (label) label.textContent = 'Grid';
     }
     
     network.redraw();
@@ -80,20 +80,20 @@ function openMultiTagDialog(isEmptyAreaMode = false) {
     
     modal.innerHTML = `
         <div style="font-weight: bold; margin-bottom: 15px; color: #2c3e50; font-size: 1.1rem;">
-            ${isEmptyAreaMode ? 'Créer une zone de tag' : 'Ajouter un tag'}
+            ${isEmptyAreaMode ? 'Create a tag zone' : 'Add a tag'}
         </div>
         ${!isEmptyAreaMode ? `<div style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">
-            ${multiSelection.selectedNodes.length} nœud(s) sélectionné(s)
+            ${multiSelection.selectedNodes.length} node(s) selected
         </div>` : ''}
         <div style="position: relative; margin-bottom: 15px;">
-            <input type="text" id="multiTagInput" placeholder="Nom du tag" 
+            <input type="text" id="multiTagInput" placeholder="Tag name" 
                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 0.95rem;">
             <div id="tagWarning" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #e74c3c; font-size: 0.85rem; font-weight: 600; display: none;">
-                ⚠ Tag existe déjà
+                ⚠ Tag already exists
             </div>
         </div>
         <div style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 8px; color: #666; font-size: 0.9rem; font-weight: 600;">Couleur du tag :</label>
+            <label style="display: block; margin-bottom: 8px; color: #666; font-size: 0.9rem; font-weight: 600;">Tag color:</label>
             <div id="colorPalette" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px;">
                 ${colorPaletteHTML}
                 <div class="color-option color-picker-option" id="customColorOption"
@@ -113,10 +113,10 @@ function openMultiTagDialog(isEmptyAreaMode = false) {
         </div>
         <div style="display: flex; gap: 10px;">
             <button id="cancelMultiTag" style="flex: 1; padding: 10px; background: #e0e0e0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem;">
-                Annuler
+                Cancel
             </button>
             <button id="applyMultiTag" style="flex: 1; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem;">
-                ${isEmptyAreaMode ? 'Créer' : 'Appliquer'}
+                ${isEmptyAreaMode ? 'Create' : 'Apply'}
             </button>
         </div>
     `;
@@ -273,33 +273,71 @@ function applyMultiTagFromDialog(tagColor) {
     const tagName = document.getElementById('multiTagInput').value.trim();
     
     if (!tagName) {
-        showNotification('Veuillez entrer un nom de tag', 'error');
+        showNotification('Please enter a tag name', 'error');
         return;
     }
     
     if (!tagColor) tagColor = '#e74c3c';
     
-    // Calculate bounding box
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    multiSelection.selectedNodes.forEach(nodeId => {
-        const pos = network.getPositions([nodeId])[nodeId];
-        if (pos) {
-            minX = Math.min(minX, pos.x);
-            minY = Math.min(minY, pos.y);
-            maxX = Math.max(maxX, pos.x);
-            maxY = Math.max(maxY, pos.y);
-        }
-    });
+    const minZoneSize = 150; // Minimum zone size
+    let zone;
     
-    const padding = 100;
-    const zone = {
-        tag: tagName,
-        color: tagColor,
-        x: minX - padding,
-        y: minY - padding,
-        width: maxX - minX + padding * 2,
-        height: maxY - minY + padding * 2
-    };
+    // Use selection box bounds if available (DON'T fit to nodes)
+    if (multiSelection.selectionBox && multiSelection.selectionBox.style.display !== 'none') {
+        const boxLeft = parseFloat(multiSelection.selectionBox.style.left);
+        const boxTop = parseFloat(multiSelection.selectionBox.style.top);
+        const boxWidth = parseFloat(multiSelection.selectionBox.style.width);
+        const boxHeight = parseFloat(multiSelection.selectionBox.style.height);
+        
+        // Convert DOM coordinates to canvas coordinates
+        const topLeft = network.DOMtoCanvas({ x: boxLeft, y: boxTop });
+        const bottomRight = network.DOMtoCanvas({ x: boxLeft + boxWidth, y: boxTop + boxHeight });
+        
+        let zoneWidth = bottomRight.x - topLeft.x;
+        let zoneHeight = bottomRight.y - topLeft.y;
+        
+        // Ensure minimum size
+        if (zoneWidth < minZoneSize) zoneWidth = minZoneSize;
+        if (zoneHeight < minZoneSize) zoneHeight = minZoneSize;
+        
+        zone = {
+            tag: tagName,
+            color: tagColor,
+            x: topLeft.x,
+            y: topLeft.y,
+            width: zoneWidth,
+            height: zoneHeight
+        };
+    } else {
+        // Fallback: calculate bounding box from nodes (shouldn't happen normally)
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        multiSelection.selectedNodes.forEach(nodeId => {
+            const pos = network.getPositions([nodeId])[nodeId];
+            if (pos) {
+                minX = Math.min(minX, pos.x);
+                minY = Math.min(minY, pos.y);
+                maxX = Math.max(maxX, pos.x);
+                maxY = Math.max(maxY, pos.y);
+            }
+        });
+        
+        const padding = 100;
+        let zoneWidth = maxX - minX + padding * 2;
+        let zoneHeight = maxY - minY + padding * 2;
+        
+        // Ensure minimum size
+        if (zoneWidth < minZoneSize) zoneWidth = minZoneSize;
+        if (zoneHeight < minZoneSize) zoneHeight = minZoneSize;
+        
+        zone = {
+            tag: tagName,
+            color: tagColor,
+            x: minX - padding,
+            y: minY - padding,
+            width: zoneWidth,
+            height: zoneHeight
+        };
+    }
     
     const existingIndex = tagZones.findIndex(z => z.tag === tagName);
     if (existingIndex >= 0) {
@@ -344,30 +382,39 @@ function applyEmptyAreaZoneFromDialog(zoneColor) {
     const zoneName = document.getElementById('multiTagInput').value.trim();
     
     if (!zoneName) {
-        showNotification('Veuillez entrer un nom de zone', 'error');
+        showNotification('Please enter a zone name', 'error');
         return;
     }
     
     if (!multiSelection.emptyAreaSelection) {
-        showNotification('Aucune zone sélectionnée', 'error');
+        showNotification('No zone selected', 'error');
         return;
     }
     
     const area = multiSelection.emptyAreaSelection;
+    const minZoneSize = 150; // Minimum zone size
+    
+    // Keep the selection area size as-is (don't fit to nodes)
+    let zoneWidth = area.width;
+    let zoneHeight = area.height;
+    
+    // Ensure minimum size
+    if (zoneWidth < minZoneSize) zoneWidth = minZoneSize;
+    if (zoneHeight < minZoneSize) zoneHeight = minZoneSize;
     
     const zone = {
         tag: zoneName,
         color: zoneColor || '#e74c3c',
         x: area.x,
         y: area.y,
-        width: area.width,
-        height: area.height
+        width: zoneWidth,
+        height: zoneHeight
     };
     
     // Check if zone with this tag already exists
     const existingZoneIndex = tagZones.findIndex(z => z.tag === zoneName);
     if (existingZoneIndex !== -1) {
-        showNotification('Une zone avec ce tag existe déjà', 'error');
+        showNotification('A zone with this tag already exists', 'error');
         return;
     }
     
@@ -405,8 +452,8 @@ function deleteSelectedNodes() {
     
     const count = multiSelection.selectedNodes.length;
     const message = count === 1 
-        ? 'Voulez-vous vraiment supprimer ce nœud ?' 
-        : `Voulez-vous vraiment supprimer ces ${count} nœuds ?`;
+        ? 'Do you really want to delete this node?' 
+        : `Do you really want to delete these ${count} nodes?`;
     
     if (!confirm(message)) {
         hideSelectionRadialMenu();

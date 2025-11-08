@@ -26,6 +26,17 @@ function saveToLocalStorage(silent = false) {
         localStorage.setItem('papermap_edge_control_points', JSON.stringify(edgeControlPoints));
         localStorage.setItem('papermap_next_control_point_id', nextControlPointId.toString());
         console.log('Data saved to localStorage');
+        
+        // Also save to cloud if enabled (async, non-blocking)
+        if (typeof window.isCloudStorageEnabled === 'function' && window.isCloudStorageEnabled()) {
+            // Dynamically import and call cloud save
+            import('./cloud-storage.js').then(module => {
+                module.saveToCloud(true); // Silent cloud save
+            }).catch(err => {
+                console.warn('Cloud save skipped:', err.message);
+            });
+        }
+        
         if (!silent) {
             // showNotification('Projet sauvegardé!', 'success');
         }
@@ -36,6 +47,42 @@ function saveToLocalStorage(silent = false) {
 
 function loadFromLocalStorage() {
     try {
+        // Check if we're loading a gallery project
+        if (window.isReadOnlyMode && window.galleryProjectData) {
+            console.log('📖 Loading gallery project in read-only mode');
+            const galleryData = window.galleryProjectData.data;
+            
+            // Load project data structure - support both formats
+            if (galleryData.nodes && galleryData.edges) {
+                // Cloud format (nodes/edges)
+                appData = {
+                    articles: galleryData.nodes || [],
+                    connections: galleryData.edges || []
+                };
+                tagZones = galleryData.zones || [];
+                window.savedNodePositions = galleryData.positions || {};
+            } else if (galleryData.articles && galleryData.connections) {
+                // Editor format (articles/connections)
+                appData = {
+                    articles: galleryData.articles || [],
+                    connections: galleryData.connections || []
+                };
+                tagZones = galleryData.tagZones || galleryData.zones || [];
+                window.savedNodePositions = galleryData.nodePositions || galleryData.positions || {};
+            }
+            
+            console.log('✓ Loaded gallery project:', appData.articles.length, 'articles');
+            console.log('✓ Loaded gallery zones:', tagZones.length, 'zones');
+            
+            // Initialize control points
+            edgeControlPoints = {};
+            window.edgeControlPoints = edgeControlPoints;
+            nextControlPointId = -1;
+            window.nextControlPointId = nextControlPointId;
+            
+            return;
+        }
+        
         const saved = localStorage.getItem('papermap_data');
         if (saved) {
             appData = JSON.parse(saved);

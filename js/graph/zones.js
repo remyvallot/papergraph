@@ -208,7 +208,7 @@ function showZoneRadialMenu(zoneIndex) {
             </svg>`,
             action: () => {
                 if (selectedZoneIndex !== -1) {
-                    if (confirm('Supprimer cette zone/tag ?')) {
+                    if (confirm('Delete this zone/tag?')) {
                         deleteZone(selectedZoneIndex);
                         hideZoneDeleteButton();
                     }
@@ -217,7 +217,7 @@ function showZoneRadialMenu(zoneIndex) {
             hoverColor: '#e74c3c',
             offsetX: 50,
             offsetY: 0,
-            title: 'Supprimer la zone'
+            title: 'Delete zone'
         }
     ];
     
@@ -631,24 +631,40 @@ function checkNodeZoneMembership() {
 }
 
 function getZoneResizeHandle(event) {
+    // Don't allow zone resizing in gallery viewer mode
+    if (window.isGalleryViewer) {
+        return { zone: null, zoneIndex: -1, handle: null };
+    }
+    
     const canvas = network.canvas.frame.canvas;
     const rect = canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
     const mousePos = network.DOMtoCanvas({ x: mouseX, y: mouseY });
     
-    const handleSize = 10 / network.getScale(); // Reduced from 20 to 10
+    // Detection zone: offset to the left and up from the visual border
+    const handleMargin = 10; // Margin on each side of the border (total detection zone = 20)
+    const offsetX = -5; // Shift detection zone to the left
+    const offsetY = -5; // Shift detection zone up
     
     for (let i = 0; i < tagZones.length; i++) {
         const zone = tagZones[i];
         
-        const nearLeft = Math.abs(mousePos.x - zone.x) < handleSize;
-        const nearRight = Math.abs(mousePos.x - (zone.x + zone.width)) < handleSize;
-        const nearTop = Math.abs(mousePos.y - zone.y) < handleSize;
-        const nearBottom = Math.abs(mousePos.y - (zone.y + zone.height)) < handleSize;
+        // Visual borders with offset adjustment
+        const borderLeft = zone.x + offsetX;
+        const borderRight = zone.x + zone.width + offsetX;
+        const borderTop = zone.y + offsetY;
+        const borderBottom = zone.y + zone.height + offsetY;
         
-        const inHorizontalRange = mousePos.y >= zone.y - handleSize && mousePos.y <= zone.y + zone.height + handleSize;
-        const inVerticalRange = mousePos.x >= zone.x - handleSize && mousePos.x <= zone.x + zone.width + handleSize;
+        // Check if mouse is within detection zone (handleMargin on each side of border)
+        const nearLeft = mousePos.x >= borderLeft - handleMargin && mousePos.x <= borderLeft + handleMargin;
+        const nearRight = mousePos.x >= borderRight - handleMargin && mousePos.x <= borderRight + handleMargin;
+        const nearTop = mousePos.y >= borderTop - handleMargin && mousePos.y <= borderTop + handleMargin;
+        const nearBottom = mousePos.y >= borderBottom - handleMargin && mousePos.y <= borderBottom + handleMargin;
+        
+        // For edges, we need to be within the zone's bounds (extended by margin)
+        const inHorizontalRange = mousePos.y >= borderTop - handleMargin && mousePos.y <= borderBottom + handleMargin;
+        const inVerticalRange = mousePos.x >= borderLeft - handleMargin && mousePos.x <= borderRight + handleMargin;
         
         // Check corners first
         if (nearLeft && nearTop && inHorizontalRange && inVerticalRange) {
@@ -687,20 +703,20 @@ function updateZoneCursor(event) {
     const resizeHandle = getZoneResizeHandle(event);
     
     if (resizeHandle.zoneIndex !== -1) {
-        // Set cursor based on handle type
+        // Set cursor based on handle type with custom SVG cursors (using bidirectional arrows)
         const cursorMap = {
-            'nw': 'nwse-resize',
-            'ne': 'nesw-resize',
-            'sw': 'nesw-resize',
-            'se': 'nwse-resize',
-            'n': 'ns-resize',
-            's': 'ns-resize',
-            'w': 'ew-resize',
-            'e': 'ew-resize'
+            'nw': "url('assets/cursors/size_fdiag.svg'), nw-resize",
+            'ne': "url('assets/cursors/size_bdiag.svg'), ne-resize",
+            'sw': "url('assets/cursors/size_bdiag.svg'), sw-resize",
+            'se': "url('assets/cursors/size_fdiag.svg'), se-resize",
+            'n': "url('assets/cursors/size_ver.svg'), n-resize",
+            's': "url('assets/cursors/size_ver.svg'), s-resize",
+            'w': "url('assets/cursors/size_hor.svg'), w-resize",
+            'e': "url('assets/cursors/size_hor.svg'), e-resize"
         };
-        canvas.style.cursor = cursorMap[resizeHandle.handle] || 'default';
+        canvas.style.cursor = cursorMap[resizeHandle.handle] || "url('assets/cursors/default.svg'), default";
     } else {
-        canvas.style.cursor = 'default';
+        canvas.style.cursor = "url('assets/cursors/default.svg'), default";
     }
 }
 
@@ -1101,17 +1117,16 @@ function deleteZone(zoneIndex) {
     tagZones.splice(zoneIndex, 1);
     selectedZoneIndex = -1;
     
-    saveToLocalStorage();
-    updateCategoryFilters();
-    renderListView();
-    updateGraph();
+    // Recalculate all node colors using the same logic as position updates
+    // This ensures colors match the actual zone membership
+    checkNodeZoneMembership();
     
     const canvas = network.canvas.frame.canvas;
     if (canvas) {
-        canvas.style.cursor = 'default';
+        canvas.style.cursor = "url('assets/cursors/default.svg'), default";
     }
     
-    showNotification(`Zone "${tagToRemove}" supprimée`, 'success');
+    showNotification(`Zone "${tagToRemove}" deleted`, 'success');
 }
 
 function startZoneResize(event, zoneIndex, handle) {
@@ -1192,7 +1207,7 @@ function updateZoneResize(event) {
     }
     
     // Enforce minimum size
-    const minSize = 100;
+    const minSize = 150;
     if (zone.width < minSize) {
         zone.width = minSize;
         zone.x = orig.x;

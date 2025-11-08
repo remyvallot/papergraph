@@ -46,6 +46,17 @@
     pointer-events: auto;
 }
 
+.footer-link {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.2s;
+}
+
+.footer-link:hover {
+    color: #333;
+}
+
 .footer-github {
     display: flex;
     align-items: center;

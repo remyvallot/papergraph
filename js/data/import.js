@@ -242,18 +242,18 @@ async function processBibTeXImport() {
     
     const bibtexText = bibtexTextarea.value.trim();
     if (!bibtexText) {
-        showImportStatus('Veuillez coller une entrée BibTeX', 'error');
+        showImportStatus('Please paste a BibTeX entry', 'error');
         return;
     }
     
-    showImportStatus('Traitement des entrées BibTeX...', 'loading');
+    showImportStatus('Processing BibTeX entries...', 'loading');
     
     try {
         // Parse BibTeX entries (now async to fetch arXiv abstracts)
         const articles = await parseMultipleBibTeXEntries(bibtexText);
         
         if (articles.length === 0) {
-            showImportStatus('Aucune entrée BibTeX valide trouvée', 'error');
+            showImportStatus('No valid BibTeX entry found', 'error');
             return;
         }
         
@@ -265,7 +265,7 @@ async function processBibTeXImport() {
             pendingImportArticle = article;
             
             fillFormWithArticleData(article);
-            showImportStatus(`✓ Entrée BibTeX importée: ${article.title}`, 'success');
+            showImportStatus(`✓ BibTeX entry imported: ${article.title}`, 'success');
             hideBibTeXPasteArea();
             // Don't automatically open manual form - let user decide
             
@@ -337,11 +337,11 @@ async function processBibTeXImport() {
                 window.closeOnboarding();
             }
             
-            showNotification(`✓ ${articles.length} articles importés depuis BibTeX`, 'success');
+            showNotification(`✓ ${articles.length} articles imported from BibTeX`, 'success');
         }
     } catch (error) {
         console.error('BibTeX parse error:', error);
-        showImportStatus('Erreur lors du traitement de l\'entrée BibTeX', 'error');
+        showImportStatus('Error processing BibTeX entry', 'error');
     }
 }
 
@@ -406,7 +406,7 @@ async function handleBibFile(file) {
 // ===== PDF HANDLING =====
 
 async function handlePdfFile(file) {
-    showImportStatus('Extraction des métadonnées du PDF...', 'loading');
+    showImportStatus('Extracting PDF metadata...', 'loading');
     
     try {
         // Use PDF.js library if available, otherwise extract basic info
@@ -429,16 +429,16 @@ async function handlePdfFile(file) {
             if (doiMatch) {
                 const doiField = document.getElementById('articleDoi');
                 if (doiField) doiField.value = doiMatch[0];
-                showImportStatus('PDF chargé. Tentative d\'import via DOI trouvé...', 'loading');
+                showImportStatus('PDF loaded. Attempting import via found DOI...', 'loading');
                 await importFromDoi(doiMatch[0]);
             } else {
-                showImportStatus('✓ Fichier PDF chargé (nom extrait). Utilisez DOI/arXiv pour plus d\'infos.', 'success');
+                showImportStatus('✓ PDF file loaded (name extracted). Use DOI/arXiv for more info.', 'success');
                 toggleManualForm(); // Show form for manual entry
             }
         }
     } catch (error) {
         console.error('PDF processing error:', error);
-        showImportStatus('Erreur lors du traitement du PDF', 'error');
+        showImportStatus('Error processing PDF', 'error');
     }
 }
 
@@ -452,7 +452,7 @@ async function extractPdfMetadata(file) {
     
     if (doiMatch) {
         const doi = doiMatch[0].replace(/[.,;]$/, ''); // Remove trailing punctuation
-        showImportStatus('DOI trouvé dans le PDF, import en cours...', 'loading');
+        showImportStatus('DOI found in PDF, importing...', 'loading');
         await importFromDoi(doi);
     } else {
         const filename = file.name.replace('.pdf', '');
@@ -463,7 +463,7 @@ async function extractPdfMetadata(file) {
         const pdfUrl = URL.createObjectURL(file);
         if (pdfField) pdfField.value = pdfUrl;
         
-        showImportStatus('PDF chargé, mais aucun DOI trouvé. Veuillez compléter manuellement.', 'success');
+        showImportStatus('PDF loaded, but no DOI found. Please complete manually.', 'success');
         toggleManualForm();
     }
 }
@@ -484,7 +484,7 @@ async function importFromDoi(doi) {
     }
     
     if (!doi) {
-        showImportStatus('Veuillez entrer un DOI', 'error');
+        showImportStatus('Please enter a DOI', 'error');
         return;
     }
     
@@ -492,12 +492,12 @@ async function importFromDoi(doi) {
     const existingArticle = appData.articles.find(a => a.doi && a.doi.toLowerCase() === doi.toLowerCase());
     if (existingArticle) {
         const confirmImport = confirm(
-            `⚠️ Attention : Un article avec ce DOI existe déjà :\n\n` +
+            `⚠️ Warning: An article with this DOI already exists:\n\n` +
             `"${existingArticle.title}"\n\n` +
-            `Voulez-vous quand même importer ce DOI ?`
+            `Do you want to import this DOI anyway?`
         );
         if (!confirmImport) {
-            showImportStatus('Import annulé', 'info');
+            showImportStatus('Import cancelled', 'info');
             const input = document.getElementById('quickImport');
             if (input) input.value = '';
             resetImportZone();
@@ -506,7 +506,7 @@ async function importFromDoi(doi) {
     }
     
     console.log('📚 Importing DOI:', doi);
-    showImportStatus('Récupération des métadonnées...', 'loading');
+    showImportStatus('Fetching metadata...', 'loading');
     
     try {
         // Try to fetch BibTeX first for better metadata
@@ -603,7 +603,7 @@ async function importFromDoi(doi) {
             linkField.value = work.URL;
         }
         
-        showImportStatus('✓ Métadonnées importées avec succès !', 'success');
+        showImportStatus('✓ Metadata imported successfully!', 'success');
         
         // Show success summary
         showImportSuccess({
@@ -618,7 +618,7 @@ async function importFromDoi(doi) {
         
     } catch (error) {
         console.error('Error importing DOI:', error);
-        showImportStatus(`Erreur: ${error.message}`, 'error');
+        showImportStatus(`Error: ${error.message}`, 'error');
         toggleManualForm(); // Show manual form on error
     }
 }
@@ -634,7 +634,7 @@ async function importFromArxiv(arxivId) {
     }
     
     if (!arxivId) {
-        showImportStatus('Veuillez entrer un ID arXiv', 'error');
+        showImportStatus('Please enter an arXiv ID', 'error');
         return;
     }
     
@@ -649,12 +649,12 @@ async function importFromArxiv(arxivId) {
     
     if (existingArticle) {
         const confirmImport = confirm(
-            `⚠️ Attention : Un article avec cet ID arXiv existe déjà :\n\n` +
+            `⚠️ Warning: An article with this arXiv ID already exists:\n\n` +
             `"${existingArticle.title}"\n\n` +
-            `Voulez-vous quand même importer cet article ?`
+            `Do you want to import this article anyway?`
         );
         if (!confirmImport) {
-            showImportStatus('Import annulé', 'info');
+            showImportStatus('Import cancelled', 'info');
             const input = document.getElementById('quickImport');
             if (input) input.value = '';
             resetImportZone();
@@ -662,7 +662,7 @@ async function importFromArxiv(arxivId) {
         }
     }
     
-    showImportStatus('Récupération des métadonnées arXiv...', 'loading');
+    showImportStatus('Fetching arXiv metadata...', 'loading');
     
     try {
         // Use arXiv API
@@ -683,7 +683,7 @@ async function importFromArxiv(arxivId) {
         const parserError = xml.querySelector('parsererror');
         if (parserError) {
             console.error('XML parsing error:', parserError.textContent);
-            throw new Error('Erreur de parsing XML de la réponse arXiv');
+            throw new Error('XML parsing error from arXiv response');
         }
         
         const entry = xml.querySelector('entry');
@@ -694,10 +694,10 @@ async function importFromArxiv(arxivId) {
             // Check if there's an error message in the feed
             const totalResults = xml.querySelector('totalResults')?.textContent;
             if (totalResults === '0') {
-                throw new Error(`Article arXiv non trouvé pour l'ID: ${arxivId}`);
+                throw new Error(`arXiv article not found for ID: ${arxivId}`);
             }
             
-            throw new Error('Article arXiv non trouvé - réponse invalide');
+            throw new Error('arXiv article not found - invalid response');
         }
         
         console.log('Entry found, extracting metadata...');
@@ -720,7 +720,7 @@ async function importFromArxiv(arxivId) {
         
         // Validate that we got meaningful data
         if (!title || title.length < 5) {
-            throw new Error('Titre non trouvé dans la réponse arXiv');
+            throw new Error('Title not found in arXiv response');
         }
         
         // Try to fetch BibTeX from arXiv (arxiv2bib service or similar)
@@ -770,7 +770,7 @@ async function importFromArxiv(arxivId) {
             journalField.value = 'arXiv preprint';
         }
         
-        showImportStatus('✓ Métadonnées arXiv importées avec succès !', 'success');
+        showImportStatus('✓ arXiv metadata imported successfully!', 'success');
         
         // Show success summary
         showImportSuccess({
@@ -855,13 +855,13 @@ function showImportSuccess(data) {
     summary.className = 'import-summary';
     summary.innerHTML = `
         <div class="import-success-icon">✓</div>
-        <h3>Article importé</h3>
+        <h3>Article imported</h3>
         <div class="import-details">
-            <p><strong>Titre:</strong> ${data.title || 'Non disponible'}</p>
-            <p><strong>Auteurs:</strong> ${data.authors || 'Non disponible'}</p>
+            <p><strong>Title:</strong> ${data.title || 'Not available'}</p>
+            <p><strong>Authors:</strong> ${data.authors || 'Not available'}</p>
             ${data.doi ? `<p><strong>DOI:</strong> ${data.doi}</p>` : ''}
         </div>
-        <button type="button" id="reimportBtn" class="btn-secondary">↻ Réimporter</button>
+        <button type="button" id="reimportBtn" class="btn-secondary">↻ Reimport</button>
     `;
     
     importZone.insertBefore(summary, importZone.firstChild);
@@ -892,7 +892,7 @@ async function importBibtexFile(event) {
         const articles = await parseMultipleBibTeXEntries(text);
         
         if (articles.length === 0) {
-            showNotification('❌ Aucune entrée BibTeX valide trouvée dans le fichier', 'error');
+            showNotification('❌ No valid BibTeX entry found in file', 'error');
             return;
         }
         
@@ -962,11 +962,11 @@ async function importBibtexFile(event) {
             });
         }
         
-        showNotification(`✓ ${articles.length} article(s) importé(s) depuis BibTeX`, 'success');
+        showNotification(`✓ ${articles.length} article(s) imported from BibTeX`, 'success');
         
     } catch (error) {
         console.error('Error importing BibTeX file:', error);
-        showNotification('❌ Erreur lors de l\'import du fichier BibTeX', 'error');
+        showNotification('❌ Error importing BibTeX file', 'error');
     } finally {
         // Reset file input
         event.target.value = '';

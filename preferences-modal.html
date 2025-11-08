@@ -1,0 +1,121 @@
+<!-- Preferences Modal -->
+<div id="preferencesModal" class="modal">
+    <div class="modal-content preferences-modal">
+        <button class="close-modal" onclick="closePreferencesModal()">&times;</button>
+        
+        <div class="preferences-container">
+            <!-- Left Sidebar with Tabs -->
+            <div class="preferences-sidebar">
+                <button class="preferences-tab active" data-tab="profile">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Profile
+                </button>
+                <button class="preferences-tab" data-tab="appearance">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    Appearance
+                </button>
+                <button class="preferences-tab" data-tab="support">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    Support
+                </button>
+            </div>
+
+            <!-- Right Content Area -->
+            <div class="preferences-content">
+                <!-- Profile Tab -->
+                <div class="preferences-panel active" id="profile-panel">
+                    <h2>Profile Information</h2>
+                    
+                    <div class="preferences-section">
+                        <label>Display Name</label>
+                        <div id="prefDisplayName" class="preferences-display-value"></div>
+                    </div>
+
+                    <div class="preferences-section">
+                        <label>Username</label>
+                        <div class="preferences-input-group">
+                            <span class="preferences-input-prefix">@</span>
+                            <input type="text" id="prefUsername" class="preferences-input" 
+                                   pattern="[a-zA-Z0-9_]+" minlength="3" maxlength="20">
+                            <button class="btn-secondary btn-small" onclick="updateUsername()">Save</button>
+                        </div>
+                        <small class="preferences-hint">3-20 characters, letters, numbers and underscore only</small>
+                    </div>
+
+                    <div class="preferences-section">
+                        <label>Connected Accounts</label>
+                        <div class="connected-accounts" id="connectedAccounts">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="preferences-section danger-zone">
+                        <h3>Delete Account</h3>
+                        <p>Once you delete your account, there is no going back. All your projects and data will be permanently deleted.</p>
+                        <button class="btn-danger" onclick="confirmDeleteAccount()">Delete Account</button>
+                    </div>
+                </div>
+
+                <!-- Appearance Tab -->
+                <div class="preferences-panel" id="appearance-panel">
+                    <h2>Appearance</h2>
+                    
+                    <div class="preferences-section">
+                        <label>Dark Mode</label>
+                        <div class="preferences-toggle-container">
+                            <label class="preferences-toggle">
+                                <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                                <span class="preferences-toggle-slider"></span>
+                            </label>
+                            <div class="preferences-toggle-label">
+                                <span id="darkModeStatus">Light Mode</span>
+                            </div>
+                        </div>
+                        <small class="preferences-hint preferences-warning">⚠️ Dark mode is not fully implemented yet. Some elements may not display correctly.</small>
+                    </div>
+                </div>
+
+                <!-- Support Tab -->
+                <div class="preferences-panel" id="support-panel">
+                    <h2>Support</h2>
+                    
+                    <div class="preferences-section">
+                        <label>Report a Bug</label>
+                        <p style="color: #6c757d; margin-bottom: 16px;">Found a bug or have a suggestion? Let us know!</p>
+                        <button class="btn-primary" onclick="reportBug()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            </svg>
+                            Open GitHub Issues
+                        </button>
+                    </div>
+
+                    <div class="preferences-section">
+                        <label>About PaperGraph</label>
+                        <p style="color: #6c757d; line-height: 1.6;">
+                            PaperGraph helps researchers organize and visualize their academic papers.<br>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

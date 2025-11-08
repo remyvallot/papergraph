@@ -1,0 +1,1331 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Projects - Papergraph</title>
+    
+    <!-- Base path helper must load first -->
+    <script type="module">
+        import { navigateTo } from './js/utils/base-path.js';
+        window.navigateTo = navigateTo;
+    </script>
+    <link href="https://api.fontshare.com/v2/css?f[]=chillax@400,700&display=swap" rel="stylesheet">
+    
+    <!-- Modular CSS - Base -->
+    <link rel="stylesheet" href="css/base/reset.css">
+    <link rel="stylesheet" href="css/base/typography.css">
+    
+    <!-- Modular CSS - Components -->
+    <link rel="stylesheet" href="css/components/buttons.css">
+    <link rel="stylesheet" href="css/components/dropdown.css">
+    <link rel="stylesheet" href="css/components/modals.css">
+    <link rel="stylesheet" href="css/components/footer.css">
+    <link rel="stylesheet" href="css/components/onboarding.css">
+    
+    <!-- Cursors - MUST BE LAST to override everything -->
+    <link rel="stylesheet" href="css/base/cursors.css">
+    
+    <link rel="icon" type="image/svg+xml" href="assets/logo-papergraph.svg">
+</head>
+<body>
+    <!-- Page Container -->
+    <div class="pg-page">
+        
+        <!-- Header -->
+        <header class="pg-header">
+            <!-- Logo Menu -->
+            <div class="logo-menu-container">
+                <button class="logo-menu-btn">
+                    <img src="assets/logo-papergraph.svg" alt="papergraph" class="logo-icon">
+                    <span class="logo-text">papergraph</span>
+                </button>
+                
+                <!-- Logo Dropdown -->
+                <div id="logoDropdown" class="logo-dropdown">
+                    <button class="logo-dropdown-item" onclick="window.navigateTo('projects.html')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="3" y1="9" x2="21" y2="9"/>
+                            <line x1="9" y1="21" x2="9" y2="9"/>
+                        </svg>
+                        <span>Dashboard</span>
+                    </button>
+                    <button class="logo-dropdown-item" onclick="createNewProject()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <span>New Project</span>
+                    </button>
+                    <button class="logo-dropdown-item logo-dropdown-item-submenu" id="projectImportMenu">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <span>Import</span>
+                        <svg class="submenu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
+                    <div class="logo-dropdown-divider"></div>
+                    <div class="logo-dropdown-section-title">Gallery</div>
+                    <button class="logo-dropdown-item" onclick="window.navigateTo('gallery.html')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1"/>
+                        </svg>
+                        <span>Explore Gallery</span>
+                    </button>
+                    <button class="logo-dropdown-item" onclick="openSubmitToGalleryModal()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <span>Submit to Gallery</span>
+                    </button>
+                    <div class="logo-dropdown-divider"></div>
+                    <div class="logo-dropdown-section-title">Help</div>
+                    <button class="logo-dropdown-item" onclick="window.open('https://github.com/remyvallot/papergraph#readme', '_blank')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 1 1 5.82 1c0 2-3 2.5-3 4"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <span>Help</span>
+                    </button>
+                    <button class="logo-dropdown-item" onclick="window.open('https://github.com/remyvallot/papergraph/issues/new', '_blank')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <g transform="translate(0,-2)">
+                                <rect x="7" y="9" width="10" height="10" rx="5" ry="5"/>
+                                <line x1="7" y1="12" x2="3" y2="10"/>
+                                <line x1="7" y1="15" x2="3" y2="15"/>
+                                <line x1="7" y1="18" x2="3" y2="20"/>
+                                <line x1="17" y1="12" x2="21" y2="10"/>
+                                <line x1="17" y1="15" x2="21" y2="15"/>
+                                <line x1="17" y1="18" x2="21" y2="20"/>
+                            </g>
+                        </svg>
+                        <span>Report Bug</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Import Submenu for Projects -->
+            <div id="projectImportSubmenu" class="dropdown-submenu" style="display: none; position: fixed;">
+                <button class="logo-dropdown-item" onclick="importProject()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span>Import Project</span>
+                </button>
+                <button class="logo-dropdown-item" onclick="importBibtex()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <path d="M9 15h6"/>
+                        <path d="M9 11h6"/>
+                    </svg>
+                    <span>Import BibTeX (.bib)</span>
+                </button>
+            </div>
+            
+            <div class="pg-header-actions">
+                <!-- User Avatar Dropdown -->
+                <div class="user-dropdown-container">
+                    <button id="userAvatarBtn" class="user-avatar-btn" style="display: none;">
+                        <img id="userAvatar" class="pg-avatar" src="" alt="User">
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="userDropdown" class="user-dropdown">
+                        <div class="user-dropdown-header">
+                            <img id="userAvatarDropdown" class="user-dropdown-avatar" src="" alt="User">
+                            <div class="user-dropdown-info">
+                                <div id="userNameDropdown" class="user-dropdown-name"></div>
+                                <div id="userUsernameDropdown" class="user-dropdown-username"></div>
+                            </div>
+                        </div>
+                        <div class="user-dropdown-divider"></div>
+                        <button class="user-dropdown-item" onclick="openPreferencesModal()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58z"/>
+                            </svg>
+                            Preferences
+                        </button>
+                        <div class="user-dropdown-divider"></div>
+                        <button class="user-dropdown-item user-dropdown-item-danger" onclick="signOut()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="pg-main">
+            <div class="pg-dashboard-header">
+                <h1>My Projects</h1>
+                <div class="pg-header-buttons">
+                    <button class="btn-secondary" onclick="importProject()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Import Project
+                    </button>
+                    <button class="btn-primary" onclick="createNewProject()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        New Project
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" style="text-align: center; padding: 80px 32px; color: #999;">
+                <p>Loading your projects...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="pg-empty-state" style="display: none;">
+                <h2>No projects yet</h2>
+                <p>Create your first project to start organizing your research</p>
+                <button class="btn-primary" onclick="createNewProject()">Create Project</button>
+            </div>
+
+            <!-- Projects Grid -->
+            <div id="projectsGrid" class="pg-projects-grid">
+                <!-- Projects will be inserted here dynamically -->
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <div data-include="footer"></div>
+
+    </div>
+
+    <!-- Preferences Modal -->
+    <div data-include="preferences-modal"></div>
+
+    <!-- Submit to Gallery Modal -->
+    <div id="submitGalleryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSubmitGalleryModal()">&times;</span>
+            <h2>Submit to Gallery</h2>
+            <form id="submitGalleryForm" onsubmit="handleSubmitToGallery(event)">
+                <div class="form-group">
+                    <label for="submitProjectSelect">Select Project</label>
+                    <select id="submitProjectSelect" class="form-input" required>
+                        <option value="">Choose a project...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="submitTitle">Title</label>
+                    <input type="text" id="submitTitle" class="form-input" placeholder="Project title" maxlength="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="submitDescription">Description (2 lines max)</label>
+                    <textarea id="submitDescription" class="form-input" placeholder="Brief description of your research project..." rows="3" maxlength="200" required></textarea>
+                    <small style="color: #999;"><span id="descCharCount">0</span>/200 characters</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="submitAuthor">Full Name</label>
+                    <input type="text" id="submitAuthor" class="form-input" placeholder="Your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="submitAffiliation">Affiliation</label>
+                    <input type="text" id="submitAffiliation" class="form-input" placeholder="University or institution" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Thumbnail (optional)</label>
+                    <div style="border: 2px dashed #ddd; border-radius: 8px; padding: 20px; text-align: center;">
+                        <div id="thumbnailPreview" style="display: none; position: relative;">
+                            <img id="thumbnailImg" src="" alt="Thumbnail" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+                            <button type="button" onclick="removeThumbnail()" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">×</button>
+                        </div>
+                        <div id="thumbnailPlaceholder">
+                            <p style="margin: 0 0 10px;">Click to upload an image</p>
+                            <button type="button" class="btn-secondary" onclick="document.getElementById('thumbnailInput').click()">Choose File</button>
+                        </div>
+                        <input type="file" id="thumbnailInput" accept="image/png,image/jpeg" style="display: none;">
+                    </div>
+                </div>
+
+                <p style="background: #f5f9ff; border-left: 4px solid #4a90e2; padding: 12px; margin: 20px 0; font-size: 0.9rem;">
+                    <strong>Note:</strong> GitHub authentication is required. Submissions create a merge request for review.
+                </p>
+
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" class="btn-secondary" onclick="closeSubmitGalleryModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="submitGalleryButton">Submit Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Project Modal -->
+    <div id="newProjectModal" class="modal">
+        <div class="modal-content modal-small">
+            <span class="close" onclick="closeNewProjectModal()">&times;</span>
+            <h2>Create New Project</h2>
+            <form id="newProjectForm" onsubmit="handleCreateProject(event)">
+                <div class="form-group">
+                    <label for="projectName">Project Name</label>
+                    <input type="text" id="projectName" placeholder="e.g., Machine Learning Papers" required />
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" class="btn-secondary" onclick="closeNewProjectModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content modal-small">
+            <span class="close" onclick="closeDeleteModal()">&times;</span>
+            <h2>Delete Project?</h2>
+            <p style="margin-bottom: 24px; color: #666;">This action cannot be undone. All data in this project will be permanently deleted.</p>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn-danger" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Projects Logic -->
+    <script type="module">
+        import { supabase } from './js/auth/config.js';
+        import { 
+            loadProjects, 
+            createProject, 
+            deleteProject,
+            renameProject 
+        } from './js/auth/projects.js';
+
+        let currentUser = null;
+        let projects = [];
+        let projectToDelete = null;
+
+        // Check authentication on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (!session) {
+                // Not logged in, redirect to landing page
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = session.user;
+            
+            // Ensure user has a username (for OAuth users)
+            await ensureUserHasUsername();
+            
+            // Setup user dropdown
+            setupUserDropdown();
+            
+            // Setup logo dropdown
+            setupLogoDropdown();
+
+            // Load projects
+            await refreshProjects();
+            
+            // Check if we should auto-open new project modal
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('new') === 'true') {
+                // Clear the URL parameter
+                window.history.replaceState({}, document.title, window.location.pathname);
+                // Open new project modal
+                setTimeout(() => openNewProjectModal(), 300);
+            }
+        });
+
+        // Refresh projects list
+        async function refreshProjects() {
+            try {
+                projects = await loadProjects();
+                renderProjects();
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                alert('Failed to load projects: ' + error.message);
+            }
+        }
+
+        // Utility: Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Utility: Format date to readable string
+        function formatDate(dateString) {
+            if (!dateString) return 'Unknown date';
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            
+            // For older dates, show formatted date
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        // Render projects
+        function renderProjects() {
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+            const projectsGrid = document.getElementById('projectsGrid');
+
+            loadingState.style.display = 'none';
+
+            if (projects.length === 0) {
+                emptyState.style.display = 'block';
+                projectsGrid.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                projectsGrid.style.display = 'block';
+                
+                // Render all projects
+                let html = '<div class="pg-projects-section"><div class="pg-projects-grid">';
+                html += projects.map(project => renderProjectCard(project)).join('');
+                html += '</div></div>';
+                
+                projectsGrid.innerHTML = html;
+            }
+        }
+        
+        // Render individual project card
+        function renderProjectCard(project) {
+            const stats = getProjectStats(project);
+            const preview = generateProjectPreview(project);
+            
+            return `
+            <div class="pg-project-card" onclick="openProject('${project.id}')">
+                <div class="pg-project-preview">
+                    ${preview}
+                </div>
+                <div class="pg-project-info">
+                    <div class="pg-project-header">
+                        <h3 class="pg-project-title" 
+                            id="title-${project.id}"
+                            contenteditable="false" 
+                            data-project-id="${project.id}"
+                            data-original-name="${escapeHtml(project.name)}"
+                            onclick="event.stopPropagation();"
+                            onblur="finishEditingTitle(this, '${escapeHtml(project.name)}')"
+                            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();} if(event.key==='Escape'){this.textContent='${escapeHtml(project.name)}';this.blur();}"
+                        >${escapeHtml(project.name)}</h3>
+                                <div class="pg-project-menu">
+                                    <button class="pg-project-menu-btn" onclick="event.stopPropagation(); toggleProjectMenu('${project.id}')" data-menu-id="${project.id}">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="1"/>
+                                            <circle cx="12" cy="5" r="1"/>
+                                            <circle cx="12" cy="19" r="1"/>
+                                        </svg>
+                                    </button>
+                                    <div class="pg-project-menu-dropdown" id="menu-${project.id}" style="display: none;">
+                                        <button onclick="event.stopPropagation(); openProject('${project.id}')">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                                <polyline points="15 3 21 3 21 9"/>
+                                                <line x1="10" y1="14" x2="21" y2="3"/>
+                                            </svg>
+                                            Open
+                                        </button>
+                                        <button onclick="event.stopPropagation(); startRenameFromMenu('${project.id}')">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                            </svg>
+                                            Rename
+                                        </button>
+                                        <button class="danger" onclick="event.stopPropagation(); deleteProjectPrompt('${project.id}')">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="3 6 5 6 21 6"/>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                            </svg>
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pg-project-stats">
+                                <div class="pg-stat">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                    </svg>
+                                    <span>${stats.nodes} nodes</span>
+                                </div>
+                                <div class="pg-stat">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="5" y1="12" x2="19" y2="12"/>
+                                    </svg>
+                                    <span>${stats.edges} connections</span>
+                                </div>
+                            </div>
+                            <div class="pg-project-meta">
+                                Updated ${formatDate(project.updated_at || project.created_at)}
+                            </div>
+                        </div>
+                    </div>
+            `;
+        }
+        
+        // Get project statistics
+        function getProjectStats(project) {
+            // If stats are provided by the RPC function, use them
+            if (project.node_count !== undefined && project.edge_count !== undefined) {
+                return {
+                    nodes: project.node_count,
+                    edges: project.edge_count
+                };
+            }
+            
+            // Otherwise calculate from data (fallback)
+            const data = project.data || {};
+            return {
+                nodes: (data.nodes || []).length,
+                edges: (data.edges || []).length
+            };
+        }
+        
+        // Generate project preview (uses stored PNG or fallback SVG)
+        function generateProjectPreview(project) {
+            const data = project.data || {};
+            const nodes = data.nodes || [];
+            
+            // Check if project has a stored preview image
+            if (data.previewImage) {
+                return `<img src="${data.previewImage}" alt="Project preview" class="pg-preview-img" />`;
+            }
+            
+            if (nodes.length === 0) {
+                return '<div class="pg-preview-empty">No nodes yet</div>';
+            }
+            
+            // Fallback: Create a simple SVG preview
+            const edges = data.edges || [];
+            let svg = '<svg viewBox="0 0 200 150" class="pg-preview-svg">';
+            
+            // Draw edges first (so they appear behind nodes)
+            edges.slice(0, 10).forEach((edge, i) => {
+                const angle = (i / Math.max(edges.length, 1)) * Math.PI * 2;
+                const x1 = 100 + Math.cos(angle) * 40;
+                const y1 = 75 + Math.sin(angle) * 30;
+                const x2 = 100 + Math.cos(angle + 1) * 40;
+                const y2 = 75 + Math.sin(angle + 1) * 30;
+                svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#ddd" stroke-width="1.5"/>`;
+            });
+            
+            // Draw nodes
+            nodes.slice(0, 15).forEach((node, i) => {
+                const angle = (i / Math.max(nodes.length, 1)) * Math.PI * 2;
+                const radius = 35 + (i % 3) * 15;
+                const x = 100 + Math.cos(angle) * radius;
+                const y = 75 + Math.sin(angle) * radius;
+                const color = node.tags && node.tags.length > 0 ? '#4a90e2' : '#999';
+                svg += `<circle cx="${x}" cy="${y}" r="4" fill="${color}"/>`;
+            });
+            
+            svg += '</svg>';
+            return svg;
+        }
+        
+        // Toggle project menu
+        window.toggleProjectMenu = function(projectId) {
+            const menu = document.getElementById(`menu-${projectId}`);
+            const allMenus = document.querySelectorAll('.pg-project-menu-dropdown');
+            
+            // Close all other menus
+            allMenus.forEach(m => {
+                if (m.id !== `menu-${projectId}`) {
+                    m.style.display = 'none';
+                }
+            });
+            
+            // Toggle current menu
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // Close menus when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.pg-project-menu')) {
+                document.querySelectorAll('.pg-project-menu-dropdown').forEach(m => {
+                    m.style.display = 'none';
+                });
+            }
+        });
+        
+        // Open project
+        window.openProject = function(projectId) {
+            window.location.href = `editor.html?id=${projectId}`;
+        };
+
+        // Create new project
+        window.createNewProject = function() {
+            document.getElementById('newProjectModal').classList.add('active');
+        };
+
+        window.closeNewProjectModal = function() {
+            document.getElementById('newProjectModal').classList.remove('active');
+            document.getElementById('newProjectForm').reset();
+        };
+
+        window.handleCreateProject = async function(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('projectName').value.trim();
+            
+            if (!name) return;
+
+            try {
+                const newProject = await createProject(name);
+                closeNewProjectModal();
+                // Redirect to editor instead of refreshing list
+                window.location.href = `editor.html?id=${newProject.id}`;
+            } catch (error) {
+                console.error('Error creating project:', error);
+                alert('Failed to create project: ' + error.message);
+            }
+        };
+
+        // Start rename from menu
+        window.startRenameFromMenu = function(projectId) {
+            // Close the menu
+            const menu = document.getElementById(`menu-${projectId}`);
+            if (menu) menu.style.display = 'none';
+            
+            // Get the title element
+            const titleElement = document.getElementById(`title-${projectId}`);
+            if (titleElement) {
+                titleElement.contentEditable = 'true';
+                titleElement.focus();
+                // Select all text
+                const range = document.createRange();
+                range.selectNodeContents(titleElement);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        };
+        
+        window.finishEditingTitle = async function(element, originalName) {
+            element.contentEditable = 'false';
+            const newName = element.textContent.trim();
+            
+            if (!newName || newName === originalName) {
+                element.textContent = originalName;
+                return;
+            }
+            
+            const projectId = element.dataset.projectId;
+            
+            try {
+                await renameProject(projectId, newName);
+                // Update the data attribute with new name
+                element.dataset.originalName = newName;
+            } catch (error) {
+                console.error('Error renaming project:', error);
+                alert('Failed to rename project: ' + error.message);
+                element.textContent = originalName;
+            }
+        };
+
+        // Delete project
+        window.deleteProjectPrompt = function(projectId) {
+            projectToDelete = projectId;
+            document.getElementById('deleteModal').classList.add('active');
+        };
+
+        window.closeDeleteModal = function() {
+            document.getElementById('deleteModal').classList.remove('active');
+            projectToDelete = null;
+        };
+
+        window.confirmDelete = async function() {
+            if (!projectToDelete) return;
+
+            try {
+                await deleteProject(projectToDelete);
+                closeDeleteModal();
+                await refreshProjects();
+            } catch (error) {
+                console.error('Error deleting project:', error);
+                alert('Failed to delete project: ' + error.message);
+            }
+        };
+
+        // Generate unique username from email or name
+        async function generateUniqueUsername(baseUsername) {
+            let username = baseUsername.toLowerCase().replace(/[^a-z0-9_]/g, '');
+            if (username.length < 3) username = 'user_' + username;
+            if (username.length > 20) username = username.substring(0, 20);
+            
+            let finalUsername = username;
+            let suffix = 1;
+            
+            while (true) {
+                const { data, error } = await supabase
+                    .from('user_profiles')
+                    .select('username')
+                    .eq('username', finalUsername)
+                    .maybeSingle();
+                
+                if (!data) break; // Username is available
+                
+                finalUsername = username + suffix;
+                suffix++;
+                
+                if (suffix > 100) break; // Safety limit
+            }
+            
+            return finalUsername;
+        }
+
+        // Ensure user has a username (create if missing)
+        async function ensureUserHasUsername() {
+            if (!currentUser) return;
+            
+            // Check if user already has username in metadata
+            if (currentUser.user_metadata?.username) return;
+            
+            // Get username from OAuth provider or generate from email
+            let username = null;
+            
+            if (currentUser.user_metadata?.user_name) {
+                // GitHub provides user_name
+                username = currentUser.user_metadata.user_name;
+            } else if (currentUser.user_metadata?.preferred_username) {
+                // Some OAuth providers use preferred_username
+                username = currentUser.user_metadata.preferred_username;
+            } else if (currentUser.user_metadata?.name) {
+                // Google provides name
+                username = currentUser.user_metadata.name.replace(/\s+/g, '_');
+            } else {
+                // Generate from email
+                username = currentUser.email.split('@')[0];
+            }
+            
+            // Generate unique username
+            const uniqueUsername = await generateUniqueUsername(username);
+            
+            // Update user metadata
+            const { error } = await supabase.auth.updateUser({
+                data: { username: uniqueUsername }
+            });
+            
+            if (error) {
+                console.error('Error setting username:', error);
+            } else {
+                // Update local currentUser object
+                currentUser.user_metadata.username = uniqueUsername;
+                
+                // Store in user_profiles table
+                await supabase
+                    .from('user_profiles')
+                    .upsert({
+                        id: currentUser.id,
+                        username: uniqueUsername,
+                        email: currentUser.email,
+                        updated_at: new Date().toISOString()
+                    });
+            }
+        }
+
+        // Setup user dropdown
+        // Preferences Modal Functions
+        window.openPreferencesModal = function() {
+            // Close the avatar dropdown first
+            const userDropdown = document.getElementById('userDropdown');
+            if (userDropdown) {
+                userDropdown.classList.remove('active');
+            }
+            
+            const modal = document.getElementById('preferencesModal');
+            modal.style.display = 'flex';
+            
+            // Initialize tab switching (in case modal was just loaded)
+            initPreferencesTabs();
+            
+            loadPreferencesData();
+        }
+        
+        function initPreferencesTabs() {
+            const tabs = document.querySelectorAll('.preferences-tab');
+            const panels = document.querySelectorAll('.preferences-panel');
+
+            // Remove any existing listeners by cloning
+            tabs.forEach(tab => {
+                const newTab = tab.cloneNode(true);
+                tab.parentNode.replaceChild(newTab, tab);
+            });
+
+            // Re-query after cloning
+            const newTabs = document.querySelectorAll('.preferences-tab');
+            
+            newTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    
+                    newTabs.forEach(t => t.classList.remove('active'));
+                    panels.forEach(p => p.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    const panel = document.getElementById(`${tabName}-panel`);
+                    if (panel) {
+                        panel.classList.add('active');
+                    }
+                });
+            });
+        }
+
+        window.closePreferencesModal = function() {
+            const modal = document.getElementById('preferencesModal');
+            modal.style.display = 'none';
+        }
+
+        async function loadPreferencesData() {
+            if (!currentUser) return;
+
+            // Load profile data
+            const displayName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email.split('@')[0];
+            const username = currentUser.user_metadata?.username || '';
+            
+            document.getElementById('prefDisplayName').textContent = displayName;
+            document.getElementById('prefUsername').value = username;
+
+            // Load dark mode state
+            const darkModeEnabled = localStorage.getItem('darkMode') === 'enabled';
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeStatus = document.getElementById('darkModeStatus');
+            if (darkModeToggle && darkModeStatus) {
+                darkModeToggle.checked = darkModeEnabled;
+                darkModeStatus.textContent = darkModeEnabled ? 'Dark Mode' : 'Light Mode';
+            }
+
+            // Load connected accounts
+            const connectedAccountsDiv = document.getElementById('connectedAccounts');
+            connectedAccountsDiv.innerHTML = '';
+
+            const providers = currentUser.app_metadata?.providers || [currentUser.app_metadata?.provider || 'email'];
+            const email = currentUser.email;
+            const avatarUrl = currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture;
+
+            providers.forEach(provider => {
+                const accountDiv = document.createElement('div');
+                accountDiv.className = 'connected-account';
+                
+                let providerIcon = '';
+                let providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
+                
+                if (provider === 'github') {
+                    providerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>';
+                } else if (provider === 'google') {
+                    providerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>';
+                } else {
+                    providerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6"/></svg>';
+                }
+                
+                accountDiv.innerHTML = `
+                    ${providerIcon}
+                    <div class="connected-account-info">
+                        <div class="connected-account-name">${providerName}</div>
+                        <div class="connected-account-email">${email}</div>
+                    </div>
+                `;
+                
+                connectedAccountsDiv.appendChild(accountDiv);
+            });
+        }
+
+        window.updateUsername = async function() {
+            const newUsername = document.getElementById('prefUsername').value.trim();
+            
+            if (!newUsername || newUsername.length < 3 || newUsername.length > 20) {
+                showNotification('Username must be 3-20 characters', 'error');
+                return;
+            }
+
+            if (!/^[a-zA-Z0-9_]+$/.test(newUsername)) {
+                showNotification('Username can only contain letters, numbers and underscore', 'error');
+                return;
+            }
+
+            // Check if username is already taken
+            const { data: existingUser } = await supabase
+                .from('user_profiles')
+                .select('id')
+                .eq('username', newUsername)
+                .single();
+
+            if (existingUser && existingUser.id !== currentUser.id) {
+                showNotification('Username already taken', 'error');
+                return;
+            }
+
+            // Update username in user metadata
+            const { error: updateError } = await supabase.auth.updateUser({
+                data: { username: newUsername }
+            });
+
+            if (updateError) {
+                showNotification('Failed to update username', 'error');
+                return;
+            }
+
+            // Update in user_profiles table
+            const { error: profileError } = await supabase
+                .from('user_profiles')
+                .upsert({
+                    id: currentUser.id,
+                    username: newUsername,
+                    email: currentUser.email
+                });
+
+            if (profileError) {
+                console.error('Error updating profile:', profileError);
+            }
+
+            showNotification('Username updated successfully', 'success');
+            
+            // Refresh user data
+            const { data: { user } } = await supabase.auth.getUser();
+            currentUser = user;
+            setupUserDropdown();
+        }
+
+        window.confirmDeleteAccount = async function() {
+            const confirmed = confirm('âš ï¸ WARNING: This will permanently delete your account and all your data.\n\nThis action CANNOT be undone.\n\nType "DELETE" to confirm:');
+            
+            if (!confirmed) return;
+
+            const confirmation = prompt('Type DELETE to confirm account deletion:');
+            if (confirmation !== 'DELETE') {
+                alert('Account deletion cancelled');
+                return;
+            }
+
+            try {
+                // Delete all user data from profiles
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .delete()
+                    .eq('id', currentUser.id);
+
+                if (profileError) throw profileError;
+
+                // Delete all user projects
+                const { error: projectsError } = await supabase
+                    .from('projects')
+                    .delete()
+                    .eq('user_id', currentUser.id);
+
+                if (projectsError) throw projectsError;
+
+                // Sign out
+                await supabase.auth.signOut();
+                
+                alert('Account deleted successfully. Redirecting to home page...');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                alert('Failed to delete account: ' + error.message);
+            }
+        }
+
+        // Dark mode toggle
+        window.toggleDarkMode = function() {
+            const isDark = document.body.classList.toggle('dark-theme');
+            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+            document.getElementById('darkModeStatus').textContent = isDark ? 'Dark Mode' : 'Light Mode';
+        };
+
+        // Report bug function
+        window.reportBug = function() {
+            window.open('https://github.com/remyvallot/papergraph/issues/new', '_blank');
+        };
+
+        // Tab switching
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.preferences-tab');
+            const panels = document.querySelectorAll('.preferences-panel');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    panels.forEach(p => p.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tabName}-panel`).classList.add('active');
+                });
+            });
+
+            // Close modal on background click
+            const modal = document.getElementById('preferencesModal');
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closePreferencesModal();
+                    }
+                });
+            }
+
+            // Set dark mode toggle state on load
+            const darkModeEnabled = localStorage.getItem('darkMode') === 'enabled';
+            if (darkModeEnabled) {
+                document.body.classList.add('dark-theme');
+            }
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeStatus = document.getElementById('darkModeStatus');
+            if (darkModeToggle && darkModeStatus) {
+                darkModeToggle.checked = darkModeEnabled;
+                darkModeStatus.textContent = darkModeEnabled ? 'Dark Mode' : 'Light Mode';
+            }
+        });
+
+        function setupUserDropdown() {
+            if (!currentUser) return;
+            
+            const userAvatarBtn = document.getElementById('userAvatarBtn');
+            const userAvatar = document.getElementById('userAvatar');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            // Populate user info
+            const avatarUrl = currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture;
+            const username = currentUser.user_metadata?.username;
+            const displayName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email.split('@')[0];
+            const email = currentUser.email;
+            const provider = currentUser.app_metadata?.provider || 'email';
+            
+            if (avatarUrl) {
+                userAvatar.src = avatarUrl;
+                document.getElementById('userAvatarDropdown').src = avatarUrl;
+            }
+            
+            // Display name first, then username below
+            document.getElementById('userNameDropdown').textContent = displayName;
+            
+            const usernameElement = document.getElementById('userUsernameDropdown');
+            if (username) {
+                usernameElement.textContent = `@${username}`;
+                usernameElement.style.display = 'block';
+            } else {
+                usernameElement.style.display = 'none';
+            }
+            
+            userAvatarBtn.style.display = 'flex';
+            
+            // Toggle dropdown
+            userAvatarBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.classList.toggle('active');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!userAvatarBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.remove('active');
+                }
+            });
+        }
+
+        function setupLogoDropdown() {
+            const logoMenuBtn = document.querySelector('.logo-menu-btn');
+            const logoDropdown = document.getElementById('logoDropdown');
+            const importMenu = document.getElementById('projectImportMenu');
+            const importSubmenu = document.getElementById('projectImportSubmenu');
+            
+            if (!logoMenuBtn || !logoDropdown) return;
+            
+            // Toggle dropdown
+            logoMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                logoDropdown.classList.toggle('active');
+                // Close submenu when main dropdown closes
+                if (!logoDropdown.classList.contains('active')) {
+                    importSubmenu.style.display = 'none';
+                }
+            });
+            
+            // Handle import submenu
+            if (importMenu && importSubmenu) {
+                importMenu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const rect = importMenu.getBoundingClientRect();
+                    importSubmenu.style.top = rect.top + 'px';
+                    importSubmenu.style.left = rect.right + 'px';
+                    importSubmenu.style.display = importSubmenu.style.display === 'block' ? 'none' : 'block';
+                });
+            }
+            
+            // Close dropdown and submenu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!logoMenuBtn.contains(e.target) && 
+                    !logoDropdown.contains(e.target) && 
+                    !importSubmenu.contains(e.target)) {
+                    logoDropdown.classList.remove('active');
+                    importSubmenu.style.display = 'none';
+                }
+            });
+        }
+
+        // Import project - create new project from JSON file
+        window.importProject = function() {
+            // Create file input
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.papergraph,.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        
+                        console.log('ðŸ“¥ Import - Raw imported data:', imported);
+                        
+                        if (!imported || typeof imported !== 'object') {
+                            throw new Error('Invalid file format');
+                        }
+                        
+                        // Prepare project data in cloud format (nodes/edges/zones/positions)
+                        let projectData = {
+                            nodes: [],
+                            edges: [],
+                            zones: [],
+                            positions: {}
+                        };
+                        
+                        // Check different formats
+                        if (imported.articles && imported.connections) {
+                            // Editor export format (articles/connections)
+                            console.log('ðŸ“¥ Import - Editor format detected (articles/connections)');
+                            projectData.nodes = imported.articles || [];
+                            projectData.edges = imported.connections || [];
+                            projectData.zones = imported.tagZones || [];
+                            projectData.positions = imported.nodePositions || {};
+                        } else if (imported.data && imported.data.nodes && imported.data.edges) {
+                            // Cloud export format with nested data object
+                            console.log('ðŸ“¥ Import - Cloud format detected (nested data)');
+                            projectData = imported.data;
+                            // Normalize field names
+                            if (!projectData.zones && projectData.tagZones) {
+                                projectData.zones = projectData.tagZones;
+                            }
+                            if (!projectData.positions && projectData.nodePositions) {
+                                projectData.positions = projectData.nodePositions;
+                            }
+                        } else if (imported.nodes && imported.edges) {
+                            // Direct format with nodes/edges
+                            console.log('ðŸ“¥ Import - Direct format detected (nodes/edges)');
+                            projectData.nodes = imported.nodes || [];
+                            projectData.edges = imported.edges || [];
+                            projectData.zones = imported.zones || imported.tagZones || [];
+                            projectData.positions = imported.positions || imported.nodePositions || {};
+                        } else {
+                            throw new Error('Invalid file format - missing nodes/edges or articles/connections');
+                        }
+                        
+                        console.log('ðŸ“¥ Import - Prepared project data:', projectData);
+                        console.log('ðŸ“¥ Import - Nodes count:', projectData.nodes?.length || 0);
+                        console.log('ðŸ“¥ Import - Edges count:', projectData.edges?.length || 0);
+                        
+                        // Create project name from filename (remove .papergraph or .json extension)
+                        const projectName = file.name.replace(/\.(papergraph|json)$/, '');
+                        console.log('ðŸ“¥ Import - Creating project:', projectName);
+                        
+                        // Create new project with imported data
+                        const newProject = await createProject(projectName, projectData);
+                        console.log('âœ… Import - Project created:', newProject);
+                        
+                        // Refresh projects list to show updated stats
+                        await refreshProjects();
+                        
+                        // Show success and navigate
+                        if (typeof showNotification === 'function') {
+                            showNotification('Project imported successfully!', 'success');
+                        }
+                        
+                        // Short delay to ensure UI updates before navigation
+                        setTimeout(() => {
+                            window.location.href = `editor.html?id=${newProject.id}`;
+                        }, 500);
+                        
+                    } catch (error) {
+                        console.error('âŒ Import error:', error);
+                        alert('Failed to import project: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+                
+                // Reset file input
+                e.target.value = '';
+            };
+            input.click();
+        };
+
+        // Import BibTeX file
+        window.importBibtex = function() {
+            alert('BibTeX import feature coming soon! For now, you can import BibTeX files from within the editor.');
+        };
+
+        // Submit to Gallery Modal
+        window.openSubmitToGalleryModal = async function() {
+            // Check if user is logged in
+            if (!currentUser) {
+                console.log('⚠️ User not logged in, cannot submit to gallery');
+                alert('Please sign in to submit a project to the gallery.');
+                return;
+            }
+            
+            const modal = document.getElementById('submitGalleryModal');
+            modal.style.display = 'block';
+            
+            // Load user's projects
+            try {
+                const { loadProjects } = await import('./js/auth/projects.js');
+                const projects = await loadProjects();
+                
+                const select = document.getElementById('submitProjectSelect');
+                select.innerHTML = '<option value="">Choose a project...</option>';
+                
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    select.appendChild(option);
+                });
+                
+                // Pre-fill author info
+                const fullName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || '';
+                document.getElementById('submitAuthor').value = fullName;
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                alert('Failed to load your projects. Please try again.');
+                closeSubmitGalleryModal();
+            }
+        };
+
+        window.closeSubmitGalleryModal = function() {
+            document.getElementById('submitGalleryModal').style.display = 'none';
+            document.getElementById('submitGalleryForm').reset();
+            removeThumbnail();
+        };
+
+        window.removeThumbnail = function() {
+            document.getElementById('thumbnailInput').value = '';
+            document.getElementById('thumbnailPreview').style.display = 'none';
+            document.getElementById('thumbnailPlaceholder').style.display = 'block';
+        };
+
+        // Thumbnail upload handler
+        document.getElementById('thumbnailInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                document.getElementById('thumbnailImg').src = event.target.result;
+                document.getElementById('thumbnailPreview').style.display = 'block';
+                document.getElementById('thumbnailPlaceholder').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Character count
+        document.getElementById('submitDescription').addEventListener('input', function() {
+            document.getElementById('descCharCount').textContent = this.value.length;
+        });
+
+        // Form submit
+        window.handleSubmitToGallery = async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitGalleryButton');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            try {
+                const { submitToGallery } = await import('./js/data/github-submit.js');
+                
+                const projectId = document.getElementById('submitProjectSelect').value;
+                const title = document.getElementById('submitTitle').value;
+                const description = document.getElementById('submitDescription').value;
+                const author = document.getElementById('submitAuthor').value;
+                const affiliation = document.getElementById('submitAffiliation').value;
+                const thumbnailFile = document.getElementById('thumbnailInput').files[0];
+                
+                await submitToGallery({
+                    projectId,
+                    title,
+                    description,
+                    author,
+                    affiliation,
+                    thumbnail: thumbnailFile
+                });
+                
+                alert('✅ Your project has been submitted for review!\n\nA merge request has been created on GitHub.');
+                closeSubmitGalleryModal();
+                
+            } catch (error) {
+                console.error('Submission error:', error);
+                alert('Failed to submit project: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Project';
+            }
+        };
+
+        // Sign out
+        window.signOut = async function() {
+            try {
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error signing out:', error);
+            }
+        };
+    </script>
+    
+    <!-- Load Footer -->
+    <script src="js/utils/load-footer.js"></script>
+</body>
+</html>

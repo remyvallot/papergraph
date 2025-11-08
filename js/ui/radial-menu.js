@@ -39,6 +39,11 @@ function openRadialMenuForNode(nodeId) {
 }
 
 function showRadialMenu(x, y, nodeId, nodeWidth = 100, nodeHeight = 50) {
+    // Don't show radial menu in read-only mode or gallery viewer mode
+    if (window.isReadOnlyMode || window.isGalleryViewer) {
+        return;
+    }
+    
     const menu = document.getElementById('radialMenu');
     
     // Clear any previous pulse animation and reset previous node
@@ -192,6 +197,11 @@ function hideRadialMenu() {
 }
 
 function showSelectionRadialMenu(x, y) {
+    // Don't show selection radial menu in gallery viewer mode
+    if (window.isGalleryViewer) {
+        return;
+    }
+    
     multiSelection.menuActive = true;
     
     const menuContainer = document.createElement('div');
@@ -303,6 +313,11 @@ function hideSelectionRadialMenu() {
 }
 
 function showEmptyAreaMenu(x, y) {
+    // Don't show empty area menu in gallery viewer mode
+    if (window.isGalleryViewer) {
+        return;
+    }
+    
     // Remove existing menu if any
     hideEmptyAreaMenu();
     

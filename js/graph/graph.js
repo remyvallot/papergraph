@@ -25,6 +25,11 @@ function initializeGraph() {
     const container = document.getElementById('graphContainer');
     const graphData = getGraphData();
     
+    // Check if we're in gallery viewer mode (read-only)
+    const isGalleryViewer = window.isGalleryViewer || false;
+    const isReadOnly = window.isReadOnlyMode || isGalleryViewer;
+    console.log(`📊 Initializing graph - Gallery viewer: ${isGalleryViewer}, Read-only mode: ${isReadOnly}`);
+    
     const options = {
         nodes: {
             shape: 'box',
@@ -104,8 +109,9 @@ function initializeGraph() {
             selectConnectedEdges: true,
             tooltipDelay: 200,
             dragView: false,  // Disable default left-click drag
-            multiselect: true,  // Enable multi-selection
-            selectable: true
+            multiselect: !isReadOnly,  // Disable multi-selection in read-only mode
+            selectable: true,
+            dragNodes: !isReadOnly  // Disable node dragging in read-only mode
         }
     };
     
@@ -114,13 +120,61 @@ function initializeGraph() {
     
     network = new vis.Network(container, graphData, options);
     
+    // Force disable node dragging in gallery viewer mode
+    if (isGalleryViewer) {
+        network.setOptions({
+            interaction: {
+                dragNodes: false,
+                dragView: false,
+                selectable: true  // Keep selection enabled for viewing cards
+            },
+            manipulation: {
+                enabled: false
+            }
+        });
+        
+        // Also fix nodes in place so they can't be moved programmatically
+        const allNodes = network.body.data.nodes.get();
+        allNodes.forEach(node => {
+            network.body.data.nodes.update({
+                id: node.id,
+                fixed: { x: true, y: true }
+            });
+        });
+    }
+    
+    // Make network globally accessible for other modules
+    window.network = network;
+    
     // Enable right-click drag for panning
     const canvas = network.canvas.frame.canvas;
     let dragStartPos = { x: 0, y: 0 };
     
     canvas.addEventListener('mousedown', (event) => {
-        if (event.button === 2) { // Right click
+        // In gallery viewer mode, ONLY allow panning (both left and right click)
+        const isGalleryViewer = window.isGalleryViewer || false;
+        
+        if (isGalleryViewer) {
+            // In gallery viewer, both left and right click do panning
+            if (event.button === 0 || event.button === 2) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation(); // Stop vis-network from handling this event
+                isDraggingView = true;
+                dragStartPos = { x: event.clientX, y: event.clientY };
+                
+                // Hide selection box and radial menus when starting to pan
+                hideSelectionBox();
+                hideRadialMenu();
+                hideSelectionRadialMenu();
+            }
+            return; // Exit early - no other interactions allowed in gallery viewer
+        }
+        
+        // Normal editor mode - right click for panning
+        if (event.button === 2) {
             event.preventDefault();
+            event.stopPropagation();
             isDraggingView = true;
             dragStartPos = { x: event.clientX, y: event.clientY };
             
@@ -128,7 +182,11 @@ function initializeGraph() {
             hideSelectionBox();
             hideRadialMenu();
             hideSelectionRadialMenu();
-        } else if (event.button === 0 && !connectionMode.active) {
+            return;
+        }
+        
+        // Left click interactions (only in normal editor mode)
+        if (event.button === 0 && !connectionMode.active) {
             // Check if clicking on zone edge/corner for resize first
             const resizeHandle = getZoneResizeHandle(event);
             if (resizeHandle.zone !== null) {
@@ -255,7 +313,8 @@ function initializeGraph() {
     }, true);
     
     canvas.addEventListener('dblclick', (event) => {
-        if (!connectionMode.active) {
+        // Disable zone title editing in gallery viewer mode
+        if (!connectionMode.active && !window.isGalleryViewer) {
             const titleClick = getZoneTitleClick(event);
             if (titleClick.zone !== null) {
                 event.preventDefault();
@@ -333,9 +392,24 @@ function initializeGraph() {
     }, true);
     
     canvas.addEventListener('mouseup', (event) => {
+        const isGalleryViewer = window.isGalleryViewer || false;
+        
+        // Stop panning on right click release
         if (event.button === 2) {
             isDraggingView = false;
-        } else if (event.button === 0 && (zoneMoving.active || zoneMoving.readyToMove)) {
+            return;
+        }
+        
+        // Stop panning on left click release in gallery viewer
+        if (event.button === 0 && isGalleryViewer) {
+            if (isDraggingView) {
+                isDraggingView = false;
+            }
+            return; // Exit early - no other interactions in gallery viewer
+        }
+        
+        // Normal editor interactions for left click
+        if (event.button === 0 && (zoneMoving.active || zoneMoving.readyToMove)) {
             event.preventDefault();
             event.stopPropagation();
             
@@ -390,12 +464,9 @@ function initializeGraph() {
             if (nodesToUpdate.length > 0) {
                 network.body.data.nodes.update(nodesToUpdate);
                 console.log('✓ Applied saved positions to', nodesToUpdate.length, 'nodes');
-                // Fit after restoring positions
+                
+                // Check node zone membership to update colors after positions are restored
                 setTimeout(() => {
-                    network.fit();
-                    console.log('Graph fitted after position restoration');
-                    
-                    // Check node zone membership to update colors after positions are restored
                     if (typeof checkNodeZoneMembership === 'function' && tagZones.length > 0) {
                         console.log('🎨 Checking zone membership after project load...');
                         checkNodeZoneMembership();
@@ -712,7 +783,20 @@ function initializeGraph() {
         });
     }
     
+    // Prevent dragging in gallery viewer mode
+    network.on('dragStart', (params) => {
+        if (window.isGalleryViewer && params.nodes && params.nodes.length > 0) {
+            // Cancel the drag by not allowing it to proceed
+            return false;
+        }
+    });
+    
     network.on('dragging', (params) => {
+        // Block dragging in gallery viewer mode
+        if (window.isGalleryViewer) {
+            return false;
+        }
+        
         // Save state on first drag event
         if (params.nodes.length > 0 && !multiSelection.wasDragging) {
             multiSelection.wasDragging = true;
@@ -839,6 +923,11 @@ function initializeGraph() {
     });
     
     network.on('dragEnd', (params) => {
+        // Block dragEnd in gallery viewer mode
+        if (window.isGalleryViewer) {
+            return false;
+        }
+        
         if (params.nodes.length > 0) {
             // Save zones to localStorage if they were moved during this drag
             if (multiSelection.selectedZonesForDrag.length > 0) {
@@ -941,13 +1030,13 @@ function initializeGraph() {
     
     network.on('hoverNode', (params) => {
         if (connectionMode.active && params.node !== connectionMode.fromNodeId) {
-            network.canvas.body.container.style.cursor = 'pointer';
+            network.canvas.body.container.style.cursor = "url('assets/cursors/pointer.svg'), pointer";
         }
     });
     
     network.on('blurNode', () => {
         if (connectionMode.active) {
-            network.canvas.body.container.style.cursor = 'crosshair';
+            network.canvas.body.container.style.cursor = "url('assets/cursors/crosshair.svg'), crosshair";
         }
     });
     
@@ -1257,6 +1346,110 @@ function updateGraph() {
         console.error('Error updating graph:', error);
     }
 }
+
+// ===== PERMISSIONS & READ-ONLY MODE =====
+// Enable or disable graph interaction based on user permissions
+function setGraphInteractionMode(readOnly = false) {
+    if (!network) {
+        console.warn('Cannot set interaction mode: network not initialized');
+        return;
+    }
+    
+    console.log(`🔒 Setting graph interaction mode: ${readOnly ? 'READ-ONLY' : 'EDIT'}`);
+    
+    // Update interaction options
+    network.setOptions({
+        interaction: {
+            hover: true,
+            hoverConnectedEdges: true,
+            selectConnectedEdges: true,
+            tooltipDelay: 200,
+            dragView: false,
+            multiselect: !readOnly, // Disable multi-selection in read-only
+            selectable: true,
+            dragNodes: !readOnly // KEY: Disable node dragging in read-only mode
+        },
+        manipulation: {
+            enabled: false // Always disable built-in manipulation UI
+        }
+    });
+    
+    // Visual feedback: update toolbar buttons
+    if (readOnly) {
+        // Disable edit buttons
+        const editButtons = [
+            'addArticleBtn',
+            'deleteArticleBtn',
+            'toggleGridBtn'
+        ];
+        
+        editButtons.forEach(btnId => {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add('disabled');
+                btn.title = 'View-only access - you cannot edit this project';
+            }
+        });
+        
+        // Show read-only indicator
+        showReadOnlyIndicator();
+    } else {
+        // Enable edit buttons
+        const editButtons = [
+            'addArticleBtn',
+            'deleteArticleBtn',
+            'toggleGridBtn'
+        ];
+        
+        editButtons.forEach(btnId => {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('disabled');
+                btn.title = '';
+            }
+        });
+        
+        hideReadOnlyIndicator();
+    }
+}
+
+// Show read-only indicator in UI
+function showReadOnlyIndicator() {
+    // Check if indicator already exists
+    let indicator = document.getElementById('readOnlyIndicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'readOnlyIndicator';
+        indicator.className = 'read-only-indicator';
+        indicator.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span>View Only</span>
+        `;
+        
+        // Insert after toolbar
+        const toolbar = document.querySelector('.toolbar');
+        if (toolbar) {
+            toolbar.parentNode.insertBefore(indicator, toolbar.nextSibling);
+        }
+    }
+    indicator.style.display = 'flex';
+}
+
+// Hide read-only indicator
+function hideReadOnlyIndicator() {
+    const indicator = document.getElementById('readOnlyIndicator');
+    if (indicator) {
+        indicator.style.display = 'none';
+    }
+}
+
+// Make function globally available
+window.setGraphInteractionMode = setGraphInteractionMode;
 
 // ===== GRAPH SEARCH ===== [VERSION 2025-10-27-16:00]
 function searchInGraph(searchTerm = '') {

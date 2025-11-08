@@ -121,6 +121,227 @@ body.dark-theme button#logoMenuBtn .logo-text {
     background: none !important;
 }
 
+/* Logo menu extended container */
+body.dark-theme .logo-menu-btn-extended {
+    background: rgba(30, 30, 30, 0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .logo-menu-btn-extended:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-theme .logo-menu-btn-part:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .logo-menu-btn-part .logo-text {
+    color: #ffffff !important;
+}
+
+body.dark-theme .vertical-divider {
+    background: linear-gradient(to bottom, 
+        rgba(255, 255, 255, 0) 0%, 
+        rgba(255, 255, 255, 0.1) 20%, 
+        rgba(255, 255, 255, 0.1) 80%, 
+        rgba(255, 255, 255, 0) 100%
+    );
+}
+
+/* Project title styles */
+body.dark-theme .project-title-input {
+    color: #ffffff !important;
+}
+
+body.dark-theme .project-title-input:focus {
+    color: #4a90e2 !important;
+    background: rgba(74, 144, 226, 0.1);
+}
+
+body.dark-theme .project-title-input::placeholder {
+    color: #666;
+}
+
+/* User dropdown dark theme */
+body.dark-theme .user-dropdown {
+    background: rgba(30, 30, 30, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .user-dropdown-name {
+    color: #ffffff;
+}
+
+body.dark-theme .user-dropdown-username {
+    color: #999;
+}
+
+body.dark-theme .user-dropdown-email {
+    color: #999;
+}
+
+body.dark-theme .user-dropdown-provider {
+    color: #666;
+}
+
+body.dark-theme .user-dropdown-divider {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .user-dropdown-item {
+    color: #ffffff;
+}
+
+body.dark-theme .user-dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .user-avatar-btn {
+    background: rgba(30, 30, 30, 0.95);
+}
+
+/* Preferences Modal Dark Theme */
+body.dark-theme .preferences-modal {
+    background: rgba(30, 30, 30, 0.98);
+}
+
+body.dark-theme .preferences-sidebar {
+    background: rgba(20, 20, 20, 0.6);
+    border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .preferences-tab {
+    color: #adb5bd;
+}
+
+body.dark-theme .preferences-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e9ecef;
+}
+
+body.dark-theme .preferences-tab.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #4a90e2;
+    border-left-color: #4a90e2;
+}
+
+body.dark-theme .preferences-panel h2,
+body.dark-theme .preferences-panel h3 {
+    color: #e9ecef;
+}
+
+body.dark-theme .preferences-section label {
+    color: #adb5bd;
+}
+
+body.dark-theme .preferences-input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e9ecef;
+}
+
+body.dark-theme .preferences-input:focus {
+    border-color: #4a90e2;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-theme .preferences-input:readonly {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #e9ecef;
+    padding: 0 !important;
+}
+
+body.dark-theme .preferences-display-value {
+    color: #e9ecef;
+}
+
+body.dark-theme .preferences-input-prefix {
+    color: #adb5bd;
+}
+
+body.dark-theme .preferences-hint {
+    color: #6c757d;
+}
+
+body.dark-theme .connected-account {
+    background: rgba(74, 144, 226, 0.1);
+    border-color: rgba(74, 144, 226, 0.3);
+}
+
+body.dark-theme .connected-account-name {
+    color: #e9ecef;
+}
+
+body.dark-theme .connected-account-email {
+    color: #adb5bd;
+}
+
+body.dark-theme .danger-zone {
+    border-color: rgba(231, 76, 60, 0.3);
+    background: rgba(231, 76, 60, 0.05);
+}
+
+body.dark-theme .danger-zone p {
+    color: #adb5bd;
+}
+
+body.dark-theme .construction svg {
+    color: #495057;
+}
+
+body.dark-theme .construction h3 {
+    color: #adb5bd;
+}
+
+body.dark-theme .construction p {
+    color: #6c757d;
+}
+
+body.dark-theme .preferences-modal .close-modal {
+    color: #adb5bd;
+}
+
+body.dark-theme .preferences-modal .close-modal:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e9ecef;
+}
+
+body.dark-theme .preferences-toggle-slider {
+    background-color: #495057;
+}
+
+body.dark-theme .preferences-toggle input:checked + .preferences-toggle-slider {
+    background-color: #4a90e2;
+}
+
+body.dark-theme .preferences-toggle-label {
+    color: #adb5bd;
+}
+
+body.dark-theme .preferences-warning {
+    color: #f39c12 !important;
+}
+
+/* Theme toggle icons */
+body.dark-theme .sun-icon {
+    display: none;
+}
+
+body.dark-theme .moon-icon {
+    display: block;
+}
+
+body:not(.dark-theme) .sun-icon {
+    display: block;
+}
+
+body:not(.dark-theme) .moon-icon {
+    display: none;
+}
+
 /* Main dropdown menu */
 body.dark-theme .main-dropdown {
     background: rgba(37, 45, 61, 0.98);

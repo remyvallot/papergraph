@@ -212,7 +212,7 @@ function saveArticle(e) {
 function deleteArticle() {
     if (!currentEditingArticleId) return;
     
-    if (confirm('Supprimer cet article ?')) {
+    if (confirm('Delete this article?')) {
         deleteArticleById(currentEditingArticleId);
         closeModal();
     }

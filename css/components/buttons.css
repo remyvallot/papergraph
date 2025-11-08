@@ -44,6 +44,11 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+#getStartedBtn {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
 .btn-primary {
     background: rgba(74, 144, 226, 0.95);
     color: white;

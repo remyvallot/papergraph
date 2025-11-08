@@ -1,920 +1,540 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>papergraph</title>
-    <link href="https://api.fontshare.com/v2/css?f[]=chillax@400&display=swap" rel="stylesheet">
+    <meta name="description" content="Papergraph is a visual research tool that helps you organize academic papers, connect ideas, and build your knowledge graph. Import from DOI, arXiv, or BibTeX.">
+    <meta name="keywords" content="research tool, paper management, knowledge graph, academic papers, literature review, bibliography, citation manager">
+    <meta name="author" content="Papergraph">
+    <title>Papergraph - Map your research. Connect ideas.</title>
+    
+    <!-- Base path helper must load first -->
+    <script type="module">
+        import { navigateTo } from './js/utils/base-path.js';
+        window.navigateTo = navigateTo;
+    </script>
+    
+    <link href="https://api.fontshare.com/v2/css?f[]=chillax@400,700&display=swap" rel="stylesheet">
     
     <!-- Modular CSS - Base -->
     <link rel="stylesheet" href="css/base/reset.css">
-    <link rel="stylesheet" href="css/base/layout.css">
     <link rel="stylesheet" href="css/base/typography.css">
-    <link rel="stylesheet" href="css/base/dark-theme.css">
     
     <!-- Modular CSS - Components -->
     <link rel="stylesheet" href="css/components/buttons.css">
-    <link rel="stylesheet" href="css/components/dropdown.css">
     <link rel="stylesheet" href="css/components/modals.css">
-    <link rel="stylesheet" href="css/components/toolbar.css">
-    <link rel="stylesheet" href="css/components/filters.css">
-    <link rel="stylesheet" href="css/components/notifications.css">
-    <link rel="stylesheet" href="css/components/radial-menu.css">
     <link rel="stylesheet" href="css/components/footer.css">
     <link rel="stylesheet" href="css/components/onboarding.css">
     
-    <!-- Modular CSS - Views -->
-    <link rel="stylesheet" href="css/views/graph-view.css">
-    <link rel="stylesheet" href="css/views/list-view.css">
-    <link rel="stylesheet" href="css/views/article-preview.css">
+    <!-- Cursors - MUST BE LAST to override everything -->
+    <link rel="stylesheet" href="css/base/cursors.css">
     
-    <!-- External Libraries -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css">
     <link rel="icon" type="image/svg+xml" href="assets/logo-papergraph.svg">
 </head>
 <body>
-    <div id="app">
-        <!-- Logo Menu Button (top-left) -->
-        <button id="logoMenuBtn" class="logo-menu-btn">
-            <img src="assets/logo-papergraph.svg" alt="papergraph" class="logo-icon">
-            <span class="logo-text">papergraph</span>
-        </button>
+    <!-- Page Container -->
+    <div class="pg-page">
         
-        <!-- Dark Theme Toggle (top-right) -->
-        <button id="themeToggle" class="theme-toggle-btn" title="Toggle Dark Mode">
-            <svg class="theme-icon sun-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="5"/>
-                <line x1="12" y1="1" x2="12" y2="3"/>
-                <line x1="12" y1="21" x2="12" y2="23"/>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                <line x1="1" y1="12" x2="3" y2="12"/>
-                <line x1="21" y1="12" x2="23" y2="12"/>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-            </svg>
-            <svg class="theme-icon moon-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-        </button>
-        
-        <!-- Main Dropdown Menu -->
-        <div id="mainDropdown" class="main-dropdown">
-            <!-- File Section -->
-            <div class="dropdown-section">
-                <div class="dropdown-section-title">File</div>
-                <button class="dropdown-menu-item" id="actionNewProject">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                    </svg>
-                    <span>New Project</span>
-                </button>
-                <button class="dropdown-menu-item has-submenu" id="actionImportMenu">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/>
-                        <line x1="12" y1="3" x2="12" y2="15"/>
-                    </svg>
-                    <span>Import</span>
-                    <svg class="submenu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="9 18 15 12 9 6"/>
-                    </svg>
-                </button>
-                <button class="dropdown-menu-item has-submenu" id="actionExportMenu">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="7 10 12 15 17 10"/>
-                        <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
-                    <span>Export</span>
-                    <svg class="submenu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="9 18 15 12 9 6"/>
-                    </svg>
-                </button>
+        <!-- Header -->
+        <header class="pg-header">
+            <a href="index.html" class="pg-header-logo">
+                <img src="assets/logo-papergraph.svg" alt="Papergraph">
+                <span class="logo-text">papergraph</span>
+            </a>
+            <div class="pg-header-actions">
+                <button class="btn-secondary" onclick="openAuthModal()">Sign in</button>
             </div>
-            
-            <!-- View Section -->
-            <div class="dropdown-section">
-                <div class="dropdown-section-title">View</div>
-                <button class="dropdown-menu-item has-submenu" id="actionNodeLabelMenu">
-                    <!-- <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                    </svg> -->
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M2.42012 12.7132C2.28394 12.4975 2.21584 12.3897 2.17772 12.2234C2.14909 12.0985 2.14909 11.9015 2.17772 11.7766C2.21584 11.6103 2.28394 11.5025 2.42012 11.2868C3.54553 9.50484 6.8954 5 12.0004 5C17.1054 5 20.4553 9.50484 21.5807 11.2868C21.7169 11.5025 21.785 11.6103 21.8231 11.7766C21.8517 11.9015 21.8517 12.0985 21.8231 12.2234C21.785 12.3897 21.7169 12.4975 21.5807 12.7132C20.4553 14.4952 17.1054 19 12.0004 19C6.8954 19 3.54553 14.4952 2.42012 12.7132Z"/>
-                        <path d="M12.0004 15C13.6573 15 15.0004 13.6569 15.0004 12C15.0004 10.3431 13.6573 9 12.0004 9C10.3435 9 9.0004 10.3431 9.0004 12C9.0004 13.6569 10.3435 15 12.0004 15Z"/>
-                    </svg>
-                    <span>Node Labels</span>
-                    <svg class="submenu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="9 18 15 12 9 6"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <!-- Help Section -->
-            <div class="dropdown-section">
-                <div class="dropdown-section-title">Help</div>
-                <button class="dropdown-menu-item" id="actionHelp">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M9.09 9a3 3 0 1 1 5.82 1c0 2-3 2.5-3 4"/>
-                        <line x1="12" y1="17" x2="12.01" y2="17"/>
-                    </svg>
-                    <span>Help</span>
-                </button>
-                <button class="dropdown-menu-item disabled-item" id="actionExploreGallery">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="7" height="7"/>
-                        <rect x="14" y="3" width="7" height="7"/>
-                        <rect x="14" y="14" width="7" height="7"/>
-                        <rect x="3" y="14" width="7" height="7"/>
-                    </svg>
-                    <span>Explore Gallery<sup class="soon-badge">soon</sup></span>
-                </button>
-                <button class="dropdown-menu-item" id="actionReportBug">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <g transform="translate(0,-2)">
-                            <rect x="7" y="9" width="10" height="10" rx="5" ry="5"/>
-                            <line x1="7" y1="12" x2="3" y2="10"/>
-                            <line x1="7" y1="15" x2="3" y2="15"/>
-                            <line x1="7" y1="18" x2="3" y2="20"/>
-                            <line x1="17" y1="12" x2="21" y2="10"/>
-                            <line x1="17" y1="15" x2="21" y2="15"/>
-                            <line x1="17" y1="18" x2="21" y2="20"/>
-                        </g>
-                    </svg>
-                    <span>Report Bug</span>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Import Submenu -->
-        <div id="importSubmenu" class="dropdown-submenu">
-            <button class="dropdown-menu-item" id="actionImport">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                </svg>
-                <span>Import Project (.json)</span>
-            </button>
-            <button class="dropdown-menu-item" id="actionImportBibtex">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <path d="M9 15h6"/>
-                    <path d="M9 11h6"/>
-                </svg>
-                <span>Import BibTeX (.bib)</span>
-            </button>
-        </div>
-        
-        <!-- Export Submenu -->
-        <div id="exportSubmenu" class="dropdown-submenu">
-            <button class="dropdown-menu-item" id="actionExport">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                </svg>
-                <span>Export Project (.json)</span>
-            </button>
-            <button class="dropdown-menu-item" id="actionExportBibtex">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <path d="M9 15h6"/>
-                    <path d="M9 11h6"/>
-                </svg>
-                <span>Export BibTeX (.bib)</span>
-            </button>
-            <button class="dropdown-menu-item" id="actionExportPdf">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="9" y1="15" x2="15" y2="15"/>
-                </svg>
-                <span>Export PDF</span>
-            </button>
-            <button class="dropdown-menu-item" id="actionExportImage">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
-                </svg>
-                <span>Export Image (.png)</span>
-            </button>
-            <button class="dropdown-menu-item" id="actionExportSVG">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <path d="M9 12h6M12 9v6"/>
-                </svg>
-                <span>Export Image (.svg)</span>
-            </button>
-        </div>
-        
-        <!-- Node Label Submenu -->
-        <div id="nodeLabelSubmenu" class="dropdown-submenu">
-            <button class="dropdown-menu-item node-label-option" data-format="bibtexId">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 7h16M4 12h16M4 17h10"/>
-                </svg>
-                <span>BibTeX ID</span>
-                <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <polyline points="20 6 9 17 4 12"/>
-                </svg>
-            </button>
-            <button class="dropdown-menu-item node-label-option" data-format="title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-                <span>Title</span>
-                <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <polyline points="20 6 9 17 4 12"/>
-                </svg>
-            </button>
-            <button class="dropdown-menu-item node-label-option" data-format="citation">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                </svg>
-                <span>Citation (Author, Year)</span>
-                <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <polyline points="20 6 9 17 4 12"/>
-                </svg>
-            </button>
-            <button class="dropdown-menu-item node-label-option" data-format="author">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                </svg>
-                <span>First Author</span>
-                <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <polyline points="20 6 9 17 4 12"/>
-                </svg>
-            </button>
-        </div>
-        
-        <!-- Active Filters Display -->
-        <div id="activeFilters" class="active-filters-container">
-            <!-- Filters will be added here dynamically -->
-        </div>
+        </header>
 
-        <!-- Graph View -->
-        <div id="graphView" class="view active">
-            <!-- Article Preview Panel on the left -->
-            <div id="articlePreview" class="article-preview">
-                <div class="preview-content">
-                    <div class="article-card">
-                        <div id="previewCitationKey" class="citation-key" style="display: none;"></div>
-                        <h2 id="previewTitle" class="article-title">Article Title</h2>
-                        <p id="previewAuthors" class="article-meta"></p>
-                        <div id="previewCategoryBadge" class="category-badge-container"></div>
-                        
-                        <div class="article-section">
-                            <h4>Abstract / Notes</h4>
-                            <p id="previewText" class="article-description"></p>
+        <!-- Hero Section -->
+        <section class="pg-hero">
+            <h1>Map your research.<br>Connect ideas.</h1>
+            <p>Organize and visualize academic literature through an elegant visual graph interface.</p>
+            <div class="pg-hero-actions">
+                <button class="btn-secondary" onclick="window.location.href='gallery.html'" style="display: flex; align-items: center; justify-content: center;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    Explore Gallery
+                </button>
+                <button class="btn-primary" id="getStartedBtn">Get started</button>
+            </div>
+
+            <!-- Trusted By Banner -->
+            <div class="pg-trusted-by">
+                <p class="pg-trusted-p">Used by researchers at</p>
+                <div class="pg-logos-marquee">
+                    <div class="pg-logos-track" id="logosTrack">
+                        <div class="pg-logo-item">
+                            <img src="assets/logos/ens-ps.png" alt="ENS Paris-Saclay" class="pg-logo-img">
                         </div>
-                        
-                        <div class="article-links">
-                            <div id="previewDoiContainer" class="link-item" style="display: none;">
-                                <span class="link-label">📄 DOI:</span>
-                                <a id="previewDoi" href="#" target="_blank" rel="noopener"></a>
-                            </div>
-                            <div id="previewLinkContainer" class="link-item" style="display: none;">
-                                <span class="link-label">🔗 Link:</span>
-                                <a id="previewLink" href="#" target="_blank" rel="noopener"></a>
-                            </div>
-                            <div id="previewPdfContainer" class="link-item" style="display: none;">
-                                <span class="link-label">📕 PDF:</span>
-                                <a id="previewPdf" href="#" target="_blank" rel="noopener"></a>
-                            </div>
+                        <div class="pg-logo-item">
+                            <img src="assets/logos/utc.png" alt="Université Technologique Compiègne" class="pg-logo-img">
+                        </div>
+                        <div class="pg-logo-item">
+                            <img src="assets/logos/poitiers.svg" alt="Université de Poitiers" class="pg-logo-img">
+                        </div>
+                        <div class="pg-logo-item">
+                            <img src="assets/logos/x.png" alt="Ecole Polytechnique" class="pg-logo-img">
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <div id="graphContainer"></div>
-            
-            <!-- Toolbar on the right (kept for compatibility) -->
-            <div class="toolbar" style="display: none;">
-            </div>
-            
-            <!-- Edge menu for connection actions -->
-            <div id="edgeMenu" class="edge-menu">
-                <button class="edge-btn edge-add-control-point" title="Ajouter point de contrôle" data-action="add-control">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <line x1="12" y1="2" x2="12" y2="9"/>
-                        <line x1="12" y1="15" x2="12" y2="22"/>
-                    </svg>
-                </button>
-                <button class="edge-btn edge-edit-label" title="Modifier le label" data-action="edit-label">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                </button>
-                <button class="edge-btn edge-delete" title="Supprimer connexion" data-action="delete">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <!-- Radial menu for node actions -->
-            <div id="radialMenu" class="radial-menu">
-                <button class="radial-btn radial-connect" title="Create connection">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                    </svg>
-                </button>
-                <button class="radial-btn radial-delete" title="Delete">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <!-- Connection mode indicator -->
-            <div id="connectionModeIndicator" class="mode-indicator">
-                <span>Connection mode active - Click on a target node</span>
-                <button id="cancelConnectionMode">✖ Cancel</button>
-            </div>
-        </div>
+        </section>
 
-        <!-- List View -->
-        <div id="listView" class="view">
-            <div id="listContainer" class="articles-list">
-                <!-- Articles will be added here dynamically -->
-            </div>
-        </div>
-        
-        <!-- Category filter dropdown (shared between both views, above toolbar) -->
-        <div id="categoryDropdown" class="dropdown-panel">
-            <h3>Filters</h3>
+        <!-- Feature Showcase -->
+        <section class="pg-features">
             
-            <div class="filter-section-dropdown">
-                <label>Category</label>
-                <select id="categoryFilter">
-                    <option value="">Toutes les catégories</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Main Action Toolbar - Bottom horizontal (outside views to be always visible) -->
-        <div class="main-toolbar">
-            <button id="addArticleBtn" class="main-tool-btn" title="Add an article">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="8" x2="12" y2="16"/>
-                    <line x1="8" y1="12" x2="16" y2="12"/>
-                </svg>
-                <span class="btn-label">Add</span>
-            </button>
-            
-            <!-- Category filter icon (both modes) -->
-            <button id="categoryFilterBtn" class="main-tool-btn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-                </svg>
-                <span class="btn-label">Filter</span>
-            </button>
-            
-            <!-- Search icon/box -->
-            <button id="searchToggleBtn" class="main-tool-btn search-toggle-btn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.35-4.35"/>
-                </svg>
-                <span class="btn-label">Search</span>
-            </button>
-            
-            <!-- Expandable search box -->
-            <div class="toolbar-search collapsed">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.35-4.35"/>
-                </svg>
-                <input type="text" id="searchBoxToolbar" placeholder="Rechercher..." class="toolbar-search-input">
-                <span id="searchResultCount" class="search-result-count"></span>
-                <button id="searchCloseBtn" class="search-close-btn">✕</button>
-            </div>
-            
-            <!-- Graph-only buttons -->
-            <div class="main-tool-divider graph-only"></div>
-            <button id="fitGraphBtn" class="main-tool-btn graph-only">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-                    <path d="M12 3 L12 8" stroke-linecap="round"/>
-                    <path d="M10 5 L12 3 L14 5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 21 L12 16" stroke-linecap="round"/>
-                    <path d="M10 19 L12 21 L14 19" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M3 12 L8 12" stroke-linecap="round"/>
-                    <path d="M5 10 L3 12 L5 14" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M21 12 L16 12" stroke-linecap="round"/>
-                    <path d="M19 10 L21 12 L19 14" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span class="btn-label">Recentrer</span>
-            </button>
-            <button id="toggleGridBtn" class="main-tool-btn graph-only">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="6" cy="6" r="1" fill="currentColor"/>
-                    <circle cx="12" cy="6" r="1" fill="currentColor"/>
-                    <circle cx="18" cy="6" r="1" fill="currentColor"/>
-                    <circle cx="6" cy="12" r="1" fill="currentColor"/>
-                    <circle cx="12" cy="12" r="1" fill="currentColor"/>
-                    <circle cx="18" cy="12" r="1" fill="currentColor"/>
-                    <circle cx="6" cy="18" r="1" fill="currentColor"/>
-                    <circle cx="12" cy="18" r="1" fill="currentColor"/>
-                    <circle cx="18" cy="18" r="1" fill="currentColor"/>
-                </svg>
-                <span class="btn-label">Grille</span>
-            </button>
-            
-            <div class="main-tool-divider"></div>
-            
-            <!-- Toggle switch for view mode (at the right, fixed position) -->
-            <div class="toolbar-view-toggle">
-                <input type="checkbox" id="viewToggle" class="toggle-input">
-                <label for="viewToggle" class="toggle-label">
-                    <span class="toggle-option toggle-graph" title="Vue Graphe">
-                        <img src="assets/graph-icon-blue.svg" alt="Graph" class="toggle-icon toggle-icon-active">
-                        <img src="assets/graph-icon-gray.svg" alt="Graph" class="toggle-icon toggle-icon-inactive">
-                    </span>
-                    <span class="toggle-option toggle-list" title="Vue Liste">
-                        <img src="assets/list-icon-blue.svg" alt="List" class="toggle-icon toggle-icon-active">
-                        <img src="assets/list-icon-gray.svg" alt="List" class="toggle-icon toggle-icon-inactive">
-                    </span>
-                </label>
-            </div>
-        </div>
-
-        <!-- Article Edit Modal -->
-        <div id="articleModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2 id="modalTitle">New Article</h2>
-                <form id="articleForm">
-                    <!-- Minimal import section -->
-                    <div class="import-zone">
-                        <div id="dropZone" class="drop-zone">
-                            <div class="drop-zone-content">
-                                <span class="drop-icon">📄</span>
-                                <p class="drop-text">Drop PDF or .bib file here</p>
-                                <p class="drop-or">or</p>
-                                <input type="text" id="quickImport" placeholder="Paste DOI, arXiv ID or BibTeX (e.g. 10.1234/... or @article{...})">
-                                <div class="bibtex-paste-area" style="display: none;">
-                                    <textarea id="bibtexPasteArea" placeholder="Paste one or more complete BibTeX entries here...&#10;&#10;@article{key2024,&#10;  title = {Example},&#10;  author = {Doe, John},&#10;  year = {2024},&#10;  ...&#10;}" rows="10"></textarea>
-                                    <button type="button" id="parseBibtexBtn" class="btn-primary">✓ Import</button>
-                                    <button type="button" id="cancelBibtexBtn" class="btn-secondary">Cancel</button>
-                                </div>
-                                <input type="file" id="pdfFileInput" accept=".pdf,.bib" style="display: none;">
-                                <button type="button" id="browseFileBtn" class="btn-browse">Browse...</button>
-                            </div>
-                        </div>
-                        <div id="importStatus" class="import-status"></div>
+            <!-- Feature 1: Add Nodes -->
+            <div class="pg-feature-section">
+                <div class="pg-feature-content">
+                    <h2>Build your research graph</h2>
+                    <p>Add articles with a single click. Import from DOI, arXiv, BibTeX, or add manually. Each article becomes a node in your visual knowledge network.</p>
+                    <div class="pg-feature-tags">
+                        <span class="pg-tag">DOI Import</span>
+                        <span class="pg-tag">arXiv</span>
+                        <span class="pg-tag">BibTeX</span>
+                        <span class="pg-tag">PDF Metadata</span>
                     </div>
-                    
-                    <!-- Collapsible manual form -->
-                    <div id="manualFormToggle" class="manual-toggle">
-                        <button type="button" id="toggleManualBtn" class="toggle-manual-btn">
-                            ✏️ Manual entry / edit
-                        </button>
+                </div>
+                <div class="pg-feature-visual">
+                    <div class="pg-demo-container">
+                        <img src="assets/demo-add-node.gif" alt="Add nodes demo" class="pg-demo-gif">
                     </div>
-                    
-                    <div id="manualForm" class="manual-form collapsed">
-                        <!-- Essential fields -->
-                        <div class="form-group">
-                            <label for="articleTitle">Title *</label>
-                            <input type="text" id="articleTitle" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="articleAuthors">Author(s)</label>
-                            <input type="text" id="articleAuthors" placeholder="Doe, John and Smith, Jane">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="articleYear">Year</label>
-                            <input type="text" id="articleYear" placeholder="2024">
-                        </div>
-                        
-                        <!-- Publication details -->
-                        <div class="form-group">
-                            <label for="articleType">Entry Type</label>
-                            <select id="articleType">
-                                <option value="article">Article (journal)</option>
-                                <option value="inproceedings">Inproceedings (conference)</option>
-                                <option value="book">Book</option>
-                                <option value="phdthesis">PhD Thesis</option>
-                                <option value="mastersthesis">Master's Thesis</option>
-                                <option value="techreport">Technical Report</option>
-                                <option value="misc">Misc</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="articleJournal">Journal / Conference Name</label>
-                            <input type="text" id="articleJournal" placeholder="Journal or conference name">
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="articleVolume">Volume</label>
-                                <input type="text" id="articleVolume" placeholder="123">
-                            </div>
-                            <div class="form-group">
-                                <label for="articleNumber">Number</label>
-                                <input type="text" id="articleNumber" placeholder="4">
-                            </div>
-                            <div class="form-group">
-                                <label for="articlePages">Pages</label>
-                                <input type="text" id="articlePages" placeholder="45-67">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="articlePublisher">Publisher / Institution</label>
-                            <input type="text" id="articlePublisher" placeholder="Publisher or institution name">
-                        </div>
-                        
-                        <!-- Identifiers -->
-                        <div class="form-group">
-                            <label for="articleDoi">DOI</label>
-                            <input type="text" id="articleDoi" placeholder="10.1234/example.2024">
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="articleIsbn">ISBN</label>
-                                <input type="text" id="articleIsbn" placeholder="978-3-16-148410-0">
-                            </div>
-                            <div class="form-group">
-                                <label for="articleIssn">ISSN</label>
-                                <input type="text" id="articleIssn" placeholder="1234-5678">
-                            </div>
-                        </div>
-                        
-                        <!-- Links and files -->
-                        <div class="form-group">
-                            <label for="articleLink">URL</label>
-                            <input type="url" id="articleLink" placeholder="https://...">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="articlePdf">PDF (URL or path)</label>
-                            <input type="text" id="articlePdf" placeholder="https://... or local path">
-                        </div>
-                        
-                        <!-- Content -->
-                        <div class="form-group">
-                            <label for="articleAbstract">Abstract</label>
-                            <textarea id="articleAbstract" rows="4" placeholder="Article abstract..."></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="articleNote">Note</label>
-                            <textarea id="articleNote" rows="2" placeholder="Additional notes..."></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="articleCategories">Keywords / Categories (comma separated)</label>
-                            <input type="text" id="articleCategories" placeholder="machine learning, neural networks">
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" id="deleteArticleBtn" class="btn-danger">�Delete</button>
-                        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
-                        <button type="submit" class="btn-primary">Save</button>
-                    </div>
-                </form>
+                </div>
             </div>
-        </div>
 
-        <!-- Hidden file input for import -->
-        <input type="file" id="fileInput" accept=".json" style="display: none;">
-        <input type="file" id="bibtexFileInput" accept=".bib,.bibtex" style="display: none;">
-        
+            <!-- Feature 2: Connect Ideas -->
+            <div class="pg-feature-section pg-feature-reverse">
+                <div class="pg-feature-content">
+                    <h2>Connect related papers</h2>
+                    <p>Draw connections between articles to visualize relationships. Label each connection to explain how papers relate—citations, similar methods, contrasting views.</p>
+                    <div class="pg-feature-tags">
+                        <span class="pg-tag">Labeled Edges</span>
+                        <span class="pg-tag">Visual Relations</span>
+                        <span class="pg-tag">Semantic Links</span>
+                    </div>
+                </div>
+                <div class="pg-feature-visual">
+                    <div class="pg-demo-container">
+                        <img src="assets/demo-connect-ideas.gif" alt="Connect ideas demo" class="pg-demo-gif">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 3: Organize with Tags -->
+            <div class="pg-feature-section">
+                <div class="pg-feature-content">
+                    <h2>Organize with tags and zones</h2>
+                    <p>Color-code articles by topic or theme. Create spatial zones to group related papers. Filter your graph by tags to focus on specific research areas.</p>
+                    <div class="pg-feature-tags">
+                        <span class="pg-tag">Color Coding</span>
+                        <span class="pg-tag">Tag Zones</span>
+                        <span class="pg-tag">Smart Filters</span>
+                    </div>
+                </div>
+                <div class="pg-feature-visual">
+                    <div class="pg-demo-container">
+                        <img src="assets/demo-organize-tags.gif" alt="Organize with tags demo" class="pg-demo-gif">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 4: Multiple Views -->
+            <div class="pg-feature-section pg-feature-reverse">
+                <div class="pg-feature-content">
+                    <h2>Switch between views</h2>
+                    <p>Toggle between graph view for visual exploration and list view for detailed reference management. Export to PDF, PNG, BibTeX, or JSON for backups.</p>
+                    <div class="pg-feature-tags">
+                        <span class="pg-tag">Graph View</span>
+                        <span class="pg-tag">List View</span>
+                        <span class="pg-tag">PDF Export</span>
+                        <span class="pg-tag">BibTeX Export</span>
+                    </div>
+                </div>
+                <div class="pg-feature-visual">
+                    <div class="pg-demo-container">
+                        <img src="assets/demo-switch-views.gif" alt="Switch views demo" class="pg-demo-gif">
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
         <!-- Footer -->
-        <footer class="app-footer">
-            <div class="footer-left">
-                <span class="footer-author">Rémy Vallot</span>
-                <span class="footer-separator">•</span>
-                <span class="footer-date" id="lastUpdate">Last update: Oct 2025</span>
+        <div data-include="footer"></div>
+
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-modal-content">
+            <button class="auth-modal-close" onclick="closeAuthModal()">&times;</button>
+            
+            <div class="auth-modal-header">
+                <h2 id="authModalTitle">Welcome to Papergraph</h2>
+                <p id="authModalSubtitle">Sign in to sync your projects across devices</p>
             </div>
-            <div class="footer-right">
-                <a href="https://github.com/remyvallot/papergraph" target="_blank" rel="noopener" class="footer-github" title="View on GitHub">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+
+            <!-- Error/Success Messages -->
+            <div id="authMessage"></div>
+
+            <!-- OAuth Providers -->
+            <div class="auth-providers">
+                <button class="auth-provider-btn" onclick="signInWithGitHub()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                     </svg>
-                </a>
-                <span class="app-version">v1.6.0</span>
+                    Continue with GitHub
+                </button>
+                
+                <button class="auth-provider-btn" onclick="signInWithGoogle()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Continue with Google
+                </button>
             </div>
-        </footer>
-        
-        <!-- Onboarding Overlay -->
-        <div id="onboardingOverlay" class="onboarding-overlay">
-            <div class="onboarding-content">
-                <div class="onboarding-header">
-                    <h1>Welcome to papergraph</h1>
-                </div>
-                
-                <h2>Map your research. Connect ideas. Export citations.</h2>
-                
-                <div class="onboarding-options">
-                    <div class="onboarding-option" id="continueProject">
-                        <svg class="option-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                        </svg>
-                        <span>Continue</span>
-                    </div>
-                    
-                    <div class="onboarding-option" id="newProject">
-                        <svg class="option-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="12" y1="8" x2="12" y2="16"/>
-                            <line x1="8" y1="12" x2="16" y2="12"/>
-                        </svg>
-                        <span>New Project</span>
-                    </div>
-                    
-                    <div class="onboarding-option disabled-option" id="exploreGallery">
-                        <svg class="option-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="7" height="7"/>
-                            <rect x="14" y="3" width="7" height="7"/>
-                            <rect x="14" y="14" width="7" height="7"/>
-                            <rect x="3" y="14" width="7" height="7"/>
-                        </svg>
-                        <span>Gallery<sup class="soon-badge">soon</sup></span>
-                    </div>
-                </div>
-                
-                <div class="quick-tips">
-                    <div class="tip-item"><strong>+</strong> Add articles with DOI or arXiv</div>
-                    <div class="tip-separator">•</div>
-                    <div class="tip-item"><strong>Click node</strong> then link icon to connect</div>
-                    <div class="tip-separator">•</div>
-                    <div class="tip-item"><strong>Drag</strong> to organize</div>
-                    <div class="tip-separator">•</div>
-                    <div class="tip-item"><strong>Export</strong> via logo menu</div>
-                </div>
-                
-                <div class="onboarding-footer">
-                    Press any key or click anywhere to dismiss
-                </div>
+
+            <div class="auth-divider">
+                <span>or continue with email</span>
+            </div>
+
+            <!-- Email Form -->
+            <form id="authForm" class="auth-form" onsubmit="handleAuthSubmit(event)">
+                <input 
+                    type="text" 
+                    id="authFullName" 
+                    placeholder="Full Name"
+                    style="display: none;"
+                />
+                <input 
+                    type="text" 
+                    id="authUsername" 
+                    placeholder="Username"
+                    minlength="3"
+                    maxlength="20"
+                    pattern="[a-zA-Z0-9_]+"
+                    title="Username must be 3-20 characters (letters, numbers, underscore only)"
+                    style="display: none;"
+                />
+                <input 
+                    type="email" 
+                    id="authEmail" 
+                    placeholder="Email address" 
+                    required
+                />
+                <input 
+                    type="password" 
+                    id="authPassword" 
+                    placeholder="Password" 
+                    required
+                    minlength="6"
+                />
+                <button type="submit" class="btn-primary" id="authSubmitBtn">
+                    Sign in
+                </button>
+            </form>
+
+            <div class="auth-form-toggle">
+                <span id="authToggleText">Don't have an account?</span>
+                <button type="button" onclick="toggleAuthMode()">Sign up</button>
             </div>
         </div>
     </div>
 
-    <!-- External Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/10.0.2/dist/vis-network.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Core Modules (Load First - No Dependencies) -->
-    <script src="js/core/state.js"></script>
-    <script src="js/utils/helpers.js"></script>
-    
-    <!-- Graph Modules (Load connections.js BEFORE storage.js so edgeControlPoints is defined) -->
-    <script src="js/graph/zones.js"></script>
-    <script src="js/graph/connections.js"></script>
-    
-    <!-- Data Layer -->
-    <script src="js/data/storage.js"></script>
-    <script src="js/data/bibtex-parser.js"></script>
-    <script src="js/data/export.js"></script>
-    <script src="js/data/import.js"></script>
-    
-    <!-- Graph Module -->
-    <script src="js/graph/graph.js"></script>
-    
-    <!-- UI Components -->
-    <script src="js/ui/filters.js"></script>
-    <script src="js/ui/modal.js"></script>
-    <script src="js/ui/preview.js"></script>
-    <script src="js/ui/radial-menu.js"></script>
-    <script src="js/ui/toolbar.js"></script>
-    <script src="js/ui/list-view.js"></script>
-    
-    <!-- Core Init (After all dependencies loaded) -->
-    <script src="js/core/init.js"></script>
-    
-    <!-- Application Startup -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Check if importing from gallery
+    <!-- Auth Logic -->
+    <script type="module">
+        import { supabase, config } from './js/auth/config.js';
+
+        let isSignUp = false;
+
+        // Check if user is already logged in
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Check for redirect parameters
             const urlParams = new URLSearchParams(window.location.search);
-            const importFromGallery = urlParams.get('source') === 'gallery';
+            const redirect = urlParams.get('redirect');
+            const token = urlParams.get('token');
             
-            if (importFromGallery) {
-                // Skip onboarding for gallery imports
-                localStorage.setItem('skipOnboarding', 'true');
-                
-                // Load project from gallery
-                const galleryProject = localStorage.getItem('gallery_import_project');
-                if (galleryProject) {
-                    try {
-                        const projectData = JSON.parse(galleryProject);
-                        
-                        // Import the project data
-                        if (projectData.tagZones) {
-                            tagZones = projectData.tagZones;
-                            delete projectData.tagZones;
-                        }
-                        if (projectData.nodePositions) {
-                            window.savedNodePositions = projectData.nodePositions;
-                            delete projectData.nodePositions;
-                        }
-                        
-                        appData = projectData;
-                        
-                        // Don't save to localStorage immediately (read-only mode)
-                        // User can export if they want to save
-                        
-                        // Clean up
-                        localStorage.removeItem('gallery_import_project');
-                        
-                        showNotification('Gallery project loaded (read-only)', 'success');
-                    } catch (err) {
-                        console.error('Error loading gallery project:', err);
-                        showNotification('Failed to load gallery project', 'error');
-                    }
-                }
-            } else {
-                // Normal load from localStorage
-                loadFromLocalStorage();
+            // Handle hash fragment (from email confirmation)
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const hashType = hashParams.get('type');
+            
+            // If we have an access token in hash, this is a redirect from email confirmation
+            if (accessToken) {
+                // Supabase SDK will handle the session automatically
+                // Wait a moment for session to be established
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
             
-            initializeEventListeners();
-            updateCategoryFilters();
-            renderListView();
-            
-            // Initialize graph-only buttons visibility (default to graph view)
-            const graphOnlyElements = document.querySelectorAll('.graph-only');
-            graphOnlyElements.forEach(el => {
-                el.style.display = 'flex';
-                el.classList.add('visible');
-            });
-            
-            // Initialize graph after a short delay to ensure DOM is ready
-            setTimeout(() => {
-                initializeGraph();
-                
-                // Restore control point nodes after graph is initialized
-                setTimeout(() => {
-                    if (typeof restoreControlPointNodes === 'function') {
-                        restoreControlPointNodes();
-                        
-                        // Rebuild edges with control points
-                        Object.keys(edgeControlPoints || {}).forEach(edgeId => {
-                            if (typeof rebuildEdgeWithControlPoints === 'function') {
-                                rebuildEdgeWithControlPoints(parseInt(edgeId));
-                            }
-                        });
-                    }
-                }, 200);
-                
-                // Note: Node positioning is handled in stabilizationIterationsDone event
-                // in graph.js, which checks for savedNodePositions first
-            }, 100);
-            
-            // ===== ONBOARDING SETUP =====
-            const onboardingOverlay = document.getElementById('onboardingOverlay');
-            const continueProjectBtn = document.getElementById('continueProject');
-            const newProjectBtn = document.getElementById('newProject');
-            const exploreGalleryBtn = document.getElementById('exploreGallery');
-            
-            console.log('Onboarding overlay:', onboardingOverlay);
-            
-            // Function to close onboarding (make it global so any action can close it)
-            window.closeOnboarding = function() {
-                console.log('closeOnboarding called');
-                if (onboardingOverlay) {
-                    onboardingOverlay.classList.add('hidden');
-                    console.log('Onboarding hidden');
-                }
-            }
-            
-            // Check if there's existing data
-            let hasExistingData = false;
-            try {
-                const data = localStorage.getItem('papermap_data');
-                if (data) {
-                    const parsed = JSON.parse(data);
-                    hasExistingData = parsed.articles && parsed.articles.length > 0;
-                }
-            } catch (e) {
-                hasExistingData = false;
-            }
-            
-            // Disable continue option if no data
-            if (!hasExistingData) {
-                continueProjectBtn.style.opacity = '0.5';
-                continueProjectBtn.style.pointerEvents = 'none';
-                const continueSpan = continueProjectBtn.querySelector('span');
-                if (continueSpan) continueSpan.textContent = 'No Project';
-            }
-            
-            // Show onboarding only if not skipped
-            const skipOnboarding = localStorage.getItem('skipOnboarding');
-            if (skipOnboarding) {
-                localStorage.removeItem('skipOnboarding'); // Clear the flag
-                onboardingOverlay.classList.add('hidden');
-                console.log('Onboarding skipped (skipOnboarding flag was set)');
-            } else {
-                onboardingOverlay.classList.remove('hidden');
-                console.log('Onboarding should be visible now');
-                
-                // Open main dropdown menu when onboarding is shown
-                setTimeout(() => {
-                    const mainDropdown = document.getElementById('mainDropdown');
-                    if (mainDropdown) mainDropdown.classList.add('active');
-                }, 0);
-            }
-            
-            // Continue project
-            continueProjectBtn.addEventListener('click', () => {
-                if (hasExistingData) {
-                    window.closeOnboarding();
-                    showNotification('Welcome back!', 'success');
-                }
-            });
-            
-            // New project
-            newProjectBtn.addEventListener('click', () => {
-                if (hasExistingData) {
-                    if (confirm('Starting a new project will clear your current data. Continue?')) {
-                        localStorage.removeItem('papermap_data');
-                        localStorage.removeItem('papermap_positions');
-                        localStorage.removeItem('papermap_zones'); // Clear tag zones
-                        localStorage.setItem('skipOnboarding', 'true'); // Skip onboarding after reload
-                        window.closeOnboarding();
-                        setTimeout(() => location.reload(), 100);
-                    }
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                // User is logged in
+                if (redirect === 'share' && token) {
+                    // Redirect to shared project
+                    window.navigateTo(`editor.html?share=${token}`);
                 } else {
-                    // Clear any leftover tag zones even for empty projects
-                    localStorage.removeItem('papermap_zones');
-                    tagZones = []; // Clear in-memory tag zones
-                    window.closeOnboarding();
-                    showNotification('Welcome to papergraph!', 'success');
+                    // Normal redirect to projects
+                    window.navigateTo('projects.html');
                 }
-            });
+                return;
+            }
             
-            // Explore gallery - DISABLED (Coming Soon)
-            exploreGalleryBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // Disabled - Coming Soon
-            });
+            // User not logged in
+            if (redirect === 'share' && token) {
+                // Show auth modal with message about shared project
+                openAuthModal();
+                showAuthMessage('Please sign in to view this shared project', false);
+            }
+
+            // Attach event listeners after DOM is ready
+            const getStartedBtn = document.getElementById('getStartedBtn');
+            if (getStartedBtn) {
+                getStartedBtn.addEventListener('click', openAuthModal);
+            }
+        });
+
+        // Modal functions
+        function openAuthModal() {
+            document.getElementById('authModal').classList.add('active');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+            clearAuthMessage();
+        }
+
+        // Make functions available globally for inline handlers
+        window.openAuthModal = openAuthModal;
+        window.closeAuthModal = closeAuthModal;
+
+        // Toggle between sign in and sign up
+        function toggleAuthMode() {
+            isSignUp = !isSignUp;
+            const title = document.getElementById('authModalTitle');
+            const subtitle = document.getElementById('authModalSubtitle');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            const toggleText = document.getElementById('authToggleText');
+            const fullNameField = document.getElementById('authFullName');
+            const usernameField = document.getElementById('authUsername');
             
-            // Close onboarding when clicking anywhere on the overlay (except option buttons)
-            onboardingOverlay.addEventListener('click', (e) => {
-                console.log('Overlay clicked, target:', e.target.className, 'closest option:', e.target.closest('.onboarding-option'));
-                // Close unless clicking on an option button
-                const clickedOption = e.target.closest('.onboarding-option');
-                if (!clickedOption) {
-                    console.log('Closing onboarding from overlay click');
-                    window.closeOnboarding();
-                    if (!hasExistingData) {
-                        showNotification('Welcome to papergraph!', 'success');
+            if (isSignUp) {
+                title.textContent = 'Create your account';
+                subtitle.textContent = 'Join Papergraph to sync your research';
+                submitBtn.textContent = 'Sign up';
+                toggleText.textContent = 'Already have an account?';
+                fullNameField.style.display = 'block';
+                fullNameField.required = true;
+                usernameField.style.display = 'block';
+                usernameField.required = true;
+            } else {
+                title.textContent = 'Welcome to Papergraph';
+                subtitle.textContent = 'Sign in to sync your projects across devices';
+                submitBtn.textContent = 'Sign in';
+                toggleText.textContent = "Don't have an account?";
+                fullNameField.style.display = 'none';
+                fullNameField.required = false;
+                usernameField.style.display = 'none';
+                usernameField.required = false;
+            }
+            clearAuthMessage();
+        }
+
+        window.toggleAuthMode = toggleAuthMode;
+
+        // Show message
+        function showAuthMessage(message, isError = false) {
+            const messageDiv = document.getElementById('authMessage');
+            messageDiv.className = isError ? 'auth-error' : 'auth-success';
+            messageDiv.textContent = message;
+        }
+
+        function clearAuthMessage() {
+            document.getElementById('authMessage').textContent = '';
+            document.getElementById('authMessage').className = '';
+        }
+
+        // Email/Password Auth
+        async function handleAuthSubmit(event) {
+            event.preventDefault();
+            clearAuthMessage();
+
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+
+            try {
+                if (isSignUp) {
+                    const fullName = document.getElementById('authFullName').value;
+                    const username = document.getElementById('authUsername').value;
+                    
+                    // Check if username is already taken
+                    const { data: existingUsers, error: checkError } = await supabase
+                        .from('profiles')
+                        .select('username')
+                        .eq('username', username)
+                        .maybeSingle();
+                    
+                    if (existingUsers) {
+                        throw new Error('Username already taken. Please choose another.');
+                    }
+
+                    const { data, error } = await supabase.auth.signUp({
+                        email,
+                        password,
+                        options: {
+                            data: {
+                                full_name: fullName,
+                                username: username
+                            }
+                        }
+                    });
+
+                    if (error) throw error;
+
+                    showAuthMessage('Check your email to confirm your account!', false);
+                    
+                    // Clear form
+                    document.getElementById('authForm').reset();
+                } else {
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email,
+                        password,
+                    });
+
+                    if (error) throw error;
+
+                    // Check for pending share token redirect
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirect = urlParams.get('redirect');
+                    const token = urlParams.get('token');
+                    
+                    if (redirect === 'share' && token) {
+                        // Redirect to shared project
+                        window.navigateTo(`editor.html?share=${token}`);
+                    } else {
+                        // Normal redirect to dashboard
+                        window.navigateTo('projects.html');
                     }
                 }
-            });
+            } catch (error) {
+                showAuthMessage(error.message, true);
+            }
+        }
+
+        // Generate unique username
+        async function generateUniqueUsername(baseUsername) {
+            let username = baseUsername.toLowerCase().replace(/[^a-z0-9_]/g, '');
+            if (username.length < 3) username = 'user_' + username;
+            if (username.length > 20) username = username.substring(0, 20);
             
-            // Close onboarding when clicking on toolbar buttons or toggle switch
-            document.querySelectorAll('.main-toolbar button, .main-tool-btn, .toggle-switch').forEach(btn => {
-                btn.addEventListener('click', window.closeOnboarding, { once: true });
-            });
+            let finalUsername = username;
+            let suffix = 1;
             
-            // Close on any keypress
-            document.addEventListener('keydown', function hideOnKey(e) {
-                console.log('Key pressed, closing onboarding');
-                window.closeOnboarding();
-                if (!hasExistingData) {
-                    showNotification('Welcome to papergraph!', 'success');
+            while (true) {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('username')
+                    .eq('username', finalUsername)
+                    .maybeSingle();
+                
+                if (!data) break; // Username is available
+                
+                finalUsername = username + suffix;
+                suffix++;
+            }
+            
+            return finalUsername;
+        }
+
+        // GitHub OAuth
+        async function signInWithGitHub() {
+            try {
+                // Check for pending share redirect
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirect = urlParams.get('redirect');
+                const token = urlParams.get('token');
+                
+                let redirectTo = window.location.origin + config.basePath + 'projects.html';
+                if (redirect === 'share' && token) {
+                    redirectTo = window.location.origin + config.basePath + `editor.html?share=${token}`;
                 }
-            }, { once: true });
-        });
-        
-        // Save positions before page unload (refresh, close, etc.)
-        window.addEventListener('beforeunload', () => {
-            console.log('=== BEFORE UNLOAD - Saving positions ===');
-            if (network) {
-                const positions = network.getPositions();
-                console.log('Positions to save:', Object.keys(positions).length, 'nodes');
-                console.log('Sample positions:', Object.entries(positions).slice(0, 3));
-                localStorage.setItem('papermap_positions', JSON.stringify(positions));
-                console.log('✓ Positions saved to localStorage');
-            } else {
-                console.warn('⚠ Network not available, positions not saved');
+                
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'github',
+                    options: {
+                        redirectTo: redirectTo,
+                        scopes: 'user:email'
+                    }
+                });
+
+                if (error) throw error;
+            } catch (error) {
+                showAuthMessage(error.message, true);
+            }
+        }
+
+        // Google OAuth
+        async function signInWithGoogle() {
+            try {
+                // Check for pending share redirect
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirect = urlParams.get('redirect');
+                const token = urlParams.get('token');
+                
+                let redirectTo = window.location.origin + config.basePath + 'projects.html';
+                if (redirect === 'share' && token) {
+                    redirectTo = window.location.origin + config.basePath + `editor.html?share=${token}`;
+                }
+                
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: redirectTo
+                    }
+                });
+
+                if (error) throw error;
+            } catch (error) {
+                showAuthMessage(error.message, true);
+            }
+        }
+
+        // Make functions globally available
+        window.handleAuthSubmit = handleAuthSubmit;
+        window.signInWithGitHub = signInWithGitHub;
+        window.signInWithGoogle = signInWithGoogle;
+
+        // Close modal on outside click
+        document.getElementById('authModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAuthModal();
             }
         });
     </script>
+    
+    <!-- Logo Marquee Duplication Script -->
+    <script>
+        // Duplicate logos for seamless infinite scroll
+        document.addEventListener('DOMContentLoaded', () => {
+            const track = document.getElementById('logosTrack');
+            if (track) {
+                const logos = track.innerHTML;
+                track.innerHTML = logos + logos; // Duplicate for seamless loop
+            }
+        });
+    </script>
+    
+    <!-- Load Footer -->
+    <script src="js/utils/load-footer.js"></script>
 </body>
 </html>
-

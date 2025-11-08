@@ -88,7 +88,7 @@ function renderListView(searchTerm = '') {
         if (article.bibtexId) {
             const citationKey = document.createElement('div');
             citationKey.className = 'citation-key';
-            citationKey.contentEditable = 'true';
+            citationKey.contentEditable = window.isGalleryViewer ? 'false' : 'true';
             citationKey.textContent = article.bibtexId;
             citationKey.onclick = (e) => e.stopPropagation();
             citationKey.ondblclick = (e) => {
@@ -128,7 +128,7 @@ function renderListView(searchTerm = '') {
         
         const title = document.createElement('div');
         title.className = 'article-list-title';
-        title.contentEditable = 'true';
+        title.contentEditable = window.isGalleryViewer ? 'false' : 'true';
         title.textContent = article.title;
         title.onclick = (e) => e.stopPropagation();
         title.ondblclick = (e) => {
@@ -159,15 +159,18 @@ function renderListView(searchTerm = '') {
         const actions = document.createElement('div');
         actions.className = 'article-list-actions';
         
-        const editBtn = document.createElement('button');
-        editBtn.className = 'article-action-btn';
-        editBtn.title = 'Éditer dans le modal';
-        editBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-        </svg>`;
-        editBtn.onclick = () => openArticleModal(article.id);
-        actions.appendChild(editBtn);
+        // Don't show edit button in gallery viewer mode
+        if (!window.isGalleryViewer) {
+            const editBtn = document.createElement('button');
+            editBtn.className = 'article-action-btn';
+            editBtn.title = 'Éditer dans le modal';
+            editBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>`;
+            editBtn.onclick = () => openArticleModal(article.id);
+            actions.appendChild(editBtn);
+        }
         
         header.appendChild(actions);
         item.appendChild(header);
@@ -179,7 +182,7 @@ function renderListView(searchTerm = '') {
         // Authors
         const authors = document.createElement('div');
         authors.className = 'article-list-authors';
-        authors.contentEditable = 'true';
+        authors.contentEditable = window.isGalleryViewer ? 'false' : 'true';
         authors.textContent = article.authors || '';
         authors.onclick = (e) => e.stopPropagation();
         authors.ondblclick = (e) => {
@@ -230,7 +233,7 @@ function renderListView(searchTerm = '') {
         // Text/Notes
         const text = document.createElement('div');
         text.className = 'article-list-text';
-        text.contentEditable = 'true';
+        text.contentEditable = window.isGalleryViewer ? 'false' : 'true';
         text.textContent = article.text || '';
         text.onclick = (e) => e.stopPropagation();
         text.ondblclick = (e) => {

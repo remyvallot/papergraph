@@ -38,6 +38,11 @@ function editConnectionLabel(edgeId) {
 }
 
 function editEdgeLabelInline(edgeId, edge, pointerDOM) {
+    // Don't allow editing in gallery viewer mode
+    if (window.isGalleryViewer) {
+        return;
+    }
+    
     const connection = appData.connections.find(c => c.id === edgeId);
     if (!connection) {
         console.log('Connection not found:', edgeId);
@@ -184,6 +189,11 @@ function deleteConnection(edgeId) {
 }
 
 function showEdgeMenu(x, y, edgeId) {
+    // Don't show edge menu in gallery viewer mode
+    if (window.isGalleryViewer) {
+        return;
+    }
+    
     const menu = document.getElementById('edgeMenu');
     
     console.log('📍 ========== SHOWING EDGE MENU ==========');
@@ -450,7 +460,7 @@ function handleConnectionModeClick(params) {
         );
         
         if (exists) {
-            showNotification('Cette connexion existe déjà', 'error');
+            showNotification('This connection already exists', 'error');
             cancelConnectionMode();
             return;
         }
@@ -521,7 +531,7 @@ function cancelConnectionMode() {
     document.getElementById('connectionModeIndicator').classList.remove('active');
     
     if (network) {
-        network.canvas.body.container.style.cursor = 'default';
+        network.canvas.body.container.style.cursor = "url('assets/cursors/default.svg'), default";
         network.setOptions({
             interaction: {
                 hover: true,
@@ -538,7 +548,7 @@ function cancelConnectionMode() {
         });
     }
     
-    showNotification('Mode connexion annulé', 'info');
+    showNotification('Connection mode cancelled', 'info');
 }
 
 // ===== EDGE CONTROL POINTS =====
@@ -1037,7 +1047,7 @@ function showControlPointMenu(x, y, controlPointId) {
     deleteBtn.className = 'edge-btn edge-delete';
     deleteBtn.style.left = '-22px';
     deleteBtn.style.top = '-22px';
-    deleteBtn.title = 'Supprimer point de contrôle';
+    deleteBtn.title = 'Delete control point';
     deleteBtn.innerHTML = `
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="3 6 5 6 21 6"/>

@@ -109,8 +109,8 @@ function showArticlePreview(articleId) {
     // Show preview panel
     preview.classList.add('active');
     
-    // Setup inline editing once
-    if (!inlineEditingSetup) {
+    // Setup inline editing once (but not in gallery viewer mode)
+    if (!inlineEditingSetup && !window.isGalleryViewer) {
         setupInlineEditing();
         inlineEditingSetup = true;
     }

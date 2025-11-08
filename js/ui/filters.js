@@ -58,7 +58,7 @@ function createFilterChip(label, value, onRemove) {
     const removeBtn = document.createElement('button');
     removeBtn.className = 'filter-chip-remove';
     removeBtn.innerHTML = '×';
-    removeBtn.title = 'Supprimer le filtre';
+    removeBtn.title = 'Remove filter';
     removeBtn.onclick = onRemove;
     
     chip.appendChild(labelSpan);

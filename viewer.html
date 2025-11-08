@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>papergraph</title>
+    <link href="https://api.fontshare.com/v2/css?f[]=chillax@400,700&display=swap" rel="stylesheet">
+    
+    <!-- Modular CSS - Base -->
+    <link rel="stylesheet" href="css/base/reset.css">
+    <link rel="stylesheet" href="css/base/layout.css">
+    <link rel="stylesheet" href="css/base/typography.css">
+    <link rel="stylesheet" href="css/base/dark-theme.css">
+    
+    <!-- Modular CSS - Components -->
+    <link rel="stylesheet" href="css/components/buttons.css">
+    <link rel="stylesheet" href="css/components/dropdown.css">
+    <link rel="stylesheet" href="css/components/modals.css">
+    <link rel="stylesheet" href="css/components/toolbar.css">
+    <link rel="stylesheet" href="css/components/filters.css">
+    <link rel="stylesheet" href="css/components/radial-menu.css">
+    <link rel="stylesheet" href="css/components/footer.css">
+    <link rel="stylesheet" href="css/components/onboarding.css">
+    
+    <!-- Modular CSS - Views -->
+    <link rel="stylesheet" href="css/views/graph-view.css">
+    <link rel="stylesheet" href="css/views/list-view.css">
+    <link rel="stylesheet" href="css/views/article-preview.css">
+    
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css">
+    
+    <!-- Cursors - MUST BE LAST to override everything -->
+    <link rel="stylesheet" href="css/base/cursors.css">
+    <link rel="icon" type="image/svg+xml" href="assets/logo-papergraph.svg">
+</head>
+<body>
+    <div id="app">
+        <!-- Read-Only Mode Indicator (hidden by default) -->
+        <div id="readonlyIndicator" class="readonly-indicator" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Read-Only Mode - Gallery Project
+        </div>
+        
+        <!-- Copy to Dashboard Button (hidden by default) -->
+        <button id="copyToDashboardBtn" class="btn-primary copy-to-dashboard-btn" style="display: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            </svg>
+            Copy to My Dashboard
+        </button>
+        
+        <!-- Logo Menu Button with integrated Project Title -->
+        <div class="logo-menu-btn-extended">
+            <button id="logoMenuBtn" class="logo-menu-btn-part">
+                <img src="assets/logo-papergraph.svg" alt="papergraph" class="logo-icon">
+                <span class="logo-text">papergraph</span>
+            </button>
+            
+            <div class="vertical-divider"></div>
+            
+            <!-- Project Title (editable) -->
+            <input 
+                type="text" 
+                id="projectTitle" 
+                class="project-title-input" 
+                placeholder="Untitled Project"
+                maxlength="100"
+            />
+        </div>
+        
+        <!-- User Profile Button (top-right) -->
+        <div class="user-dropdown-container editor-user-dropdown">
+            <button id="editorUserAvatarBtn" class="user-avatar-btn" style="display: none;">
+                <img id="editorUserAvatar" class="pg-avatar" src="" alt="User">
+            </button>
+            
+            <!-- Dropdown Menu -->
+            <div id="editorUserDropdown" class="user-dropdown">
+                <div class="user-dropdown-header">
+                    <img id="editorUserAvatarDropdown" class="user-dropdown-avatar" src="" alt="User">
+                    <div class="user-dropdown-info">
+                        <div id="editorUserNameDropdown" class="user-dropdown-name"></div>
+                        <div id="editorUserUsernameDropdown" class="user-dropdown-username"></div>
+                    </div>
+                </div>
+                <div class="user-dropdown-divider"></div>
+                <button class="user-dropdown-item" onclick="openPreferencesModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58z"/>
+                    </svg>
+                    Preferences
+                </button>
+                <div class="user-dropdown-divider"></div>
+                <button class="user-dropdown-item user-dropdown-item-danger" id="editorSignOut">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Sign Out
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Dropdown Menu -->
+        <div id="mainDropdown" class="main-dropdown">
+            <!-- File Section -->
+            <div class="dropdown-section">
+                <div class="dropdown-section-title">File</div>
+                <button class="dropdown-menu-item" id="actionBackToDashboard">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="3" y1="9" x2="21" y2="9"/>
+                        <line x1="9" y1="21" x2="9" y2="9"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </button>
+                <button class="dropdown-menu-item has-submenu" id="actionExportMenu">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Export</span>
+                    <svg class="submenu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- View Section -->
+            <div class="dropdown-section">
+                <div class="dropdown-section-title">View</div>
+                <button class="dropdown-menu-item has-submenu" id="actionNodeLabelMenu">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2.42012 12.7132C2.28394 12.4975 2.21584 12.3897 2.17772 12.2234C2.14909 12.0985 2.14909 11.9015 2.17772 11.7766C2.21584 11.6103 2.28394 11.5025 2.42012 11.2868C3.54553 9.50484 6.8954 5 12.0004 5C17.1054 5 20.4553 9.50484 21.5807 11.2868C21.7169 11.5025 21.785 11.6103 21.8231 11.7766C21.8517 11.9015 21.8517 12.0985 21.8231 12.2234C21.785 12.3897 21.7169 12.4975 21.5807 12.7132C20.4553 14.4952 17.1054 19 12.0004 19C6.8954 19 3.54553 14.4952 2.42012 12.7132Z"/>
+                        <path d="M12.0004 15C13.6573 15 15.0004 13.6569 15.0004 12C15.0004 10.3431 13.6573 9 12.0004 9C10.3435 9 9.0004 10.3431 9.0004 12C9.0004 13.6569 10.3435 15 12.0004 15Z"/>
+                    </svg>
+                    <span>Node Labels</span>
+                    <svg class="submenu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Gallery Section -->
+            <div class="dropdown-section">
+                <div class="dropdown-section-title">Gallery</div>
+                <button class="dropdown-menu-item" id="actionExploreGallery">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <span>Explore Gallery</span>
+                </button>
+            </div>
+            
+            <!-- Help Section -->
+            <div class="dropdown-section">
+                <div class="dropdown-section-title">Help</div>
+                <button class="dropdown-menu-item" id="actionHelp">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 1 1 5.82 1c0 2-3 2.5-3 4"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span>Help</span>
+                </button>
+                <button class="dropdown-menu-item" id="actionReportBug">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <g transform="translate(0,-2)">
+                            <rect x="7" y="9" width="10" height="10" rx="5" ry="5"/>
+                            <line x1="7" y1="12" x2="3" y2="10"/>
+                            <line x1="7" y1="15" x2="3" y2="15"/>
+                            <line x1="7" y1="18" x2="3" y2="20"/>
+                            <line x1="17" y1="12" x2="21" y2="10"/>
+                            <line x1="17" y1="15" x2="21" y2="15"/>
+                            <line x1="17" y1="18" x2="21" y2="20"/>
+                        </g>
+                    </svg>
+                    <span>Report Bug</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Export Submenu -->
+        <div id="exportSubmenu" class="dropdown-submenu">
+            <button class="dropdown-menu-item" id="actionExport">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span>Export Project</span>
+            </button>
+            <button class="dropdown-menu-item" id="actionExportBibtex">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <path d="M9 15h6"/>
+                    <path d="M9 11h6"/>
+                </svg>
+                <span>Export BibTeX (.bib)</span>
+            </button>
+            <button class="dropdown-menu-item" id="actionExportPdf">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+                <span>Export PDF</span>
+            </button>
+            <button class="dropdown-menu-item" id="actionExportImage">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span>Export Image (.png)</span>
+            </button>
+            <button class="dropdown-menu-item" id="actionExportSVG">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <path d="M9 12h6M12 9v6"/>
+                </svg>
+                <span>Export Image (.svg)</span>
+            </button>
+        </div>
+        
+        <!-- Node Label Submenu -->
+        <div id="nodeLabelSubmenu" class="dropdown-submenu">
+            <button class="dropdown-menu-item node-label-option" data-format="bibtexId">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 7h16M4 12h16M4 17h10"/>
+                </svg>
+                <span>BibTeX ID</span>
+                <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </button>
+            <button class="dropdown-menu-item node-label-option" data-format="title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <span>Title</span>
+                <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </button>
+            <button class="dropdown-menu-item node-label-option" data-format="citation">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span>Citation (Author, Year)</span>
+                <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </button>
+            <button class="dropdown-menu-item node-label-option" data-format="author">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>First Author</span>
+                <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Active Filters Display -->
+        <div id="activeFilters" class="active-filters-container">
+            <!-- Filters will be added here dynamically -->
+        </div>
+
+        <!-- Graph View -->
+        <div id="graphView" class="view active">
+            <!-- Article Preview Panel on the left -->
+            <div id="articlePreview" class="article-preview">
+                <div class="preview-content">
+                    <div class="article-card">
+                        <div id="previewCitationKey" class="citation-key" style="display: none;"></div>
+                        <h2 id="previewTitle" class="article-title">Article Title</h2>
+                        <p id="previewAuthors" class="article-meta"></p>
+                        <div id="previewCategoryBadge" class="category-badge-container"></div>
+                        
+                        <div class="article-section">
+                            <h4>Abstract / Notes</h4>
+                            <p id="previewText" class="article-description"></p>
+                        </div>
+                        
+                        <div class="article-links">
+                            <div id="previewDoiContainer" class="link-item" style="display: none;">
+                                <span class="link-label">📄 DOI:</span>
+                                <a id="previewDoi" href="#" target="_blank" rel="noopener"></a>
+                            </div>
+                            <div id="previewLinkContainer" class="link-item" style="display: none;">
+                                <span class="link-label">🔗 Link:</span>
+                                <a id="previewLink" href="#" target="_blank" rel="noopener"></a>
+                            </div>
+                            <div id="previewPdfContainer" class="link-item" style="display: none;">
+                                <span class="link-label">📕 PDF:</span>
+                                <a id="previewPdf" href="#" target="_blank" rel="noopener"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="graphContainer"></div>
+            
+            <!-- Toolbar on the right (kept for compatibility) -->
+            <div class="toolbar" style="display: none;">
+            </div>
+            
+            <!-- Edge menu for connection actions -->
+            <div id="edgeMenu" class="edge-menu">
+                <button class="edge-btn edge-add-control-point" title="Add control point" data-action="add-control">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <line x1="12" y1="2" x2="12" y2="9"/>
+                        <line x1="12" y1="15" x2="12" y2="22"/>
+                    </svg>
+                </button>
+                <button class="edge-btn edge-edit-label" title="Edit label" data-action="edit-label">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                </button>
+                <button class="edge-btn edge-delete" title="Delete connection" data-action="delete">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Radial menu for node actions -->
+            <div id="radialMenu" class="radial-menu">
+                <button class="radial-btn radial-connect" title="Create connection">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                </button>
+                <button class="radial-btn radial-delete" title="Delete">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Connection mode indicator -->
+            <div id="connectionModeIndicator" class="mode-indicator">
+                <span>Connection mode active - Click on a target node</span>
+                <button id="cancelConnectionMode">✖ Cancel</button>
+            </div>
+        </div>
+
+        <!-- List View -->
+        <div id="listView" class="view">
+            <div id="listContainer" class="articles-list">
+                <!-- Articles will be added here dynamically -->
+            </div>
+        </div>
+        
+        <!-- Category filter dropdown (shared between both views, above toolbar) -->
+        <div id="categoryDropdown" class="dropdown-panel">
+            <h3>Filters</h3>
+            
+            <div class="filter-section-dropdown">
+                <label>Category</label>
+                <select id="categoryFilter">
+                    <option value="">Toutes les catégories</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Main Action Toolbar - Bottom horizontal (outside views to be always visible) -->
+        <div class="main-toolbar">
+            <button id="addArticleBtn" class="main-tool-btn" title="Add an article">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="16"/>
+                    <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+                <span class="btn-label">Add</span>
+            </button>
+            
+            <!-- Category filter icon (both modes) -->
+            <button id="categoryFilterBtn" class="main-tool-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                </svg>
+                <span class="btn-label">Filter</span>
+            </button>
+            
+            <!-- Search icon/box -->
+            <button id="searchToggleBtn" class="main-tool-btn search-toggle-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <span class="btn-label">Search</span>
+            </button>
+            
+            <!-- Expandable search box -->
+            <div class="toolbar-search collapsed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input type="text" id="searchBoxToolbar" placeholder="Search..." class="toolbar-search-input">
+                <span id="searchResultCount" class="search-result-count"></span>
+                <button id="searchCloseBtn" class="search-close-btn">✕</button>
+            </div>
+            
+            <!-- Graph-only buttons -->
+            <div class="main-tool-divider graph-only"></div>
+            <button id="fitGraphBtn" class="main-tool-btn graph-only">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                    <path d="M12 3 L12 8" stroke-linecap="round"/>
+                    <path d="M10 5 L12 3 L14 5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 21 L12 16" stroke-linecap="round"/>
+                    <path d="M10 19 L12 21 L14 19" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 12 L8 12" stroke-linecap="round"/>
+                    <path d="M5 10 L3 12 L5 14" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M21 12 L16 12" stroke-linecap="round"/>
+                    <path d="M19 10 L21 12 L19 14" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="btn-label">Recentrer</span>
+            </button>
+            <button id="toggleGridBtn" class="main-tool-btn graph-only">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="6" cy="6" r="1" fill="currentColor"/>
+                    <circle cx="12" cy="6" r="1" fill="currentColor"/>
+                    <circle cx="18" cy="6" r="1" fill="currentColor"/>
+                    <circle cx="6" cy="12" r="1" fill="currentColor"/>
+                    <circle cx="12" cy="12" r="1" fill="currentColor"/>
+                    <circle cx="18" cy="12" r="1" fill="currentColor"/>
+                    <circle cx="6" cy="18" r="1" fill="currentColor"/>
+                    <circle cx="12" cy="18" r="1" fill="currentColor"/>
+                    <circle cx="18" cy="18" r="1" fill="currentColor"/>
+                </svg>
+                <span class="btn-label">Grid</span>
+            </button>
+            
+            <div class="main-tool-divider"></div>
+            
+            <!-- Toggle switch for view mode (at the right, fixed position) -->
+            <div class="toolbar-view-toggle">
+                <input type="checkbox" id="viewToggle" class="toggle-input">
+                <label for="viewToggle" class="toggle-label">
+                    <span class="toggle-option toggle-graph" title="Vue Graphe">
+                        <img src="assets/graph-icon-blue.svg" alt="Graph" class="toggle-icon toggle-icon-active">
+                        <img src="assets/graph-icon-gray.svg" alt="Graph" class="toggle-icon toggle-icon-inactive">
+                    </span>
+                    <span class="toggle-option toggle-list" title="Vue Liste">
+                        <img src="assets/list-icon-blue.svg" alt="List" class="toggle-icon toggle-icon-active">
+                        <img src="assets/list-icon-gray.svg" alt="List" class="toggle-icon toggle-icon-inactive">
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Article Edit Modal -->
+        <div id="articleModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="modalTitle">New Article</h2>
+                <form id="articleForm">
+                    <!-- Minimal import section -->
+                    <div class="import-zone">
+                        <div id="dropZone" class="drop-zone">
+                            <div class="drop-zone-content">
+                                <span class="drop-icon">📄</span>
+                                <p class="drop-text">Drop PDF or .bib file here</p>
+                                <p class="drop-or">or</p>
+                                <input type="text" id="quickImport" placeholder="Paste DOI, arXiv ID or BibTeX (e.g. 10.1234/... or @article{...})">
+                                <div class="bibtex-paste-area" style="display: none;">
+                                    <textarea id="bibtexPasteArea" placeholder="Paste one or more complete BibTeX entries here...&#10;&#10;@article{key2024,&#10;  title = {Example},&#10;  author = {Doe, John},&#10;  year = {2024},&#10;  ...&#10;}" rows="10"></textarea>
+                                    <button type="button" id="parseBibtexBtn" class="btn-primary">✓ Import</button>
+                                    <button type="button" id="cancelBibtexBtn" class="btn-secondary">Cancel</button>
+                                </div>
+                                <input type="file" id="pdfFileInput" accept=".pdf,.bib" style="display: none;">
+                                <button type="button" id="browseFileBtn" class="btn-browse">Browse...</button>
+                            </div>
+                        </div>
+                        <div id="importStatus" class="import-status"></div>
+                    </div>
+                    
+                    <!-- Collapsible manual form -->
+                    <div id="manualFormToggle" class="manual-toggle">
+                        <button type="button" id="toggleManualBtn" class="toggle-manual-btn">
+                            ✏️ Manual entry / edit
+                        </button>
+                    </div>
+                    
+                    <div id="manualForm" class="manual-form collapsed">
+                        <!-- Essential fields -->
+                        <div class="form-group">
+                            <label for="articleTitle">Title *</label>
+                            <input type="text" id="articleTitle" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articleAuthors">Author(s)</label>
+                            <input type="text" id="articleAuthors" placeholder="Doe, John and Smith, Jane">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articleYear">Year</label>
+                            <input type="text" id="articleYear" placeholder="2024">
+                        </div>
+                        
+                        <!-- Publication details -->
+                        <div class="form-group">
+                            <label for="articleType">Entry Type</label>
+                            <select id="articleType">
+                                <option value="article">Article (journal)</option>
+                                <option value="inproceedings">Inproceedings (conference)</option>
+                                <option value="book">Book</option>
+                                <option value="phdthesis">PhD Thesis</option>
+                                <option value="mastersthesis">Master's Thesis</option>
+                                <option value="techreport">Technical Report</option>
+                                <option value="misc">Misc</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articleJournal">Journal / Conference Name</label>
+                            <input type="text" id="articleJournal" placeholder="Journal or conference name">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="articleVolume">Volume</label>
+                                <input type="text" id="articleVolume" placeholder="123">
+                            </div>
+                            <div class="form-group">
+                                <label for="articleNumber">Number</label>
+                                <input type="text" id="articleNumber" placeholder="4">
+                            </div>
+                            <div class="form-group">
+                                <label for="articlePages">Pages</label>
+                                <input type="text" id="articlePages" placeholder="45-67">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articlePublisher">Publisher / Institution</label>
+                            <input type="text" id="articlePublisher" placeholder="Publisher or institution name">
+                        </div>
+                        
+                        <!-- Identifiers -->
+                        <div class="form-group">
+                            <label for="articleDoi">DOI</label>
+                            <input type="text" id="articleDoi" placeholder="10.1234/example.2024">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="articleIsbn">ISBN</label>
+                                <input type="text" id="articleIsbn" placeholder="978-3-16-148410-0">
+                            </div>
+                            <div class="form-group">
+                                <label for="articleIssn">ISSN</label>
+                                <input type="text" id="articleIssn" placeholder="1234-5678">
+                            </div>
+                        </div>
+                        
+                        <!-- Links and files -->
+                        <div class="form-group">
+                            <label for="articleLink">URL</label>
+                            <input type="url" id="articleLink" placeholder="https://...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articlePdf">PDF (URL or path)</label>
+                            <input type="text" id="articlePdf" placeholder="https://... or local path">
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="form-group">
+                            <label for="articleAbstract">Abstract</label>
+                            <textarea id="articleAbstract" rows="4" placeholder="Article abstract..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articleNote">Note</label>
+                            <textarea id="articleNote" rows="2" placeholder="Additional notes..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="articleCategories">Keywords / Categories (comma separated)</label>
+                            <input type="text" id="articleCategories" placeholder="machine learning, neural networks">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="deleteArticleBtn" class="btn-danger">�Delete</button>
+                        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button type="submit" class="btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Share Project Modal -->
+        <!-- Hidden file input for import -->
+        <input type="file" id="fileInput" accept=".papergraph,.json" style="display: none;">
+        <input type="file" id="bibtexFileInput" accept=".bib,.bibtex" style="display: none;">
+        
+        <!-- Footer -->
+        <div data-include="footer"></div>
+        
+        <!-- Preferences Modal -->
+        <div data-include="preferences-modal"></div>
+        
+        <!-- Submit to Gallery Modal -->
+        <div id="submitGalleryModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeSubmitGalleryModal()">&times;</span>
+                <h2>Submit to Gallery</h2>
+                <form id="submitGalleryForm" onsubmit="handleSubmitToGallery(event)">
+                    <div class="form-group">
+                        <label for="submitProjectSelect">Select Project</label>
+                        <select id="submitProjectSelect" class="form-input" required>
+                            <option value="">Choose a project...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="submitTitle">Title</label>
+                        <input type="text" id="submitTitle" class="form-input" placeholder="Project title" maxlength="100" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="submitDescription">Description (2 lines max)</label>
+                        <textarea id="submitDescription" class="form-input" placeholder="Brief description of your research project..." rows="3" maxlength="200" required></textarea>
+                        <small style="color: #999;"><span id="descCharCount">0</span>/200 characters</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="submitAuthor">Full Name</label>
+                        <input type="text" id="submitAuthor" class="form-input" placeholder="Your full name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="submitAffiliation">Affiliation</label>
+                        <input type="text" id="submitAffiliation" class="form-input" placeholder="University or institution" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Thumbnail (optional)</label>
+                        <div style="border: 2px dashed #ddd; border-radius: 8px; padding: 20px; text-align: center;">
+                            <div id="thumbnailPreview" style="display: none; position: relative;">
+                                <img id="thumbnailImg" src="" alt="Thumbnail" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+                                <button type="button" onclick="removeThumbnail()" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">×</button>
+                            </div>
+                            <div id="thumbnailPlaceholder">
+                                <p style="margin: 0 0 10px;">Click to upload an image</p>
+                                <button type="button" class="btn-secondary" onclick="document.getElementById('thumbnailInput').click()">Choose File</button>
+                            </div>
+                            <input type="file" id="thumbnailInput" accept="image/png,image/jpeg" style="display: none;">
+                        </div>
+                    </div>
+
+                    <p style="background: #f5f9ff; border-left: 4px solid #4a90e2; padding: 12px; margin: 20px 0; font-size: 0.9rem;">
+                        <strong>Note:</strong> GitHub authentication is required. Submissions create a merge request for review.
+                    </p>
+
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <button type="button" class="btn-secondary" onclick="closeSubmitGalleryModal()">Cancel</button>
+                        <button type="submit" class="btn-primary" id="submitGalleryButton">Submit Project</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- New Project Modal -->
+        <div id="newProjectModal" class="modal">
+            <div class="modal-content modal-small">
+                <span class="close" onclick="closeNewProjectModal()">&times;</span>
+                <h2>Create New Project</h2>
+                <form id="newProjectForm" onsubmit="handleCreateNewProject(event)">
+                    <div class="form-group">
+                        <label for="newProjectName">Project Name</label>
+                        <input type="text" id="newProjectName" placeholder="e.g., Machine Learning Papers" required />
+                    </div>
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <button type="button" class="btn-secondary" onclick="closeNewProjectModal()">Cancel</button>
+                        <button type="submit" class="btn-primary">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Onboarding Overlay -->
+        <div id="onboardingOverlay" class="onboarding-overlay hidden">
+            <div class="onboarding-content">
+                <div class="onboarding-header">
+                    <h1>Welcome to papergraph</h1>
+                </div>
+                
+                <h2>Map your research. Connect ideas. Export citations.</h2>
+                
+                <div class="onboarding-options">
+                    <div class="onboarding-option" id="continueProject">
+                        <svg class="option-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <span>Continue</span>
+                    </div>
+                    
+                    <div class="onboarding-option" id="newProject">
+                        <svg class="option-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="16"/>
+                            <line x1="8" y1="12" x2="16" y2="12"/>
+                        </svg>
+                        <span>New Project</span>
+                    </div>
+                    
+                    <div class="onboarding-option disabled-option" id="exploreGallery">
+                        <svg class="option-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                        <span>Gallery<sup class="soon-badge">soon</sup></span>
+                    </div>
+                </div>
+                
+                <div class="quick-tips">
+                    <div class="tip-item"><strong>+</strong> Add articles with DOI or arXiv</div>
+                    <div class="tip-separator">•</div>
+                    <div class="tip-item"><strong>Click node</strong> then link icon to connect</div>
+                    <div class="tip-separator">•</div>
+                    <div class="tip-item"><strong>Drag</strong> to organize</div>
+                    <div class="tip-separator">•</div>
+                    <div class="tip-item"><strong>Export</strong> via logo menu</div>
+                </div>
+                
+                <div class="onboarding-footer">
+                    Press any key or click anywhere to dismiss
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/10.0.2/dist/vis-network.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Initialize Supabase Client Globally -->
+    <script type="module">
+        import { supabase } from './js/auth/config.js';
+        // Make supabase client globally available for non-module scripts
+        window.supabaseClient = supabase;
+    </script>
+    
+    <!-- Core Modules (Load First - No Dependencies) -->
+    <script src="js/core/state.js"></script>
+    <script src="js/utils/helpers.js"></script>
+    
+    <!-- Graph Modules (Load connections.js BEFORE storage.js so edgeControlPoints is defined) -->
+    <script src="js/graph/zones.js"></script>
+    <script src="js/graph/connections.js"></script>
+    
+    <!-- Data Layer -->
+    <script src="js/data/storage.js"></script>
+    <script src="js/data/bibtex-parser.js"></script>
+    <script src="js/data/export.js"></script>
+    <script src="js/data/import.js"></script>
+    
+    <!-- Graph Module -->
+    <script src="js/graph/graph.js"></script>
+    
+    <!-- UI Components -->
+    <script src="js/ui/filters.js"></script>
+    <script src="js/ui/modal.js"></script>
+    <script src="js/ui/preview.js"></script>
+    <script src="js/ui/radial-menu.js"></script>
+    <script src="js/ui/toolbar.js"></script>
+    <script src="js/ui/list-view.js"></script>
+    
+    <!-- Core Init (After all dependencies loaded) -->
+    <script src="js/core/init.js"></script>
+    
+    <!-- Cloud Storage Module -->
+    <script type="module">
+        import { initCloudStorage, isCloudStorageEnabled } from './js/data/cloud-storage.js';
+        
+        // Make cloud storage functions globally available
+        window.initCloudStorage = initCloudStorage;
+        window.isCloudStorageEnabled = isCloudStorageEnabled;
+    </script>
+    
+    <!-- Permissions Module -->
+    <script type="module">
+        import { 
+            canEdit, 
+            isReadOnly, 
+            executeIfCanEdit, 
+            showReadOnlyNotification,
+            getUserRole,
+            isOwner,
+            isEditorOrOwner
+        } from './js/utils/permissions.js';
+        
+        // Make permission functions globally available
+        window.canEdit = canEdit;
+        window.isReadOnly = isReadOnly;
+        window.executeIfCanEdit = executeIfCanEdit;
+        window.showReadOnlyNotification = showReadOnlyNotification;
+        window.getUserRole = getUserRole;
+        window.isOwner = isOwner;
+        window.isEditorOrOwner = isEditorOrOwner;
+    </script>
+    
+    <!-- Preferences Modal -->
+    <script type="module">
+        import { supabase } from './js/auth/config.js';
+        
+        let currentUser = null;
+        
+        // Get current user
+        async function getCurrentUser() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                setupUserDropdown();
+            }
+            return currentUser;
+        }
+        
+        // Setup user dropdown menu
+        function setupUserDropdown() {
+            if (!currentUser) return;
+            
+            const userAvatarBtn = document.getElementById('editorUserAvatarBtn');
+            const userAvatar = document.getElementById('editorUserAvatar');
+            const userDropdown = document.getElementById('editorUserDropdown');
+            
+            // Populate user info
+            const avatarUrl = currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture;
+            const username = currentUser.user_metadata?.username;
+            const displayName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email.split('@')[0];
+            
+            if (avatarUrl) {
+                userAvatar.src = avatarUrl;
+                document.getElementById('editorUserAvatarDropdown').src = avatarUrl;
+            }
+            
+            // Display name first, then username below
+            document.getElementById('editorUserNameDropdown').textContent = displayName;
+            
+            const usernameElement = document.getElementById('editorUserUsernameDropdown');
+            if (username) {
+                usernameElement.textContent = `@${username}`;
+                usernameElement.style.display = 'block';
+            } else {
+                usernameElement.style.display = 'none';
+            }
+            
+            userAvatarBtn.style.display = 'flex';
+            
+            // Toggle dropdown
+            userAvatarBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.classList.toggle('active');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!userAvatarBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.remove('active');
+                }
+            });
+        }
+        
+        // Initialize on DOM ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Get current user and setup dropdown
+            await getCurrentUser();
+            
+            // Sign out handler
+            const signOutBtn = document.getElementById('editorSignOut');
+            if (signOutBtn) {
+                signOutBtn.addEventListener('click', async () => {
+                    await supabase.auth.signOut();
+                    window.location.href = 'index.html';
+                });
+            }
+        });
+        
+        window.openPreferencesModal = async function() {
+            await getCurrentUser();
+            
+            // Close the avatar dropdown first
+            const editorUserDropdown = document.getElementById('editorUserDropdown');
+            if (editorUserDropdown) {
+                editorUserDropdown.classList.remove('active');
+            }
+            
+            const modal = document.getElementById('preferencesModal');
+            modal.style.display = 'flex';
+            
+            // Initialize tab switching (in case modal was just loaded)
+            initPreferencesTabs();
+            
+            loadPreferencesData();
+        };
+        
+        function initPreferencesTabs() {
+            const tabs = document.querySelectorAll('.preferences-tab');
+            const panels = document.querySelectorAll('.preferences-panel');
+
+            // Remove any existing listeners by cloning
+            tabs.forEach(tab => {
+                const newTab = tab.cloneNode(true);
+                tab.parentNode.replaceChild(newTab, tab);
+            });
+
+            // Re-query after cloning
+            const newTabs = document.querySelectorAll('.preferences-tab');
+            
+            newTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    
+                    newTabs.forEach(t => t.classList.remove('active'));
+                    panels.forEach(p => p.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    const panel = document.getElementById(`${tabName}-panel`);
+                    if (panel) {
+                        panel.classList.add('active');
+                    }
+                });
+            });
+        }
+
+        window.closePreferencesModal = function() {
+            const modal = document.getElementById('preferencesModal');
+            modal.style.display = 'none';
+        };
+
+        async function loadPreferencesData() {
+            if (!currentUser) return;
+
+            // Load profile data
+            const displayName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email.split('@')[0];
+            const username = currentUser.user_metadata?.username || '';
+            
+            document.getElementById('prefDisplayName').textContent = displayName;
+            document.getElementById('prefUsername').value = username;
+
+            // Load dark mode state
+            const darkModeEnabled = localStorage.getItem('darkMode') === 'enabled';
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeStatus = document.getElementById('darkModeStatus');
+            if (darkModeToggle && darkModeStatus) {
+                darkModeToggle.checked = darkModeEnabled;
+                darkModeStatus.textContent = darkModeEnabled ? 'Dark Mode' : 'Light Mode';
+            }
+
+            // Load connected accounts
+            const connectedAccountsDiv = document.getElementById('connectedAccounts');
+            connectedAccountsDiv.innerHTML = '';
+
+            const providers = currentUser.app_metadata?.providers || [currentUser.app_metadata?.provider || 'email'];
+            const email = currentUser.email;
+
+            providers.forEach(provider => {
+                const accountDiv = document.createElement('div');
+                accountDiv.className = 'connected-account';
+                
+                let providerIcon = '';
+                let providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
+                
+                if (provider === 'github') {
+                    providerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>';
+                } else if (provider === 'google') {
+                    providerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>';
+                } else {
+                    providerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6"/></svg>';
+                }
+                
+                accountDiv.innerHTML = `
+                    ${providerIcon}
+                    <div class="connected-account-info">
+                        <div class="connected-account-name">${providerName}</div>
+                        <div class="connected-account-email">${email}</div>
+                    </div>
+                `;
+                
+                connectedAccountsDiv.appendChild(accountDiv);
+            });
+        }
+
+        window.updateUsername = async function() {
+            await getCurrentUser();
+            const newUsername = document.getElementById('prefUsername').value.trim();
+            
+            if (!newUsername || newUsername.length < 3 || newUsername.length > 20) {
+                showNotification('Username must be 3-20 characters', 'error');
+                return;
+            }
+
+            if (!/^[a-zA-Z0-9_]+$/.test(newUsername)) {
+                showNotification('Username can only contain letters, numbers and underscore', 'error');
+                return;
+            }
+
+            // Check if username is already taken
+            const { data: existingUser } = await supabase
+                .from('user_profiles')
+                .select('id')
+                .eq('username', newUsername)
+                .single();
+
+            if (existingUser && existingUser.id !== currentUser.id) {
+                showNotification('Username already taken', 'error');
+                return;
+            }
+
+            // Update username in user metadata
+            const { error: updateError } = await supabase.auth.updateUser({
+                data: { username: newUsername }
+            });
+
+            if (updateError) {
+                showNotification('Failed to update username', 'error');
+                return;
+            }
+
+            // Update in user_profiles table
+            const { error: profileError } = await supabase
+                .from('user_profiles')
+                .upsert({
+                    id: currentUser.id,
+                    username: newUsername,
+                    email: currentUser.email
+                });
+
+            if (profileError) {
+                console.error('Error updating profile:', profileError);
+            }
+
+            showNotification('Username updated successfully', 'success');
+            
+            // Refresh page to update dropdown
+            setTimeout(() => location.reload(), 1000);
+        };
+
+        window.confirmDeleteAccount = async function() {
+            await getCurrentUser();
+            const confirmed = confirm('⚠️ WARNING: This will permanently delete your account and all your data.\n\nThis action CANNOT be undone.\n\nType "DELETE" to confirm:');
+            
+            if (!confirmed) return;
+
+            const confirmation = prompt('Type DELETE to confirm account deletion:');
+            if (confirmation !== 'DELETE') {
+                showNotification('Account deletion cancelled', 'info');
+                return;
+            }
+
+            try {
+                // Delete all user data from user_profiles
+                const { error: profileError } = await supabase
+                    .from('user_profiles')
+                    .delete()
+                    .eq('id', currentUser.id);
+
+                if (profileError) throw profileError;
+
+                // Delete all user projects
+                const { error: projectsError } = await supabase
+                    .from('projects')
+                    .delete()
+                    .eq('user_id', currentUser.id);
+
+                if (projectsError) throw projectsError;
+
+                // Sign out
+                await supabase.auth.signOut();
+                
+                showNotification('Account deleted successfully', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                showNotification('Failed to delete account', 'error');
+            }
+        };
+
+        // Dark mode toggle
+        window.toggleDarkMode = function() {
+            const isDark = document.body.classList.toggle('dark-theme');
+            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+            document.getElementById('darkModeStatus').textContent = isDark ? 'Dark Mode' : 'Light Mode';
+        };
+
+        // Report bug function
+        window.reportBug = function() {
+            window.open('https://github.com/remyvallot/papergraph/issues/new', '_blank');
+        };
+
+        // Tab switching
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.preferences-tab');
+            const panels = document.querySelectorAll('.preferences-panel');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    panels.forEach(p => p.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tabName}-panel`).classList.add('active');
+                });
+            });
+
+            // Close modal on background click
+            const modal = document.getElementById('preferencesModal');
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closePreferencesModal();
+                    }
+                });
+            }
+
+            // Set dark mode toggle state on load
+            const darkModeEnabled = localStorage.getItem('darkMode') === 'enabled';
+            if (darkModeEnabled) {
+                document.body.classList.add('dark-theme');
+            }
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeStatus = document.getElementById('darkModeStatus');
+            if (darkModeToggle && darkModeStatus) {
+                darkModeToggle.checked = darkModeEnabled;
+                darkModeStatus.textContent = darkModeEnabled ? 'Dark Mode' : 'Light Mode';
+            }
+        });
+
+        // Submit to Gallery Modal Handlers
+        window.closeSubmitGalleryModal = function() {
+            const modal = document.getElementById('submitGalleryModal');
+            if (modal) {
+                modal.style.display = 'none';
+                const form = document.getElementById('submitGalleryForm');
+                if (form) form.reset();
+                removeThumbnail();
+            }
+        };
+
+        window.removeThumbnail = function() {
+            const thumbnailInput = document.getElementById('thumbnailInput');
+            const thumbnailPreview = document.getElementById('thumbnailPreview');
+            const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
+            
+            if (thumbnailInput) thumbnailInput.value = '';
+            if (thumbnailPreview) thumbnailPreview.style.display = 'none';
+            if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'block';
+        };
+
+        // Thumbnail upload handler
+        const thumbnailInput = document.getElementById('thumbnailInput');
+        if (thumbnailInput) {
+            thumbnailInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const thumbnailImg = document.getElementById('thumbnailImg');
+                    const thumbnailPreview = document.getElementById('thumbnailPreview');
+                    const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
+                    
+                    if (thumbnailImg) thumbnailImg.src = event.target.result;
+                    if (thumbnailPreview) thumbnailPreview.style.display = 'block';
+                    if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Character count
+        const submitDescription = document.getElementById('submitDescription');
+        if (submitDescription) {
+            submitDescription.addEventListener('input', function() {
+                const descCharCount = document.getElementById('descCharCount');
+                if (descCharCount) {
+                    descCharCount.textContent = this.value.length;
+                }
+            });
+        }
+
+        // Form submit
+        window.handleSubmitToGallery = async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitGalleryButton');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            try {
+                const { submitToGallery } = await import('./js/data/github-submit.js');
+                
+                const projectId = document.getElementById('submitProjectSelect').value;
+                const title = document.getElementById('submitTitle').value;
+                const description = document.getElementById('submitDescription').value;
+                const author = document.getElementById('submitAuthor').value;
+                const affiliation = document.getElementById('submitAffiliation').value;
+                const thumbnailFile = document.getElementById('thumbnailInput').files[0];
+                
+                await submitToGallery({
+                    projectId,
+                    title,
+                    description,
+                    author,
+                    affiliation,
+                    thumbnail: thumbnailFile
+                });
+                
+                alert('✅ Your project has been submitted for review!\n\nA merge request has been created on GitHub.');
+                closeSubmitGalleryModal();
+                
+            } catch (error) {
+                console.error('Submission error:', error);
+                alert('Failed to submit project: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Project';
+            }
+        };
+    </script>
+    
+    <!-- Application Startup -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check if this is a gallery viewer (sessionStorage takes priority)
+            const galleryProject = sessionStorage.getItem('galleryProject');
+            
+            if (galleryProject) {
+                // Set global flag for read-only viewer mode
+                window.isGalleryViewer = true;
+                
+                // Gallery viewer mode - load from sessionStorage
+                try {
+                    const { data: projectData, metadata } = JSON.parse(galleryProject);
+                    
+                    console.log('📖 Loading gallery project:', metadata.title);
+                    
+                    // Skip onboarding for gallery views
+                    localStorage.setItem('skipOnboarding', 'true');
+                    
+                    // Load tag zones (check both 'zones' and 'tagZones' for compatibility)
+                    const zones = projectData.zones || projectData.tagZones || [];
+                    if (zones.length > 0 && typeof tagZones !== 'undefined') {
+                        tagZones.length = 0;
+                        tagZones.push(...zones);
+                        console.log('🏷️ Loaded', zones.length, 'tag zones');
+                    }
+                    
+                    // Load positions (check both 'positions' and 'nodePositions' for compatibility)
+                    const positions = projectData.positions || projectData.nodePositions || {};
+                    if (Object.keys(positions).length > 0) {
+                        window.savedNodePositions = positions;
+                        console.log('📍 Loaded', Object.keys(positions).length, 'node positions');
+                    } else {
+                        window.savedNodePositions = {};
+                    }
+                    
+                    // Set appData with proper structure (nodes -> articles, edges -> connections)
+                    appData = {
+                        articles: projectData.nodes || projectData.articles || [],
+                        connections: projectData.edges || projectData.connections || [],
+                        nextArticleId: Math.max(0, ...(projectData.nodes || projectData.articles || []).map(n => n.id || 0)) + 1,
+                        nextConnectionId: Math.max(0, ...(projectData.edges || projectData.connections || []).map(e => e.id || 0)) + 1
+                    };
+                    
+                    // Store metadata for display
+                    window.galleryProjectMetadata = metadata;
+                    window.currentProjectId = metadata.id;
+                    
+                    // Set project title and make it readonly
+                    const titleInput = document.getElementById('projectTitle');
+                    if (titleInput && metadata.title) {
+                        titleInput.value = metadata.title;
+                        titleInput.disabled = true;
+                        titleInput.style.cursor = 'default';
+                        document.title = `${metadata.title} - Papergraph Gallery`;
+                    }
+                    
+                    console.log('✅ Gallery project loaded:', appData.articles.length, 'articles,', appData.connections.length, 'connections');
+                    console.log('📝 Project title set:', metadata.title);
+                    
+                } catch (error) {
+                    console.error('❌ Error loading gallery project:', error);
+                    showNotification('Failed to load gallery project', 'error');
+                }
+            } else {
+                // Normal editor behavior - check URL params and cloud storage
+                const urlParams = new URLSearchParams(window.location.search);
+                const importFromGallery = urlParams.get('source') === 'gallery';
+                const projectId = urlParams.get('id');
+                const shareToken = urlParams.get('share');
+                
+                // Try to initialize cloud storage first (if project ID or share token is present)
+                let cloudLoaded = false;
+                if ((projectId || shareToken) && !importFromGallery) {
+                    try {
+                        if (typeof window.initCloudStorage === 'function') {
+                            cloudLoaded = await window.initCloudStorage();
+                        }
+                    } catch (error) {
+                        console.error('Cloud storage initialization failed:', error);
+                    }
+                }
+                
+                if (importFromGallery) {
+                    // Skip onboarding for gallery imports
+                    localStorage.setItem('skipOnboarding', 'true');
+                    
+                    // Load project from gallery
+                    const galleryProject = localStorage.getItem('gallery_import_project');
+                    if (galleryProject) {
+                        try {
+                            const projectData = JSON.parse(galleryProject);
+                            
+                            // Import the project data
+                            if (projectData.tagZones) {
+                                tagZones = projectData.tagZones;
+                                delete projectData.tagZones;
+                            }
+                            if (projectData.nodePositions) {
+                                window.savedNodePositions = projectData.nodePositions;
+                                delete projectData.nodePositions;
+                            }
+                            
+                            appData = projectData;
+                            
+                            // Don't save to localStorage immediately (read-only mode)
+                            // User can export if they want to save
+                            
+                            // Clean up
+                            localStorage.removeItem('gallery_import_project');
+                            
+                            showNotification('Gallery project loaded (read-only)', 'success');
+                        } catch (err) {
+                            console.error('Error loading gallery project:', err);
+                            showNotification('Failed to load gallery project', 'error');
+                        }
+                    }
+                } else if (!cloudLoaded) {
+                    // Normal load from localStorage (only if not loaded from cloud)
+                    loadFromLocalStorage();
+                }
+            }
+            
+            initializeEventListeners();
+            updateCategoryFilters();
+            renderListView();
+            
+            // Hide "Add Node" button if in gallery viewer mode
+            if (window.isGalleryViewer) {
+                const addBtn = document.getElementById('addArticleBtn');
+                if (addBtn) {
+                    addBtn.style.display = 'none';
+                }
+            }
+            
+            // Initialize graph-only buttons visibility (default to graph view)
+            const graphOnlyElements = document.querySelectorAll('.graph-only');
+            graphOnlyElements.forEach(el => {
+                el.style.display = 'flex';
+                el.classList.add('visible');
+            });
+            
+            // Initialize graph after a short delay to ensure DOM is ready
+            setTimeout(() => {
+                initializeGraph();
+                
+                // Restore control point nodes after graph is initialized
+                setTimeout(() => {
+                    if (typeof restoreControlPointNodes === 'function') {
+                        restoreControlPointNodes();
+                        
+                        // Rebuild edges with control points
+                        Object.keys(edgeControlPoints || {}).forEach(edgeId => {
+                            if (typeof rebuildEdgeWithControlPoints === 'function') {
+                                rebuildEdgeWithControlPoints(parseInt(edgeId));
+                            }
+                        });
+                    }
+                }, 200);
+                
+                // Note: Node positioning is handled in stabilizationIterationsDone event
+                // in graph.js, which checks for savedNodePositions first
+            }, 100);
+            
+            // ===== DASHBOARD BUTTON HANDLER =====
+            const dashboardBtn = document.getElementById('actionBackToDashboard');
+            if (dashboardBtn) {
+                dashboardBtn.addEventListener('click', async () => {
+                    // Check if user is logged in
+                    try {
+                        const config = await import('./js/auth/config.js');
+                        const { data: { session } } = await config.supabase.auth.getSession();
+                        
+                        if (session) {
+                            // User is authenticated, go to dashboard
+                            window.location.href = 'projects.html';
+                        } else {
+                            // User is not authenticated, go to home page
+                            window.location.href = 'index.html';
+                        }
+                    } catch (error) {
+                        console.error('Error checking auth status:', error);
+                        // On error, go to home page
+                        window.location.href = 'index.html';
+                    }
+                });
+            }
+            
+            // ===== PROJECT TITLE HANDLER =====
+            // Skip title handler for gallery viewer (already set from metadata)
+            if (!window.isGalleryViewer) {
+                const projectTitleInput = document.getElementById('projectTitle');
+                console.log('🔍 PROJECT TITLE DEBUG:', {
+                    inputElement: projectTitleInput,
+                    savedTitle: localStorage.getItem('currentProjectTitle'),
+                    projectId: urlParams.get('id')
+                });
+                
+                // Set initial title from localStorage or default
+                if (projectTitleInput) {
+                    const savedTitle = localStorage.getItem('currentProjectTitle');
+                    if (savedTitle) {
+                        console.log('✓ Setting saved title:', savedTitle);
+                        projectTitleInput.value = savedTitle;
+                        // Auto-adjust input width based on content (narrower range)
+                        projectTitleInput.style.width = `${Math.max(120, Math.min(250, savedTitle.length * 10))}px`;
+                    } else {
+                        console.log('✓ Setting default title');
+                        // Default title for new projects
+                        projectTitleInput.value = 'Untitled Project';
+                        projectTitleInput.style.width = '140px';
+                    }
+                } else {
+                    console.error('❌ projectTitleInput element not found!');
+                }
+            }
+            
+            // Save title on blur or Enter key (only for cloud projects)
+            if (urlParams.get('id') && projectTitleInput) {
+                let saveTimeout = null;
+                
+                const saveTitle = async () => {
+                        const newTitle = projectTitleInput.value.trim();
+                        if (!newTitle) {
+                            projectTitleInput.value = 'Untitled Project';
+                            return;
+                        }
+                        
+                        // Auto-adjust input width (narrower range)
+                        projectTitleInput.style.width = `${Math.max(120, Math.min(250, newTitle.length * 10))}px`;
+                        
+                        // Save to localStorage
+                        localStorage.setItem('currentProjectTitle', newTitle);
+                        
+                        // Save to cloud (update project name in database)
+                        try {
+                            const { renameProject } = await import('./js/auth/projects.js');
+                            const projectId = urlParams.get('id');
+                            
+                            await renameProject(projectId, newTitle);
+                            showNotification('Project title updated', 'success');
+                        } catch (error) {
+                            console.error('Error updating project title:', error);
+                            showNotification('Failed to update title', 'error');
+                        }
+                    };
+                    
+                    // Debounced save on input
+                    projectTitleInput.addEventListener('input', () => {
+                        clearTimeout(saveTimeout);
+                        saveTimeout = setTimeout(saveTitle, 1000);
+                    });
+                    
+                    // Immediate save on blur
+                    projectTitleInput.addEventListener('blur', () => {
+                        clearTimeout(saveTimeout);
+                        saveTitle();
+                    });
+                    
+                    // Save on Enter key
+                    projectTitleInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            projectTitleInput.blur();
+                        }
+                    });
+                    
+                    // Deselect (blur) when clicking outside the title input
+                    document.addEventListener('click', (e) => {
+                        if (projectTitleInput && 
+                            projectTitleInput === document.activeElement &&
+                            !projectTitleInput.contains(e.target) &&
+                            e.target !== projectTitleInput) {
+                            projectTitleInput.blur();
+                        }
+                    });
+            }
+            
+            // ===== ONBOARDING SETUP =====
+            const onboardingOverlay = document.getElementById('onboardingOverlay');
+            const continueProjectBtn = document.getElementById('continueProject');
+            const newProjectBtn = document.getElementById('newProject');
+            const exploreGalleryBtn = document.getElementById('exploreGallery');
+            
+            console.log('Onboarding overlay:', onboardingOverlay);
+            
+            // Function to close onboarding (make it global so any action can close it)
+            window.closeOnboarding = function() {
+                console.log('closeOnboarding called');
+                if (onboardingOverlay) {
+                    onboardingOverlay.classList.add('hidden');
+                    console.log('Onboarding hidden');
+                }
+            }
+            
+            // Check if there's existing data
+            let hasExistingData = false;
+            try {
+                const data = localStorage.getItem('papermap_data');
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    hasExistingData = parsed.articles && parsed.articles.length > 0;
+                }
+            } catch (e) {
+                hasExistingData = false;
+            }
+            
+            // Disable continue option if no data
+            if (!hasExistingData) {
+                continueProjectBtn.style.opacity = '0.5';
+                continueProjectBtn.style.pointerEvents = 'none';
+                const continueSpan = continueProjectBtn.querySelector('span');
+                if (continueSpan) continueSpan.textContent = 'No Project';
+            }
+            
+            // Show onboarding only if not skipped and not a cloud project
+            const skipOnboarding = localStorage.getItem('skipOnboarding');
+            const isCloudProject = urlParams.get('id'); // Check if loading from cloud
+            
+            // Always hide onboarding for cloud projects
+            if (isCloudProject) {
+                onboardingOverlay.classList.add('hidden');
+                console.log('Onboarding skipped (cloud project)');
+            } else if (skipOnboarding) {
+                localStorage.removeItem('skipOnboarding'); // Clear the flag
+                onboardingOverlay.classList.add('hidden');
+                console.log('Onboarding skipped (skipOnboarding flag was set)');
+            } else {
+                // Only show for new local projects
+                onboardingOverlay.classList.remove('hidden');
+                console.log('Onboarding visible for new local project');
+                
+                // Open main dropdown menu when onboarding is shown
+                setTimeout(() => {
+                    const mainDropdown = document.getElementById('mainDropdown');
+                    if (mainDropdown) mainDropdown.classList.add('active');
+                }, 0);
+            }
+            
+            // Continue project
+            continueProjectBtn.addEventListener('click', () => {
+                if (hasExistingData) {
+                    window.closeOnboarding();
+                    showNotification('Welcome back!', 'success');
+                }
+            });
+            
+            // New project
+            newProjectBtn.addEventListener('click', () => {
+                if (hasExistingData) {
+                    if (confirm('Starting a new project will clear your current data. Continue?')) {
+                        localStorage.removeItem('papermap_data');
+                        localStorage.removeItem('papermap_positions');
+                        localStorage.removeItem('papermap_zones'); // Clear tag zones
+                        localStorage.setItem('skipOnboarding', 'true'); // Skip onboarding after reload
+                        window.closeOnboarding();
+                        setTimeout(() => location.reload(), 100);
+                    }
+                } else {
+                    // Clear any leftover tag zones even for empty projects
+                    localStorage.removeItem('papermap_zones');
+                    tagZones = []; // Clear in-memory tag zones
+                    window.closeOnboarding();
+                    showNotification('Welcome to papergraph!', 'success');
+                }
+            });
+            
+            // Explore gallery - DISABLED (Coming Soon)
+            exploreGalleryBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Disabled - Coming Soon
+            });
+            
+            // Close onboarding when clicking anywhere on the overlay (except option buttons)
+            onboardingOverlay.addEventListener('click', (e) => {
+                console.log('Overlay clicked, target:', e.target.className, 'closest option:', e.target.closest('.onboarding-option'));
+                // Close unless clicking on an option button
+                const clickedOption = e.target.closest('.onboarding-option');
+                if (!clickedOption) {
+                    console.log('Closing onboarding from overlay click');
+                    window.closeOnboarding();
+                    if (!hasExistingData) {
+                        showNotification('Welcome to papergraph!', 'success');
+                    }
+                }
+            });
+            
+            // Close onboarding when clicking on toolbar buttons or toggle switch
+            document.querySelectorAll('.main-toolbar button, .main-tool-btn, .toggle-switch').forEach(btn => {
+                btn.addEventListener('click', window.closeOnboarding, { once: true });
+            });
+            
+            // Close on any keypress
+            document.addEventListener('keydown', function hideOnKey(e) {
+                console.log('Key pressed, closing onboarding');
+                window.closeOnboarding();
+                if (!hasExistingData) {
+                    showNotification('Welcome to papergraph!', 'success');
+                }
+            }, { once: true });
+        });
+        
+        // Save positions before page unload (refresh, close, etc.)
+        window.addEventListener('beforeunload', () => {
+            console.log('=== BEFORE UNLOAD - Saving positions ===');
+            if (network) {
+                const positions = network.getPositions();
+                console.log('Positions to save:', Object.keys(positions).length, 'nodes');
+                console.log('Sample positions:', Object.entries(positions).slice(0, 3));
+                localStorage.setItem('papermap_positions', JSON.stringify(positions));
+                console.log('✓ Positions saved to localStorage');
+            } else {
+                console.warn('⚠ Network not available, positions not saved');
+            }
+        });
+        
+        // New Project Modal Functions
+        function closeNewProjectModal() {
+            document.getElementById('newProjectModal').style.display = 'none';
+        }
+        
+        function openNewProjectModal() {
+            document.getElementById('newProjectModal').style.display = 'block';
+            document.getElementById('newProjectName').focus();
+        }
+        
+        async function handleCreateNewProject(event) {
+            event.preventDefault();
+            
+            const projectName = document.getElementById('newProjectName').value.trim();
+            if (!projectName) return;
+            
+            try {
+                // Import project functions
+                const { createProject } = await import('./js/auth/projects.js');
+                
+                // Create new project
+                const newProject = await createProject(projectName, {
+                    nodes: [],
+                    edges: [],
+                    zones: [],
+                    positions: {}
+                });
+                
+                // Redirect to the new project
+                window.location.href = `editor.html?id=${newProject.id}`;
+            } catch (error) {
+                console.error('Error creating project:', error);
+                showNotification('Failed to create project', 'error');
+            }
+        }
+        
+        // Make functions global
+        window.closeNewProjectModal = closeNewProjectModal;
+        window.openNewProjectModal = openNewProjectModal;
+        window.handleCreateNewProject = handleCreateNewProject;
+        
+        // ===== READ-ONLY MODE SETUP =====
+        if (window.isReadOnlyMode) {
+            console.log('🔒 Configuring read-only mode...');
+            
+            // Show read-only indicator
+            document.getElementById('readonlyIndicator').style.display = 'flex';
+            document.getElementById('copyToDashboardBtn').style.display = 'flex';
+            
+            // Set project title from gallery data
+            if (window.galleryProjectData && window.galleryProjectData.metadata) {
+                const title = window.galleryProjectData.metadata.title;
+                document.getElementById('projectTitle').value = title;
+                document.getElementById('projectTitle').disabled = true;
+                document.title = `${title} - Papergraph Gallery`;
+            }
+            
+            // Hide "Import" and "New Project" menu items
+            const importMenu = document.getElementById('actionImportMenu');
+            const newProjectBtn = document.getElementById('actionNewProject');
+            if (importMenu) importMenu.style.display = 'none';
+            if (newProjectBtn) newProjectBtn.style.display = 'none';
+            
+            // Disable node dragging - will be handled in graph.js
+            
+            // Setup Copy to Dashboard button
+            document.getElementById('copyToDashboardBtn').addEventListener('click', async () => {
+                try {
+                    const { copyProjectToWorkspace } = await import('./js/data/gallery.js');
+                    await copyProjectToWorkspace(
+                        window.galleryProjectData.data,
+                        window.galleryProjectData.metadata
+                    );
+                } catch (error) {
+                    console.error('Error copying project:', error);
+                    showNotification('Failed to copy project: ' + error.message, 'error');
+                }
+            });
+        }
+    </script>
+    
+    <!-- Load Footer -->
+    <script src="js/utils/load-footer.js"></script>
+</body>
+</html>
+
+

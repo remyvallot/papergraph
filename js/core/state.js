@@ -8,6 +8,11 @@ let appData = {
     nextConnectionId: 1
 };
 
+// ===== USER PERMISSIONS =====
+// Tracks current user's role for permission checks
+let currentUserRole = null; // 'owner', 'editor', 'viewer', or null
+let isReadOnly = false; // Computed from currentUserRole
+
 let isEditingEdgeLabel = false; // Flag to prevent view adjustments during edge label editing
 
 let currentEditingArticleId = null;

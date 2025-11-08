@@ -1,30 +1,42 @@
 /* ===== DROPDOWN MENU ===== */
 
-/* Logo Menu Button - Minimalist Design */
-.logo-menu-btn {
+/* Logo Menu Button Extended - Contains logo button + divider + title */
+.logo-menu-btn-extended {
     position: fixed;
     top: 20px;
     left: 20px;
     z-index: 1100;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 20px 10px 14px;
-    border: none;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.logo-menu-btn-extended:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Logo button part (left side - clickable for dropdown) */
+.logo-menu-btn-part {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px 10px 14px;
+    border: none;
+    background: transparent;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.logo-menu-btn:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    background: rgba(255, 255, 255, 1);
+.logo-menu-btn-part:hover {
+    background: rgba(0, 0, 0, 0.03);
 }
 
-.logo-menu-btn:active {
+.logo-menu-btn-part:active {
     transform: scale(0.98);
 }
 
@@ -35,13 +47,51 @@
 
 .logo-text {
     font-family: 'Chillax', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-weight: 700;
+    font-weight: 400;
     font-size: 1.35rem;
-    background: #2c3e50;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #2c3e50;
     letter-spacing: -0.02em;
+}
+
+/* Vertical divider */
+.vertical-divider {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, 
+        rgba(0, 0, 0, 0) 0%, 
+        rgba(0, 0, 0, 0.1) 20%, 
+        rgba(0, 0, 0, 0.1) 80%, 
+        rgba(0, 0, 0, 0) 100%
+    );
+    margin: 0 4px;
+}
+
+/* Project Title Input */
+.project-title-input {
+    border: none;
+    background: transparent;
+    font-family: 'Chillax', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 400;
+    font-size: 1.1rem;
+    color: #2c3e50;
+    outline: none;
+    cursor: text;
+    padding: 10px 16px 10px 16px;
+    min-width: 120px;
+    max-width: 400px;
+    width: auto;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.project-title-input:focus {
+    color: #4a90e2;
+    background: rgba(74, 144, 226, 0.05);
+}
+
+.project-title-input::placeholder {
+    color: #999;
+    opacity: 0.6;
 }
 
 /* Main Dropdown Menu - Apple/Figma Style */
@@ -172,12 +222,14 @@
     stroke: #86868b;
     transition: stroke 0.15s;
     flex-shrink: 0;
+    pointer-events: none;
 }
 
 .dropdown-menu-item span {
     flex: 1;
     text-align: left;
     font-weight: 400;
+    pointer-events: none;
 }
 
 .dropdown-menu-item:hover {
@@ -246,4 +298,154 @@
 .dropdown-menu-item.disabled-item:hover {
     background: transparent;
     color: #1a1a1a;
+}
+
+
+/* ===== LOGO DROPDOWN (for all pages) ===== */
+
+/* Logo Menu Container (for projects/gallery) */
+.logo-menu-container {
+    position: relative;
+}
+
+.logo-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+}
+
+.logo-menu-btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.logo-menu-btn .logo-icon {
+    width: 40px;
+    height: 40px;
+}
+
+.logo-menu-btn .logo-text {
+    font-family: 'Chillax', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 400;
+    font-size: 1.35rem;
+    color: #2c3e50;
+    letter-spacing: -0.02em;
+}
+
+/* Logo Dropdown - adapts to both editor and projects/gallery */
+.logo-dropdown {
+    position: fixed;
+    min-width: 240px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    padding: 6px;
+    display: none;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    z-index: 1200;
+}
+
+/* Position for editor (after logo-menu-btn-extended) */
+.logo-menu-btn-extended + .logo-dropdown {
+    top: 88px;
+    left: 20px;
+}
+
+/* Position for projects/gallery (inside logo-menu-container) - now fixed like editor */
+.logo-menu-container .logo-dropdown {
+    position: fixed;
+    top: 88px;
+    left: 20px;
+}
+
+.logo-dropdown.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.logo-dropdown-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.9rem;
+    color: #2c3e50;
+    text-align: left;
+}
+
+.logo-dropdown-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.logo-dropdown-item svg {
+    flex-shrink: 0;
+    opacity: 0.6;
+}
+
+.logo-dropdown-item:hover svg {
+    opacity: 1;
+}
+
+.logo-dropdown-item span {
+    flex: 1;
+}
+
+/* Submenu arrow for items with submenu */
+.logo-dropdown-item-submenu {
+    position: relative;
+}
+
+.submenu-arrow {
+    position: absolute;
+    right: 10px;
+    color: #86868b;
+    transition: all 0.15s ease;
+}
+
+.logo-dropdown-item-submenu:hover .submenu-arrow {
+    color: #1a1a1a;
+    transform: translateX(2px);
+}
+
+.logo-dropdown-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.08);
+    margin: 6px 0;
+}
+
+.logo-dropdown-section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #86868b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 8px 12px 4px 12px;
+}
+
+/* Section spacing */
+.logo-dropdown .dropdown-section + .dropdown-section {
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    margin-top: 4px;
+    padding-top: 4px;
+}
+
+/* Auth-required items (dimmed when not authenticated) */
+.logo-dropdown-item-auth-required {
+    position: relative;
 }
