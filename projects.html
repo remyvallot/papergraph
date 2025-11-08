@@ -764,58 +764,7 @@
             }
         }
 
-        // Setup user dropdown
-        // Preferences Modal Functions
-        window.openPreferencesModal = function() {
-            // Close the avatar dropdown first
-            const userDropdown = document.getElementById('userDropdown');
-            if (userDropdown) {
-                userDropdown.classList.remove('active');
-            }
-            
-            const modal = document.getElementById('preferencesModal');
-            modal.style.display = 'flex';
-            
-            // Initialize tab switching (in case modal was just loaded)
-            initPreferencesTabs();
-            
-            loadPreferencesData();
-        }
-        
-        function initPreferencesTabs() {
-            const tabs = document.querySelectorAll('.preferences-tab');
-            const panels = document.querySelectorAll('.preferences-panel');
-
-            // Remove any existing listeners by cloning
-            tabs.forEach(tab => {
-                const newTab = tab.cloneNode(true);
-                tab.parentNode.replaceChild(newTab, tab);
-            });
-
-            // Re-query after cloning
-            const newTabs = document.querySelectorAll('.preferences-tab');
-            
-            newTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.dataset.tab;
-                    
-                    newTabs.forEach(t => t.classList.remove('active'));
-                    panels.forEach(p => p.classList.remove('active'));
-                    
-                    tab.classList.add('active');
-                    const panel = document.getElementById(`${tabName}-panel`);
-                    if (panel) {
-                        panel.classList.add('active');
-                    }
-                });
-            });
-        }
-
-        window.closePreferencesModal = function() {
-            const modal = document.getElementById('preferencesModal');
-            modal.style.display = 'none';
-        }
-
+        // Preferences modal now handled globally (js/ui/preferences.js)
         async function loadPreferencesData() {
             if (!currentUser) return;
 
@@ -967,57 +916,7 @@
             }
         }
 
-        // Dark mode toggle
-        window.toggleDarkMode = function() {
-            const isDark = document.body.classList.toggle('dark-theme');
-            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
-            document.getElementById('darkModeStatus').textContent = isDark ? 'Dark Mode' : 'Light Mode';
-        };
-
-        // Report bug function
-        window.reportBug = function() {
-            window.open('https://github.com/remyvallot/papergraph/issues/new', '_blank');
-        };
-
-        // Tab switching
-        document.addEventListener('DOMContentLoaded', () => {
-            const tabs = document.querySelectorAll('.preferences-tab');
-            const panels = document.querySelectorAll('.preferences-panel');
-
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.dataset.tab;
-                    
-                    tabs.forEach(t => t.classList.remove('active'));
-                    panels.forEach(p => p.classList.remove('active'));
-                    
-                    tab.classList.add('active');
-                    document.getElementById(`${tabName}-panel`).classList.add('active');
-                });
-            });
-
-            // Close modal on background click
-            const modal = document.getElementById('preferencesModal');
-            if (modal) {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        closePreferencesModal();
-                    }
-                });
-            }
-
-            // Set dark mode toggle state on load
-            const darkModeEnabled = localStorage.getItem('darkMode') === 'enabled';
-            if (darkModeEnabled) {
-                document.body.classList.add('dark-theme');
-            }
-            const darkModeToggle = document.getElementById('darkModeToggle');
-            const darkModeStatus = document.getElementById('darkModeStatus');
-            if (darkModeToggle && darkModeStatus) {
-                darkModeToggle.checked = darkModeEnabled;
-                darkModeStatus.textContent = darkModeEnabled ? 'Dark Mode' : 'Light Mode';
-            }
-        });
+        // Dark mode and tab logic moved to global script
 
         function setupUserDropdown() {
             if (!currentUser) return;
@@ -1327,5 +1226,6 @@
     
     <!-- Load Footer -->
     <script src="js/utils/load-footer.js"></script>
+    <script src="js/ui/preferences.js"></script>
 </body>
 </html>

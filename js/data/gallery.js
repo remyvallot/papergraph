@@ -118,22 +118,22 @@ async function scanProjectsFolder() {
         console.warn('GitHub API failed:', error);
     }
     
-    // Method 2: Try known project folders (for localhost/development)
-    console.log('Trying to load known projects...');
-    const knownFolders = ['remyvallot_2025-11-08'];
+    // // Method 2: Try known project folders (for localhost/development)
+    // console.log('Trying to load known projects...');
+    // const knownFolders = ['remyvallot_2025-11-08'];
     
-    for (const folderName of knownFolders) {
-        try {
-            const metadataResponse = await fetch(`projects/${folderName}/metadata.json`);
-            if (metadataResponse.ok) {
-                const metadata = await metadataResponse.json();
-                projects.push(metadata);
-                console.log(`Loaded project: ${metadata.title}`);
-            }
-        } catch (err) {
-            console.warn(`Failed to load ${folderName}:`, err);
-        }
-    }
+    // for (const folderName of knownFolders) {
+    //     try {
+    //         const metadataResponse = await fetch(`projects/${folderName}/metadata.json`);
+    //         if (metadataResponse.ok) {
+    //             const metadata = await metadataResponse.json();
+    //             projects.push(metadata);
+    //             console.log(`Loaded project: ${metadata.title}`);
+    //         }
+    //     } catch (err) {
+    //         console.warn(`Failed to load ${folderName}:`, err);
+    //     }
+    // }
     
     // Sort by submission date (newest first)
     projects.sort((a, b) => {

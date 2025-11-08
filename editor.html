@@ -947,58 +947,7 @@
             }
         });
         
-        window.openPreferencesModal = async function() {
-            await getCurrentUser();
-            
-            // Close the avatar dropdown first
-            const editorUserDropdown = document.getElementById('editorUserDropdown');
-            if (editorUserDropdown) {
-                editorUserDropdown.classList.remove('active');
-            }
-            
-            const modal = document.getElementById('preferencesModal');
-            modal.style.display = 'flex';
-            
-            // Initialize tab switching (in case modal was just loaded)
-            initPreferencesTabs();
-            
-            loadPreferencesData();
-        };
-        
-        function initPreferencesTabs() {
-            const tabs = document.querySelectorAll('.preferences-tab');
-            const panels = document.querySelectorAll('.preferences-panel');
-
-            // Remove any existing listeners by cloning
-            tabs.forEach(tab => {
-                const newTab = tab.cloneNode(true);
-                tab.parentNode.replaceChild(newTab, tab);
-            });
-
-            // Re-query after cloning
-            const newTabs = document.querySelectorAll('.preferences-tab');
-            
-            newTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.dataset.tab;
-                    
-                    newTabs.forEach(t => t.classList.remove('active'));
-                    panels.forEach(p => p.classList.remove('active'));
-                    
-                    tab.classList.add('active');
-                    const panel = document.getElementById(`${tabName}-panel`);
-                    if (panel) {
-                        panel.classList.add('active');
-                    }
-                });
-            });
-        }
-
-        window.closePreferencesModal = function() {
-            const modal = document.getElementById('preferencesModal');
-            modal.style.display = 'none';
-        };
-
+        // Preferences modal now handled globally (js/ui/preferences.js)
         async function loadPreferencesData() {
             if (!currentUser) return;
 
@@ -1052,154 +1001,7 @@
             });
         }
 
-        window.updateUsername = async function() {
-            await getCurrentUser();
-            const newUsername = document.getElementById('prefUsername').value.trim();
-            
-            if (!newUsername || newUsername.length < 3 || newUsername.length > 20) {
-                showNotification('Username must be 3-20 characters', 'error');
-                return;
-            }
-
-            if (!/^[a-zA-Z0-9_]+$/.test(newUsername)) {
-                showNotification('Username can only contain letters, numbers and underscore', 'error');
-                return;
-            }
-
-            // Check if username is already taken
-            const { data: existingUser } = await supabase
-                .from('user_profiles')
-                .select('id')
-                .eq('username', newUsername)
-                .single();
-
-            if (existingUser && existingUser.id !== currentUser.id) {
-                showNotification('Username already taken', 'error');
-                return;
-            }
-
-            // Update username in user metadata
-            const { error: updateError } = await supabase.auth.updateUser({
-                data: { username: newUsername }
-            });
-
-            if (updateError) {
-                showNotification('Failed to update username', 'error');
-                return;
-            }
-
-            // Update in user_profiles table
-            const { error: profileError } = await supabase
-                .from('user_profiles')
-                .upsert({
-                    id: currentUser.id,
-                    username: newUsername,
-                    email: currentUser.email
-                });
-
-            if (profileError) {
-                console.error('Error updating profile:', profileError);
-            }
-
-            showNotification('Username updated successfully', 'success');
-            
-            // Refresh page to update dropdown
-            setTimeout(() => location.reload(), 1000);
-        };
-
-        window.confirmDeleteAccount = async function() {
-            await getCurrentUser();
-            const confirmed = confirm('⚠️ WARNING: This will permanently delete your account and all your data.\n\nThis action CANNOT be undone.\n\nType "DELETE" to confirm:');
-            
-            if (!confirmed) return;
-
-            const confirmation = prompt('Type DELETE to confirm account deletion:');
-            if (confirmation !== 'DELETE') {
-                showNotification('Account deletion cancelled', 'info');
-                return;
-            }
-
-            try {
-                // Delete all user data from user_profiles
-                const { error: profileError } = await supabase
-                    .from('user_profiles')
-                    .delete()
-                    .eq('id', currentUser.id);
-
-                if (profileError) throw profileError;
-
-                // Delete all user projects
-                const { error: projectsError } = await supabase
-                    .from('projects')
-                    .delete()
-                    .eq('user_id', currentUser.id);
-
-                if (projectsError) throw projectsError;
-
-                // Sign out
-                await supabase.auth.signOut();
-                
-                showNotification('Account deleted successfully', 'success');
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
-            } catch (error) {
-                console.error('Error deleting account:', error);
-                showNotification('Failed to delete account', 'error');
-            }
-        };
-
-        // Dark mode toggle
-        window.toggleDarkMode = function() {
-            const isDark = document.body.classList.toggle('dark-theme');
-            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
-            document.getElementById('darkModeStatus').textContent = isDark ? 'Dark Mode' : 'Light Mode';
-        };
-
-        // Report bug function
-        window.reportBug = function() {
-            window.open('https://github.com/remyvallot/papergraph/issues/new', '_blank');
-        };
-
-        // Tab switching
-        document.addEventListener('DOMContentLoaded', () => {
-            const tabs = document.querySelectorAll('.preferences-tab');
-            const panels = document.querySelectorAll('.preferences-panel');
-
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.dataset.tab;
-                    
-                    tabs.forEach(t => t.classList.remove('active'));
-                    panels.forEach(p => p.classList.remove('active'));
-                    
-                    tab.classList.add('active');
-                    document.getElementById(`${tabName}-panel`).classList.add('active');
-                });
-            });
-
-            // Close modal on background click
-            const modal = document.getElementById('preferencesModal');
-            if (modal) {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        closePreferencesModal();
-                    }
-                });
-            }
-
-            // Set dark mode toggle state on load
-            const darkModeEnabled = localStorage.getItem('darkMode') === 'enabled';
-            if (darkModeEnabled) {
-                document.body.classList.add('dark-theme');
-            }
-            const darkModeToggle = document.getElementById('darkModeToggle');
-            const darkModeStatus = document.getElementById('darkModeStatus');
-            if (darkModeToggle && darkModeStatus) {
-                darkModeToggle.checked = darkModeEnabled;
-                darkModeStatus.textContent = darkModeEnabled ? 'Dark Mode' : 'Light Mode';
-            }
-        });
+        // Preferences functions moved to global script
 
         // Submit to Gallery Modal Handlers
         window.closeSubmitGalleryModal = function() {
@@ -1721,6 +1523,7 @@
     
     <!-- Load Footer -->
     <script src="js/utils/load-footer.js"></script>
+    <script src="js/ui/preferences.js"></script>
 </body>
 </html>
 

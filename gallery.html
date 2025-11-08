@@ -716,22 +716,11 @@
             }
         };
 
-        window.openPreferencesModal = function() {
-            const existingModal = document.getElementById('preferencesModal');
-            if (!existingModal) {
-                fetch('preferences-modal.html')
-                    .then(r => r.text())
-                    .then(html => {
-                        document.body.insertAdjacentHTML('beforeend', html);
-                        document.getElementById('preferencesModal').classList.add('active');
-                    });
-            } else {
-                existingModal.classList.add('active');
-            }
-        };
+        // Preferences modal now handled globally in js/ui/preferences.js
     </script>
     
     <!-- Load Footer -->
     <script src="js/utils/load-footer.js"></script>
+    <script src="js/ui/preferences.js"></script>
 </body>
 </html>
