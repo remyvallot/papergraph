@@ -52,7 +52,6 @@
   }
 
   function loadPreferencesData() {
-    if (typeof getCurrentUser !== 'function') return;
     const currentUser = window.currentUser || null;
     if (!currentUser) return;
 
@@ -98,7 +97,17 @@
   // Public API
   window.openPreferencesModal = async function() {
     ensureModalPresent();
-    if (typeof getCurrentUser === 'function') { await getCurrentUser(); }
+    if (!window.currentUser) {
+      if (typeof getCurrentUser === 'function') {
+        try { await getCurrentUser(); } catch(e){ console.warn('getCurrentUser failed', e); }
+      } else {
+        try {
+          const authMod = await import('../auth/auth.js');
+          const user = await authMod.getCurrentUser();
+          window.currentUser = user;
+        } catch(e){ console.warn('Dynamic auth import failed', e); }
+      }
+    }
     // Close any user dropdowns
     ['editorUserDropdown','userDropdown'].forEach(id => {
       const dd = document.getElementById(id); if (dd) dd.classList.remove('active');
@@ -116,7 +125,7 @@
   };
 
   window.updateUsername = async function() {
-    if (typeof getCurrentUser === 'function') { await getCurrentUser(); }
+    if (!window.currentUser && typeof getCurrentUser === 'function') { await getCurrentUser(); }
     const currentUser = window.currentUser; if (!currentUser) return;
     const newUsername = document.getElementById('prefUsername').value.trim();
     if (!newUsername || newUsername.length < 3 || newUsername.length > 20) { showNotification && showNotification('Username must be 3-20 characters','error'); return; }
@@ -137,7 +146,7 @@
   };
 
   window.confirmDeleteAccount = async function() {
-    if (typeof getCurrentUser === 'function') { await getCurrentUser(); }
+    if (!window.currentUser && typeof getCurrentUser === 'function') { await getCurrentUser(); }
     const currentUser = window.currentUser; if (!currentUser) return;
     const confirmed = confirm('⚠️ WARNING: This will permanently delete your account and all your data.\n\nType "DELETE" to confirm.');
     if (!confirmed) return;
