@@ -665,15 +665,19 @@ async function importFromArxiv(arxivId) {
     showImportStatus('Fetching arXiv metadata...', 'loading');
     
     try {
-        // Use arXiv API
+        // Use arXiv API via Supabase Edge Function
         console.log('Fetching arXiv ID:', arxivId);
-        const response = await fetch(`https://export.arxiv.org/api/query?id_list=${arxivId}`);
         
-        if (!response.ok) {
-            throw new Error('Impossible de contacter arXiv');
+        // CALL SUPABASE FUNCTION INSTEAD OF DIRECT FETCH
+        const { data: text, error } = await window.supabaseClient.functions.invoke('fetch-arxiv', {
+            body: { arxivId: arxivId }
+        });
+        
+        if (error) {
+            console.error('Supabase function error:', error);
+            throw new Error('Impossible de contacter arXiv via Supabase');
         }
         
-        const text = await response.text();
         console.log('arXiv API response received, length:', text.length);
         
         const parser = new DOMParser();
@@ -972,3 +976,4 @@ async function importBibtexFile(event) {
         event.target.value = '';
     }
 }
+
