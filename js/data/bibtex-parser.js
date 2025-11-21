@@ -340,9 +340,12 @@ function extractArxivId(url) {
  */
 async function fetchArxivAbstract(arxivId) {
     try {
-        const apiUrl = `https://export.arxiv.org/api/query?id_list=${arxivId}`;
-        const response = await fetch(apiUrl);
-        const xmlText = await response.text();
+        // CALL SUPABASE FUNCTION
+        const { data: xmlText, error } = await window.supabaseClient.functions.invoke('fetch-arxiv', {
+            body: { arxivId: arxivId }
+        });
+
+        if (error) throw error;
         
         // Parse XML to extract abstract
         const parser = new DOMParser();
@@ -408,3 +411,4 @@ function articleToBibTeX(article) {
     
     return bibtex;
 }
+
