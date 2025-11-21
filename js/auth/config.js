@@ -15,8 +15,8 @@
 // ============================================================================
 
 // Production URL - Change this single value to deploy to different domains
-// const PRODUCTION_BASE_URL = 'https://remyvallot.github.io/beta.papergraph';
-const PRODUCTION_BASE_URL = 'https://papergraph.net';
+const PRODUCTION_BASE_URL = 'https://remyvallot.github.io/papergraph';
+// const PRODUCTION_BASE_URL = 'https://papergraph.net';
 
 
 // Automatically detect environment
