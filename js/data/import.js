@@ -129,7 +129,7 @@ function processQuickImport() {
     
     // PRIORITY 1: Check for DOI FIRST (always starts with "10.")
     // This prevents false arXiv detection for DOIs like "10.1016/j.ress.2024.110120"
-    if (value.includes('10.') || value.includes('doi.org')) {
+   if (value.includes('doi.org') || (value.includes('10.') && value.includes('/'))) {
         console.log('Attempting to extract DOI from:', value);
         
         // More robust DOI extraction - allow letters, numbers, dots, slashes, hyphens, parentheses
@@ -145,7 +145,7 @@ function processQuickImport() {
             importFromDoi(doi);
             return;
         } else {
-            showImportStatus('Format DOI invalide', 'error');
+            showImportStatus('Invalid DOI format', 'error');
             return;
         }
     }
@@ -976,4 +976,5 @@ async function importBibtexFile(event) {
         event.target.value = '';
     }
 }
+
 
