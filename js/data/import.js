@@ -146,7 +146,7 @@ function processQuickImport() {
             return;
         } else {
             showImportStatus('Invalid DOI format', 'error');
-            return;
+            // return;
         }
     }
     
@@ -177,7 +177,7 @@ function processQuickImport() {
         if (arxivMatch) {
             importFromArxiv(arxivMatch[1]);
         } else {
-            showImportStatus('Format arXiv invalide - impossible d\'extraire l\'ID', 'error');
+            showImportStatus('Invalid arXiv format - impossible d\'extraire l\'ID', 'error');
         }
     } else {
         showImportStatus('Format non reconnu. Utilisez un DOI (10.xxxx/...), arXiv ID (2301.12345, 1210.0686 ou cs/0701001) ou BibTeX (@article{...})', 'error');
@@ -976,5 +976,6 @@ async function importBibtexFile(event) {
         event.target.value = '';
     }
 }
+
 
 
