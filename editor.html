@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -6,41 +6,35 @@
     <title>papergraph</title>
     <link href="https://api.fontshare.com/v2/css?f[]=chillax@400,700&display=swap" rel="stylesheet">
     
-    <!-- Modular CSS - Base -->
-    <link rel="stylesheet" href="css/base/theme.css">
-    <link rel="stylesheet" href="css/base/reset.css">
-    <link rel="stylesheet" href="css/base/layout.css">
-    <link rel="stylesheet" href="css/base/typography.css">
-    <link rel="stylesheet" href="css/base/dark-theme.css">
+    <!-- Modular CSS - Base -->
     
     <!-- Modular CSS - Components -->
-    <link rel="stylesheet" href="css/components/buttons.css">
-    <link rel="stylesheet" href="css/components/icons.css">
-    <link rel="stylesheet" href="css/components/dropdown.css">
-    <link rel="stylesheet" href="css/components/modals.css">
-    <link rel="stylesheet" href="css/components/toolbar.css">
-    <link rel="stylesheet" href="css/components/radial-menu.css">
-    <link rel="stylesheet" href="css/components/footer.css">
-    <link rel="stylesheet" href="css/components/user-dropdown.css">
-    <link rel="stylesheet" href="css/components/context-menu.css">
     
-    <!-- Modular CSS - Views -->
-    <link rel="stylesheet" href="css/views/graph-view.css">
-    <link rel="stylesheet" href="css/views/article-preview.css">
-    <link rel="stylesheet" href="css/views/gallery.css">
+    <!-- Modular CSS - Views -->
     
     <!-- Driver.js for Interactive Tutorial -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css">
-    <link rel="stylesheet" href="css/components/tour.css">
     
-    <link rel="icon" type="image/svg+xml" href="assets/logo-papergraph.svg">
+    <link rel="icon" type="image/svg+xml" href="/build-assets/logo-papergraph-DptYnSHp.svg">
+  <script type="module" crossorigin src="/build-assets/editor-DO0qHFSQ.js"></script>
+  <link rel="modulepreload" crossorigin href="/build-assets/user-dropdown-IoLJWv-i.js">
+  <link rel="modulepreload" crossorigin href="/build-assets/user-dropdown-CuYekREB.js">
+  <link rel="modulepreload" crossorigin href="/build-assets/base-path-qXy_vdCo.js">
+  <link rel="modulepreload" crossorigin href="/build-assets/auth-RFOWwUAq.js">
+  <link rel="modulepreload" crossorigin href="/build-assets/projects-CUAzXgA0.js">
+  <link rel="modulepreload" crossorigin href="/build-assets/project-import-DUSirTn2.js">
+  <link rel="stylesheet" crossorigin href="/build-assets/user-dropdown-CokYfayC.css">
+  <link rel="stylesheet" crossorigin href="/build-assets/user-dropdown-Ch0afbSs.css">
+  <link rel="stylesheet" crossorigin href="/build-assets/editor-DfSIXPMB.css">
+  <link rel="stylesheet" crossorigin href="/build-assets/buttons-DT-lZQkc.css">
+  <link rel="stylesheet" crossorigin href="/build-assets/gallery-BMl1FbkJ.css">
 </head>
 <body>
     <div id="app">
         <!-- Read-Only Mode Bar (hidden by default) - positioned next to logo menu -->
         <div id="readonlyIndicator" class="readonly-bar" style="display: none;">
             <button id="copyToDashboardBtn" class="readonly-btn">
-                <svg class="ui-icon ui-icon--sm" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#lock"></use></svg>
+                <svg class="ui-icon ui-icon--sm" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#lock"></use></svg>
                 <span>Read-only <br> Import to dashboard to edit</span>
             </button>
         </div>
@@ -48,7 +42,7 @@
         <!-- Logo Menu Button with integrated Project Title -->
         <div class="logo-menu-btn-extended">
             <button id="logoMenuBtnExtended" class="logo-menu-btn-part">
-                <img src="assets/logo-papergraph.svg" alt="papergraph" class="logo-icon">
+                <img src="data:image/svg+xml,%3csvg%20width='43'%20height='39'%20viewBox='0%200%2043%2039'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M17.9573%2035H4.375C3.47989%2035%202.62145%2034.6418%201.98851%2034.0042C1.35558%2033.3665%201%2032.5017%201%2031.6V4.4C1%203.49826%201.35558%202.63346%201.98851%201.99584C2.62145%201.35821%203.47989%201%204.375%201H16.1875L28%2012.9V26.9561'%20stroke='%232c3e50'%20stroke-width='2.5'%20stroke-linecap='round'%20stroke-linejoin='round'/%3e%3cpath%20d='M16%201V13H28'%20stroke='%232c3e50'%20stroke-width='2.5'%20stroke-linecap='round'%20stroke-linejoin='round'/%3e%3cline%20x1='16.9593'%20y1='24.252'%20x2='23.6069'%20y2='32.3663'%20stroke='%232c3e50'%20stroke-width='2.5'/%3e%3cline%20x1='16.9593'%20y1='24.252'%20x2='23.6069'%20y2='32.3663'%20stroke='%232c3e50'%20stroke-opacity='0.2'%20stroke-width='2.5'/%3e%3cline%20x1='34.3547'%20y1='29.8533'%20x2='28.65'%20y2='33.339'%20stroke='%232c3e50'%20stroke-width='2.5'/%3e%3cline%20x1='34.3547'%20y1='29.8533'%20x2='28.65'%20y2='33.339'%20stroke='%232c3e50'%20stroke-opacity='0.2'%20stroke-width='2.5'/%3e%3ccircle%20cx='15.1'%20cy='21.6286'%20r='3.34286'%20stroke='%232c3e50'%20stroke-width='2.5'/%3e%3ccircle%20cx='15.1'%20cy='21.6286'%20r='3.34286'%20stroke='%232c3e50'%20stroke-opacity='0.2'%20stroke-width='2.5'/%3e%3ccircle%20cx='25.9571'%20cy='34.6571'%20r='3.34286'%20stroke='%232c3e50'%20stroke-width='2.5'/%3e%3ccircle%20cx='25.9571'%20cy='34.6571'%20r='3.34286'%20stroke='%232c3e50'%20stroke-opacity='0.2'%20stroke-width='2.5'/%3e%3ccircle%20cx='37.9'%20cy='28.1429'%20r='3.34286'%20stroke='%232c3e50'%20stroke-width='2.5'/%3e%3ccircle%20cx='37.9'%20cy='28.1429'%20r='3.34286'%20stroke='%232c3e50'%20stroke-opacity='0.2'%20stroke-width='2.5'/%3e%3c/svg%3e" alt="papergraph" class="logo-icon">
                 <span class="logo-text">papergraph</span>
             </button>
             
@@ -117,23 +111,23 @@
             <!-- Edge menu for connection actions -->
             <div id="edgeMenu" class="edge-menu">
                 <button class="edge-btn edge-add-control-point" title="Add control point" data-action="add-control">
-                    <svg class="ui-icon ui-icon--md" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#control-point"></use></svg>
+                    <svg class="ui-icon ui-icon--md" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#control-point"></use></svg>
                 </button>
                 <button class="edge-btn edge-edit-label" title="Edit label" data-action="edit-label">
-                    <svg class="ui-icon ui-icon--md" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#edit"></use></svg>
+                    <svg class="ui-icon ui-icon--md" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#edit"></use></svg>
                 </button>
                 <button class="edge-btn edge-delete" title="Delete connection" data-action="delete">
-                    <svg class="ui-icon ui-icon--md" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#delete"></use></svg>
+                    <svg class="ui-icon ui-icon--md" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#delete"></use></svg>
                 </button>
             </div>
             
             <!-- Radial menu for node actions -->
             <div id="radialMenu" class="radial-menu">
                 <button class="radial-btn radial-connect" title="Create connection">
-                    <svg class="ui-icon ui-icon--md" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#connect"></use></svg>
+                    <svg class="ui-icon ui-icon--md" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#connect"></use></svg>
                 </button>
                 <button class="radial-btn radial-delete" title="Delete">
-                    <svg class="ui-icon ui-icon--md" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#delete"></use></svg>
+                    <svg class="ui-icon ui-icon--md" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#delete"></use></svg>
                 </button>
             </div>
             
@@ -152,19 +146,19 @@
         <!-- Main Action Toolbar - Bottom horizontal (outside views to be always visible) -->
         <div class="main-toolbar">
             <button id="addArticleBtn" class="main-tool-btn" title="Add an article">
-                <svg class="ui-icon ui-icon--xl" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#add"></use></svg>
+                <svg class="ui-icon ui-icon--xl" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#add"></use></svg>
                 <span class="btn-label">Add</span>
             </button>
             
             <!-- Search icon/box -->
             <button id="searchToggleBtn" class="main-tool-btn search-toggle-btn">
-                <svg class="ui-icon ui-icon--xl" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#search"></use></svg>
+                <svg class="ui-icon ui-icon--xl" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#search"></use></svg>
                 <span class="btn-label">Search</span>
             </button>
             
             <!-- Expandable search box -->
             <div class="toolbar-search collapsed">
-                <svg class="ui-icon ui-icon--sm" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#search"></use></svg>
+                <svg class="ui-icon ui-icon--sm" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#search"></use></svg>
                 <input type="text" id="searchBoxToolbar" placeholder="Search..." class="toolbar-search-input">
                 <span id="searchResultCount" class="search-result-count"></span>
                 <button id="searchCloseBtn" class="search-close-btn">✕</button>
@@ -173,11 +167,11 @@
             <!-- Graph-only buttons -->
             <div class="main-tool-divider graph-only"></div>
             <button id="fitGraphBtn" class="main-tool-btn graph-only">
-                <svg class="ui-icon ui-icon--xl" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#fit-view"></use></svg>
+                <svg class="ui-icon ui-icon--xl" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#fit-view"></use></svg>
                 <span class="btn-label">Recentrer</span>
             </button>
             <button id="toggleGridBtn" class="main-tool-btn graph-only">
-                <svg class="ui-icon ui-icon--xl" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#grid"></use></svg>
+                <svg class="ui-icon ui-icon--xl" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#grid"></use></svg>
                 <span class="btn-label">Grid</span>
             </button>
             
@@ -202,18 +196,18 @@
                                     <div class="quick-import-tools">
                                         <div class="quick-import-shortcuts">
                                             <button type="button" id="browseFileBtn" class="prompt-chip-btn">
-                                                <svg class="ui-icon ui-icon--sm" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#add"></use></svg>
+                                                <svg class="ui-icon ui-icon--sm" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#add"></use></svg>
                                                 <span>Import .bib</span>
                                             </button>
                                             <div id="manualFormToggle" class="manual-toggle manual-toggle-inline">
                                                 <button type="button" id="toggleManualBtn" class="prompt-chip-btn">
-                                                    <svg class="ui-icon ui-icon--sm" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#add"></use></svg>
+                                                    <svg class="ui-icon ui-icon--sm" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#add"></use></svg>
                                                     <span>Manual entry</span>
                                                 </button>
                                             </div>
                                         </div>
                                         <button type="button" id="promptActionBtn" class="prompt-action-btn" aria-label="Import or save node" title="Import metadata">
-                                            <svg class="ui-icon ui-icon--md" aria-hidden="true"><use href="assets/icons/ui-sprite.svg#chevron-right"></use></svg>
+                                            <svg class="ui-icon ui-icon--md" aria-hidden="true"><use href="/build-assets/ui-sprite-CB_gvDe8.svg#chevron-right"></use></svg>
                                         </button>
                                     </div>
                                 </div>
@@ -352,7 +346,6 @@
     </div>
 
     <!-- Application (single module entry point — Vite resolves all imports) -->
-    <script type="module" src="js/pages/editor-app.js"></script>
 </body>
 </html>
 
